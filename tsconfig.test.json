@@ -11,9 +11,11 @@
   },
   "include": [
     "src/lib/filters.ts",
+    "src/config/ads.config.ts",
     "src/config/newsSources.ts",
     "src/types/content.ts",
     "tests/news-filter.test.ts",
-    "tests/article-url.test.ts"
+    "tests/article-url.test.ts",
+    "tests/ad-fallback.test.ts"
   ]
 }

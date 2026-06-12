@@ -1,11 +1,19 @@
 "use client";
 
-import { useEffect, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
-  getAdConfig,
+  getActiveAdForPlacement,
+  isSafeAdUrl,
   type AdPlacementId,
-  type AdConfig,
+  type AdCampaign,
 } from "@/config/ads.config";
+
+const SIDE_SKIN_WIDTH = 160;
+const SIDE_SKIN_HEIGHT = 1080;
+const SIDE_SKIN_SAFE_GAP = 32;
+const SIDE_SKIN_CONTENT_WIDTH = 1280;
+const SIDE_SKIN_MIN_VIEWPORT =
+  SIDE_SKIN_CONTENT_WIDTH + SIDE_SKIN_WIDTH * 2 + SIDE_SKIN_SAFE_GAP * 2;
 
 type AdSlotProps = {
   placementId: AdPlacementId;
@@ -16,6 +24,20 @@ type AdSlotProps = {
   sideSkinLeft?: string;
   sideSkinRight?: string;
 };
+
+type OverrideCreative = { src: string; enabled: boolean };
+
+function getCreativeSrc(value?: AdCampaign | OverrideCreative | null) {
+  if (!value) {
+    return undefined;
+  }
+
+  if ("desktopSrc" in value) {
+    return value.desktopSrc;
+  }
+
+  return "src" in value ? value.src : undefined;
+}
 
 function sizeLabel(size?: [number, number]) {
   return size ? `${size[0]} x ${size[1]}` : "Advertisement";
@@ -28,31 +50,66 @@ function cssSize(size: [number, number]) {
   } as CSSProperties;
 }
 
-function trackImpression(placementId: AdPlacementId) {
+function trackImpression(placementId: AdPlacementId, campaign?: AdCampaign | null) {
   if (process.env.NODE_ENV === "development") {
-    console.info("[LeedsWire ad impression]", { placementId });
+    console.info("[LeedsWire ad impression]", {
+      placementId,
+      campaignId: campaign?.id,
+      campaignType: campaign?.campaignType,
+      creativeType: campaign?.creativeType,
+    });
   }
 }
 
-function trackClick(placementId: AdPlacementId, clickUrl?: string) {
+function trackClick(placementId: AdPlacementId, campaign?: AdCampaign | null) {
   if (process.env.NODE_ENV === "development") {
-    console.info("[LeedsWire ad click]", { placementId, clickUrl });
+    console.info("[LeedsWire ad click]", {
+      placementId,
+      campaignId: campaign?.id,
+      campaignType: campaign?.campaignType,
+      creativeType: campaign?.creativeType,
+      clickUrl: campaign?.clickUrl,
+    });
   }
+}
+
+function HouseCreative({
+  campaign,
+}: {
+  campaign?: AdCampaign | null;
+}) {
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center rounded-[0.85rem] border border-[#efbf04]/30 bg-[radial-gradient(circle_at_top,rgba(239,191,4,0.16),transparent_42%),linear-gradient(135deg,rgba(14,29,48,0.96),rgba(8,24,42,0.94))] px-5 text-center shadow-inner shadow-black/20">
+      <p className="text-[0.66rem] font-bold uppercase tracking-[0.22em] text-[#efbf04]/90">
+        LeedsWire
+      </p>
+      <p className="mt-3 max-w-[22rem] text-xl font-semibold tracking-tight text-white sm:text-2xl">
+        {campaign?.label ?? "Advertise with LeedsWire"}
+      </p>
+      <p className="mt-3 max-w-[28rem] text-sm leading-6 text-zinc-400">
+        Premium placements for Leeds United supporters, sponsors and partners.
+      </p>
+    </div>
+  );
 }
 
 function ImageCreative({
-  ad,
+  campaign,
   placementId,
   slot,
 }: {
-  ad: AdConfig;
+  campaign: AdCampaign;
   placementId: AdPlacementId;
   slot: "desktop" | "mobile";
 }) {
-  const src = slot === "mobile" && ad.mobileSrc ? ad.mobileSrc : ad.src;
+  const [hasFailed, setHasFailed] = useState(false);
+  const src =
+    slot === "mobile" && campaign.mobileSrc
+      ? campaign.mobileSrc
+      : campaign.desktopSrc;
 
-  if (!src) {
-    return null;
+  if (!src || hasFailed) {
+    return <HouseCreative campaign={campaign} />;
   }
 
   const image = (
@@ -60,51 +117,42 @@ function ImageCreative({
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
-      alt="Advertisement"
+      alt={campaign.label ?? "Advertisement"}
       className="h-full w-full object-cover"
       loading="lazy"
+      onError={() => setHasFailed(true)}
     />
   );
 
-  if (!ad.clickUrl) {
+  if (!campaign.clickUrl || !isSafeAdUrl(campaign.clickUrl)) {
     return image;
   }
 
   return (
     <a
-      href={ad.clickUrl}
+      href={campaign.clickUrl}
       target="_blank"
-      rel="noreferrer sponsored"
+      rel="sponsored noopener noreferrer"
       className="block h-full w-full"
-      onClick={() => trackClick(placementId, ad.clickUrl)}
+      onClick={() => trackClick(placementId, campaign)}
     >
       {image}
     </a>
   );
 }
 
-function IframeCreative({ ad }: { ad: AdConfig }) {
-  if (!ad.src) {
-    return null;
+function IframeCreative({ campaign }: { campaign: AdCampaign }) {
+  if (!campaign.desktopSrc || !isSafeAdUrl(campaign.desktopSrc)) {
+    return <HouseCreative campaign={campaign} />;
   }
 
   return (
     <iframe
-      src={ad.src}
-      title="Advertisement"
+      src={campaign.desktopSrc}
+      title={campaign.label ?? "Advertisement"}
       className="h-full w-full border-0"
       loading="lazy"
       sandbox="allow-popups allow-popups-to-escape-sandbox allow-scripts allow-same-origin"
-    />
-  );
-}
-
-function TagCreative({ ad }: { ad: AdConfig }) {
-  return (
-    <div
-      className="h-full w-full"
-      // Placeholder-ready for third-party tags from trusted ad providers.
-      dangerouslySetInnerHTML={{ __html: ad.html ?? "" }}
     />
   );
 }
@@ -132,35 +180,38 @@ function Placeholder({
 }
 
 function Creative({
-  ad,
+  campaign,
   placementId,
   desktopSize,
   mobileSize,
   slot,
 }: {
-  ad?: AdConfig;
+  campaign?: AdCampaign | null;
   placementId: AdPlacementId;
   desktopSize: [number, number];
   mobileSize: [number, number];
   slot: "desktop" | "mobile";
 }) {
-  if (!ad?.enabled) {
+  if (!campaign) {
     return <Placeholder desktopSize={desktopSize} mobileSize={mobileSize} />;
   }
 
-  if ((ad.creativeType === "image" || ad.creativeType === "iframe") && !ad.src) {
-    return <Placeholder desktopSize={desktopSize} mobileSize={mobileSize} />;
+  if (campaign.campaignType === "house") {
+    return <ImageCreative campaign={campaign} placementId={placementId} slot={slot} />;
   }
 
-  if (ad.creativeType === "iframe") {
-    return <IframeCreative ad={ad} />;
+  if (campaign.creativeType === "iframe") {
+    return <IframeCreative campaign={campaign} />;
   }
 
-  if (ad.creativeType === "tag") {
-    return <TagCreative ad={ad} />;
+  if (
+    campaign.creativeType === "third-party-tag" ||
+    campaign.creativeType === "html"
+  ) {
+    return <HouseCreative campaign={campaign} />;
   }
 
-  return <ImageCreative ad={ad} placementId={placementId} slot={slot} />;
+  return <ImageCreative campaign={campaign} placementId={placementId} slot={slot} />;
 }
 
 export function AdSlot({
@@ -170,27 +221,32 @@ export function AdSlot({
   className = "",
   backgroundSponsorImage,
 }: AdSlotProps) {
-  const ad = getAdConfig(placementId);
+  const campaign = getActiveAdForPlacement(placementId);
   const sponsor = backgroundSponsorImage
     ? { src: backgroundSponsorImage, enabled: true }
-    : getAdConfig("top-sponsor-background");
-  const resolvedDesktop = desktopSize ?? ad?.desktopSize ?? [970, 250];
-  const resolvedMobile = mobileSize ?? ad?.mobileSize ?? resolvedDesktop;
+    : getActiveAdForPlacement("top-sponsor-background");
+  const sponsorSrc = getCreativeSrc(sponsor);
+  const resolvedDesktop = desktopSize ?? [970, 250];
+  const resolvedMobile = mobileSize ?? resolvedDesktop;
 
   useEffect(() => {
-    trackImpression(placementId);
-  }, [placementId]);
+    trackImpression(placementId, campaign);
+  }, [campaign, placementId]);
+
+  if (!campaign && process.env.NODE_ENV === "production") {
+    return null;
+  }
 
   return (
     <section
-      className={`relative isolate flex justify-center overflow-hidden px-4 ${className}`}
+      className={`relative isolate flex justify-center overflow-hidden px-0 sm:px-4 ${className}`}
       aria-label="Advertisement"
       data-testid={`adslot-${placementId}`}
     >
-      {placementId === "homepage-top" && sponsor?.enabled && sponsor.src ? (
+      {placementId.endsWith("-top") && sponsorSrc ? (
         <div
           className="absolute inset-0 -z-10 bg-cover bg-center opacity-45"
-          style={{ backgroundImage: `url(${sponsor.src})` }}
+          style={{ backgroundImage: `url(${sponsorSrc})` }}
           data-testid="top-sponsor-background"
         />
       ) : null}
@@ -204,7 +260,7 @@ export function AdSlot({
         }}
       >
         <Creative
-          ad={ad}
+          campaign={campaign}
           placementId={placementId}
           desktopSize={resolvedDesktop}
           mobileSize={resolvedMobile}
@@ -221,7 +277,7 @@ export function AdSlot({
         }}
       >
         <Creative
-          ad={ad}
+          campaign={campaign}
           placementId={placementId}
           desktopSize={resolvedDesktop}
           mobileSize={resolvedMobile}
@@ -236,44 +292,70 @@ export function SideSkins({
   sideSkinLeft,
   sideSkinRight,
 }: Pick<AdSlotProps, "sideSkinLeft" | "sideSkinRight">) {
-  const left = sideSkinLeft
-    ? { src: sideSkinLeft, enabled: true }
-    : getAdConfig("sideskin-left");
-  const right = sideSkinRight
-    ? { src: sideSkinRight, enabled: true }
-    : getAdConfig("sideskin-right");
+  const left = useMemo(
+    () =>
+      sideSkinLeft
+        ? { src: sideSkinLeft, enabled: true }
+        : getActiveAdForPlacement("sideskin-left"),
+    [sideSkinLeft],
+  );
+  const right = useMemo(
+    () =>
+      sideSkinRight
+        ? { src: sideSkinRight, enabled: true }
+        : getActiveAdForPlacement("sideskin-right"),
+    [sideSkinRight],
+  );
 
   useEffect(() => {
-    if (left?.enabled) {
-      trackImpression("sideskin-left");
+    if (left) {
+      trackImpression("sideskin-left", "id" in left ? left : null);
     }
-    if (right?.enabled) {
-      trackImpression("sideskin-right");
+    if (right) {
+      trackImpression("sideskin-right", "id" in right ? right : null);
     }
-  }, [left?.enabled, right?.enabled]);
+  }, [left, right]);
 
-  if (!left?.enabled && !right?.enabled) {
+  if (!left && !right) {
     return null;
   }
 
+  const leftSrc = getCreativeSrc(left);
+  const rightSrc = getCreativeSrc(right);
+
+  const sideSkinStyle = {
+    "--side-skin-width": `${SIDE_SKIN_WIDTH}px`,
+    "--side-skin-height": `${SIDE_SKIN_HEIGHT}px`,
+    "--side-skin-gap": `${SIDE_SKIN_SAFE_GAP}px`,
+    "--side-skin-content-width": `${SIDE_SKIN_CONTENT_WIDTH}px`,
+  } as CSSProperties;
+
   return (
-    <div className="pointer-events-none fixed inset-y-28 z-20 hidden w-full overflow-hidden min-[1440px]:block">
-      {left?.enabled && left.src ? (
+    <div
+      className="pointer-events-none fixed inset-y-28 z-20 hidden w-full overflow-hidden min-[1664px]:block"
+      style={sideSkinStyle}
+      data-side-skin-min-viewport={SIDE_SKIN_MIN_VIEWPORT}
+    >
+      {leftSrc ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={left.src}
+          src={leftSrc}
           alt=""
           data-testid="sideskin-left"
-          className="pointer-events-auto fixed left-0 top-32 h-[calc(100vh-9rem)] max-h-[720px] w-[min(15vw,240px)] object-cover"
+          width={SIDE_SKIN_WIDTH}
+          height={SIDE_SKIN_HEIGHT}
+          className="pointer-events-auto fixed top-32 h-[var(--side-skin-height)] w-[var(--side-skin-width)] object-cover [left:max(0px,calc((100vw_-_var(--side-skin-content-width))_/_2_-_var(--side-skin-width)_-_var(--side-skin-gap)))]"
         />
       ) : null}
-      {right?.enabled && right.src ? (
+      {rightSrc ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={right.src}
+          src={rightSrc}
           alt=""
           data-testid="sideskin-right"
-          className="pointer-events-auto fixed right-0 top-32 h-[calc(100vh-9rem)] max-h-[720px] w-[min(15vw,240px)] object-cover"
+          width={SIDE_SKIN_WIDTH}
+          height={SIDE_SKIN_HEIGHT}
+          className="pointer-events-auto fixed top-32 h-[var(--side-skin-height)] w-[var(--side-skin-width)] object-cover [right:max(0px,calc((100vw_-_var(--side-skin-content-width))_/_2_-_var(--side-skin-width)_-_var(--side-skin-gap)))]"
         />
       ) : null}
     </div>

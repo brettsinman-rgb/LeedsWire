@@ -8,6 +8,11 @@ export const metadata: Metadata = {
   },
   description:
     "A premium Leeds United-only news, transfers and media hub.",
+  icons: {
+    icon: "/images/favicon.png",
+    shortcut: "/images/favicon.png",
+    apple: "/images/favicon.png",
+  },
 };
 
 export default function RootLayout({

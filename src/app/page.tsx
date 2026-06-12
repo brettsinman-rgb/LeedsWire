@@ -1,5 +1,5 @@
 import { ArticleGrid } from "@/components/ArticleGrid";
-import { AdSlot } from "@/components/AdSlot";
+import { AdPlacementSet } from "@/components/AdPlacementSet";
 import { Hero } from "@/components/Hero";
 import { PageShell } from "@/components/PageShell";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -18,17 +18,16 @@ export default async function Home() {
 
   return (
     <PageShell>
-      <AdSlot
-        placementId="homepage-top"
-        desktopSize={[970, 250]}
-        mobileSize={[300, 100]}
+      <AdPlacementSet
+        page="homepage"
+        placement="top"
         className="bg-[#071827]/35 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:py-6"
       />
       {topStory ? <Hero article={topStory} /> : null}
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
         <section id="latest" className="pb-10">
           <SectionHeader
-            eyebrow="Six story briefing"
+            eyebrow="Earlier Stories"
             title="Latest Leeds United News"
             href="/news"
             cta="View all news"
@@ -36,10 +35,9 @@ export default async function Home() {
           <ArticleGrid articles={latest.slice(0, 6)} layout="uniform" />
         </section>
 
-        <AdSlot
-          placementId="homepage-mid"
-          desktopSize={[970, 250]}
-          mobileSize={[300, 250]}
+        <AdPlacementSet
+          page="homepage"
+          placement="mid"
           className="pb-10 sm:pb-12"
         />
 
@@ -70,6 +68,12 @@ export default async function Home() {
           </div>
           <VideoChannelRows rows={videoRows} />
         </section>
+
+        <AdPlacementSet
+          page="homepage"
+          placement="bottom"
+          className="pt-10 sm:pt-12"
+        />
       </div>
     </PageShell>
   );

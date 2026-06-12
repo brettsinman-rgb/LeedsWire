@@ -122,33 +122,64 @@ test.describe("LeedsWire private beta QA", () => {
 
   test("ad placements render at expected responsive sizes", async ({ page }, testInfo) => {
     await dismissPopupForLayoutAudit(page);
-    await page.goto("/");
+    const adPages = [
+      { route: "/", prefix: "homepage" },
+      { route: "/premier-league-news", prefix: "premier-league-news" },
+      { route: "/media", prefix: "media" },
+    ];
 
-    const top = await visibleAdBox(page, "homepage-top");
-    const mid = await visibleAdBox(page, "homepage-mid");
+    for (const adPage of adPages) {
+      await page.goto(adPage.route);
 
-    expect(top).not.toBeNull();
-    expect(mid).not.toBeNull();
+      const top = await visibleAdBox(page, `${adPage.prefix}-top`);
+      const mid = await visibleAdBox(page, `${adPage.prefix}-mid`);
+      const bottom = await visibleAdBox(page, `${adPage.prefix}-bottom`);
 
-    if (testInfo.project.name === "mobile") {
-      expect(top).toMatchObject({ width: 300, height: 100 });
-      expect(mid).toMatchObject({ width: 300, height: 250 });
-      await expect(page.getByTestId("sideskin-left")).toBeHidden();
-      await expect(page.getByTestId("sideskin-right")).toBeHidden();
-    } else if (testInfo.project.name === "desktop") {
-      expect(top).toMatchObject({ width: 970, height: 250 });
-      expect(mid).toMatchObject({ width: 970, height: 250 });
-      await expect(page.getByTestId("top-sponsor-background")).toBeVisible();
-      await expect(page.getByTestId("sideskin-left")).toBeVisible();
-      await expect(page.getByTestId("sideskin-right")).toBeVisible();
-    } else {
-      expect(top!.height).toBe(250);
-      expect(mid!.height).toBe(250);
-      await expect(page.getByTestId("sideskin-left")).toBeHidden();
-      await expect(page.getByTestId("sideskin-right")).toBeHidden();
+      expect(top, `${adPage.prefix} top ad`).not.toBeNull();
+      expect(mid, `${adPage.prefix} mid ad`).not.toBeNull();
+      expect(bottom, `${adPage.prefix} bottom ad`).not.toBeNull();
+
+      if (adPage.prefix === "homepage") {
+        const placementOrder = await page.evaluate(() => {
+          const media = document.querySelector("#media");
+          const bottomSlot = document.querySelector(
+            '[data-testid="adslot-homepage-bottom"]',
+          );
+
+          return media && bottomSlot
+            ? Boolean(
+                media.compareDocumentPosition(bottomSlot) &
+                  Node.DOCUMENT_POSITION_FOLLOWING,
+              )
+            : false;
+        });
+
+        expect(placementOrder, "homepage-bottom appears below Media").toBe(true);
+      }
+
+      if (testInfo.project.name === "mobile") {
+        expect(top).toMatchObject({ width: 300, height: 100 });
+        expect(mid).toMatchObject({ width: 300, height: 600 });
+        expect(bottom).toMatchObject({ width: 300, height: 250 });
+        await expect(page.getByTestId("sideskin-left")).toBeHidden();
+        await expect(page.getByTestId("sideskin-right")).toBeHidden();
+      } else if (testInfo.project.name === "desktop") {
+        expect(top).toMatchObject({ width: 970, height: 250 });
+        expect(mid).toMatchObject({ width: 970, height: 250 });
+        expect(bottom).toMatchObject({ width: 970, height: 250 });
+        await expect(page.getByTestId("top-sponsor-background")).toBeVisible();
+        await expect(page.getByTestId("sideskin-left")).toBeVisible();
+        await expect(page.getByTestId("sideskin-right")).toBeVisible();
+      } else {
+        expect(top!.height).toBe(250);
+        expect(mid!.height).toBe(250);
+        expect(bottom!.height).toBe(250);
+        await expect(page.getByTestId("sideskin-left")).toBeHidden();
+        await expect(page.getByTestId("sideskin-right")).toBeHidden();
+      }
+
+      await expectNoHorizontalOverflow(page);
     }
-
-    await expectNoHorizontalOverflow(page);
   });
 
   test("media modal opens and exposes YouTube CTA", async ({ page }) => {

@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:ads": "NEXT_PUBLIC_LEEDSWIRE_TEST_ADS=true NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP=true NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP_FORCE_VIEW=true next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsc -p tsconfig.test.json && node .test-build/tests/news-filter.test.js && node .test-build/tests/article-url.test.js",
+    "test": "tsc -p tsconfig.test.json && node .test-build/tests/news-filter.test.js && node .test-build/tests/article-url.test.js && node .test-build/tests/ad-fallback.test.js",
     "test:e2e": "playwright test",
     "test:e2e:report": "playwright show-report"
   },

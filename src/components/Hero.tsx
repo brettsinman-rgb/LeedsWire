@@ -46,7 +46,7 @@ export function Hero({ article }: HeroProps) {
             <div className="flex min-h-[360px] flex-col bg-[linear-gradient(145deg,rgba(14,29,48,0.96)_0%,rgba(8,24,42,0.92)_100%)] p-6 sm:p-8 lg:min-h-0 lg:p-10">
               <div className="flex flex-1 flex-col justify-center overflow-hidden">
                 <p className="mb-4 text-xs font-bold uppercase tracking-[0.22em] text-[#ffdd00]">
-                  Featured briefing
+                  Top Story
                 </p>
                 <h1 className="line-clamp-4 text-4xl font-semibold leading-[1.03] tracking-tight text-white sm:text-5xl lg:text-[3.35rem]">
                   {article.title}

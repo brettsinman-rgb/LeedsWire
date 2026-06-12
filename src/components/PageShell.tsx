@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { ReactNode } from "react";
 import { SideSkins } from "@/components/AdSlot";
 import { Header } from "@/components/Header";
@@ -14,18 +13,12 @@ export function PageShell({ children }: PageShellProps) {
       <Header />
       <SideSkins />
       <PromotionalPopup />
-      <main className="pt-[150px] lg:pt-[122px]">{children}</main>
-      <footer className="border-t border-white/[0.08] bg-[#071827]/72 px-4 py-8 text-center text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 backdrop-blur">
-        <div className="mx-auto flex w-fit items-center justify-center gap-3">
-          <Image
-            src="/images/logoleedswire.png"
-            alt="LeedsWire"
-            width={32}
-            height={32}
-            className="size-8 object-contain"
-          />
-          <span>LeedsWire MVP / Local config / No team switching</span>
-        </div>
+      <main className="pt-[154px] lg:pt-[156px]">{children}</main>
+      <footer className="border-t border-white/[0.08] bg-[#071827]/72 px-4 py-10 text-center backdrop-blur sm:py-12">
+        <p className="mx-auto max-w-[700px] text-[13px] leading-6 text-[#94A3B8] sm:text-sm">
+          LeedsWire aggregates headlines and links to original publishers. All
+          articles remain the property of their respective owners.
+        </p>
       </footer>
     </div>
   );

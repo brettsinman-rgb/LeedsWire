@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { popupConfig, type PopupConfig } from "@/config/popup.config";
+import { isSafeAdUrl } from "@/config/ads.config";
 
 const DISMISSED_KEY = "leedswire-popup-dismissed";
-const ALLOWED_PATHS = new Set(["/", "/premier-league-news", "/media"]);
+const ALLOWED_PATHS = new Set(["/", "/premier-league-news", "/media", "/ad-preview"]);
 
 function isInDateWindow(config: PopupConfig) {
   const now = Date.now();
@@ -28,7 +29,7 @@ function isInDateWindow(config: PopupConfig) {
 }
 
 function hasCreative(config: PopupConfig) {
-  if (config.creativeType === "image") {
+  if (config.creativeType === "image" || config.creativeType === "gif") {
     return Boolean(config.imageUrl);
   }
 
@@ -36,7 +37,7 @@ function hasCreative(config: PopupConfig) {
     return Boolean(config.iframeUrl);
   }
 
-  return Boolean(config.html);
+  return false;
 }
 
 function trackPopup(
@@ -49,6 +50,8 @@ function trackPopup(
   if (process.env.NODE_ENV === "development") {
     console.info(`[LeedsWire popup] ${event}`, {
       campaignName: popupConfig.campaignName,
+      campaignId: popupConfig.campaignId,
+      campaignType: popupConfig.campaignType,
       creativeType: popupConfig.creativeType,
       clickUrl: popupConfig.clickUrl,
     });
@@ -67,17 +70,7 @@ function Creative({ config }: { config: PopupConfig }) {
     );
   }
 
-  if ((config.creativeType === "html" || config.creativeType === "tag") && config.html) {
-    return (
-      <div
-        className="w-full"
-        // Placeholder-ready for trusted HTML5 creative or third-party ad tags.
-        dangerouslySetInnerHTML={{ __html: config.html }}
-      />
-    );
-  }
-
-  if (config.creativeType === "image" && config.imageUrl) {
+  if ((config.creativeType === "image" || config.creativeType === "gif") && config.imageUrl) {
     return (
       // Promo creatives can be JPG, PNG, or GIF and should render as supplied.
       // eslint-disable-next-line @next/next/no-img-element
@@ -130,6 +123,31 @@ export function PromotionalPopup() {
     }, delayMs);
 
     return () => window.clearTimeout(timeout);
+  }, [canRender]);
+
+  useEffect(() => {
+    function handlePreviewRequest() {
+      if (!canRender) {
+        return;
+      }
+
+      window.sessionStorage.removeItem(DISMISSED_KEY);
+      setForceViewRemaining(
+        popupConfig.forceView
+          ? Math.max(1, Math.ceil(popupConfig.forceViewSeconds ?? 3))
+          : 0,
+      );
+      setIsVisible(true);
+      trackPopup("Popup Viewed");
+    }
+
+    window.addEventListener("leedswire:show-popup-preview", handlePreviewRequest);
+
+    return () =>
+      window.removeEventListener(
+        "leedswire:show-popup-preview",
+        handlePreviewRequest,
+      );
   }, [canRender]);
 
   useEffect(() => {
@@ -186,7 +204,7 @@ export function PromotionalPopup() {
   }
 
   function handleCreativeClick() {
-    if (!popupConfig.clickUrl) {
+    if (!popupConfig.clickUrl || !isSafeAdUrl(popupConfig.clickUrl)) {
       return;
     }
 

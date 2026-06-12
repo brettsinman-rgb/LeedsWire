@@ -15,24 +15,21 @@ export function Header() {
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b border-black/[0.08] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] backdrop-blur-2xl">
       <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3 px-4 py-3 sm:px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-8">
-        <Link href="/" className="group flex min-w-0 items-center gap-3">
-          <span className="relative flex h-[84px] w-[84px] shrink-0 items-center justify-center overflow-hidden sm:h-24 sm:w-24">
+        <Link
+          href="/"
+          className="group flex min-w-0 items-center"
+          aria-label="LeedsWire home"
+        >
+          <span className="relative flex h-[94px] w-[94px] shrink-0 items-center justify-center overflow-hidden sm:h-[118px] sm:w-[118px] lg:h-[132px] lg:w-[132px]">
             <Image
-              src="/images/logoleedswire.png"
+              src="/images/logoleedswire.png?v=20260612"
               alt="LeedsWire"
-              width={144}
-              height={144}
-              className="h-full w-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
+              width={1200}
+              height={1200}
+              className="h-full w-full object-contain"
               priority
+              unoptimized
             />
-          </span>
-          <span className="min-w-0">
-            <span className="block truncate text-[1.68rem] font-extrabold uppercase leading-none tracking-[0.12em] text-[#111111] sm:text-3xl">
-              LeedsWire
-            </span>
-            <span className="mt-1 block truncate text-[0.78rem] font-bold uppercase tracking-[0.18em] text-[#111111]/68 sm:text-[0.84rem]">
-              Leeds United Only
-            </span>
           </span>
         </Link>
         <nav className="order-3 col-span-2 flex items-center gap-5 overflow-x-auto border-t border-black/[0.08] pt-2 lg:order-none lg:col-span-1 lg:justify-center lg:border-t-0 lg:pt-0">

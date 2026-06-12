@@ -1,0 +1,942 @@
+{
+  "generatedAt": "2026-06-11T08:23:51.032Z",
+  "feedStatuses": [
+    {
+      "source": "Leeds Live",
+      "url": "https://www.leeds-live.co.uk/sport/leeds-united/?service=rss",
+      "status": 200,
+      "type": "application/rss+xml; charset=utf-8"
+    },
+    {
+      "source": "Yorkshire Evening Post",
+      "url": "https://www.yorkshireeveningpost.co.uk/sport/football/leeds-united/rss",
+      "status": 200,
+      "type": "text/xml; charset=utf-8"
+    },
+    {
+      "source": "Leeds United Official",
+      "url": "https://www.leedsunited.com/news/rss",
+      "status": 404,
+      "type": "text/html; charset=utf-8"
+    },
+    {
+      "source": "Sky Sports Football",
+      "url": "https://www.skysports.com/rss/12040",
+      "status": 200,
+      "type": "application/xml"
+    },
+    {
+      "source": "BBC Football",
+      "url": "https://feeds.bbci.co.uk/sport/football/rss.xml",
+      "status": 200,
+      "type": "text/xml; charset=utf-8"
+    }
+  ],
+  "totalFetched": 148,
+  "totalChecked": 100,
+  "accepted": 36,
+  "rejected": 64,
+  "falsePositiveCandidates": 0,
+  "stories": [
+    {
+      "source": "Leeds Live",
+      "headline": "Leeds United face clear hurdles in James Trafford Man City transfer but should roll the dice",
+      "clubDetected": "Leeds United, Man City",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary note: other club terms present: man city;",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/leeds-united-face-clear-hurdles-34099348",
+      "publishedAt": "Thu, 11 Jun 2026 08:00:00 +0000"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Celtic close in on new striker - Thursday's gossip",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cjeg04g3e1lo?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 07:23:54 GMT"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Inside Leeds United hero Lucas Radebe's life from victim of shooting to World Cup star",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/lucas-radebe-leeds-world-cup-34091174",
+      "publishedAt": "Thu, 11 Jun 2026 06:00:00 +0000"
+    },
+    {
+      "source": "Yorkshire Evening Post",
+      "headline": "Three Leeds United-linked World Cup stories to look out for including Marcelo Bielsa, Raphinha & England rival",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.yorkshireeveningpost.co.uk/sport/football/leeds-united/leeds-united-world-cup-marcelo-bielsa-raphinha-england-8667883",
+      "publishedAt": "Thu, 11 Jun 2026 05:59:50 GMT"
+    },
+    {
+      "source": "Yorkshire Evening Post",
+      "headline": "Leeds United given four-position summer transfer list as 'important' deal already confirmed",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.yorkshireeveningpost.co.uk/sport/football/leeds-united/leeds-united-transfers-summer-deal-confirmed-8667435",
+      "publishedAt": "Thu, 11 Jun 2026 04:59:29 GMT"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Leeds United have important off-field appointment to make - and it’s not in the dugout",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/leeds-united-important-field-appointment-34098304",
+      "publishedAt": "Thu, 11 Jun 2026 04:00:00 +0000"
+    },
+    {
+      "source": "Yorkshire Evening Post",
+      "headline": "24 Premier League free agents Leeds United could sign as retained lists confirm Man Utd, Spurs & Sunderland exits",
+      "clubDetected": "Leeds United, Sunderland",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary note: other club terms present: sunderland;",
+      "link": "https://www.yorkshireeveningpost.co.uk/sport/football/leeds-united/leeds-united-premier-league-free-agents-retained-lists-8667774",
+      "publishedAt": "Wed, 10 Jun 2026 16:56:41 GMT"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Everything you need to know about Karl Darlow contract talks and Illan Meslier future",
+      "clubDetected": "Leeds United",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused;",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/everything-you-need-know-karl-34097746",
+      "publishedAt": "Wed, 10 Jun 2026 16:30:00 +0000"
+    },
+    {
+      "source": "Yorkshire Evening Post",
+      "headline": "Leeds United's strongest XI and bench with pair departing and Whites in talks with three others",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.yorkshireeveningpost.co.uk/sport/football/leeds-united/leeds-uniteds-new-best-xi-and-bench-as-pair-depart-with-whites-in-talks-with-three-others-8668534",
+      "publishedAt": "Wed, 10 Jun 2026 15:59:36 GMT"
+    },
+    {
+      "source": "Yorkshire Evening Post",
+      "headline": "Leeds United investor helps launch World Cup at star-studded Los Angeles party alongside FIFA president",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.yorkshireeveningpost.co.uk/sport/football/leeds-united/leeds-united-world-cup-will-ferrell-gianni-infantino-8668441",
+      "publishedAt": "Wed, 10 Jun 2026 15:19:30 GMT"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Everton slam 'dangerous' PSR ruling as Burnley awarded £35m after Leeds United decision",
+      "clubDetected": "Leeds United, Everton",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary note: other club terms present: everton;",
+      "link": "https://www.leeds-live.co.uk/sport/everton-slam-dangerous-psr-ruling-34099876",
+      "publishedAt": "Wed, 10 Jun 2026 15:15:41 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Leeds United ready to smash transfer record with 'biggest offer ever made'",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/transfer-news-sporting-summer-window-34099136",
+      "publishedAt": "Wed, 10 Jun 2026 15:15:38 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Why Leeds United hero Gabriel Gudmundsson missed Sweden training ahead of World Cup",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/leeds-united-hero-gabriel-gudmundsson-34096516",
+      "publishedAt": "Wed, 10 Jun 2026 13:00:00 +0000"
+    },
+    {
+      "source": "Yorkshire Evening Post",
+      "headline": "The players Leeds United signed ahead of second season in Premier League in 2021 and star men who left",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.yorkshireeveningpost.co.uk/sport/football/leeds-united/leeds-united-premier-league-jack-harrison-dan-james-junior-firpo-8667367",
+      "publishedAt": "Wed, 10 Jun 2026 12:31:23 GMT"
+    },
+    {
+      "source": "Yorkshire Evening Post",
+      "headline": "Leeds United's key Premier League rivals face early-summer blow as £8m release clause emerges",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.yorkshireeveningpost.co.uk/sport/football/leeds-united/leeds-united-premier-league-rivals-blow-release-clause-8667279",
+      "publishedAt": "Wed, 10 Jun 2026 11:56:33 GMT"
+    },
+    {
+      "source": "Yorkshire Evening Post",
+      "headline": "Star and keeper available on frees as Leeds United former relegation rivals West Ham announce exits after drop",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.yorkshireeveningpost.co.uk/sport/football/leeds-united/leeds-united-west-ham-adama-traore-lukasz-fabianski-8667616",
+      "publishedAt": "Wed, 10 Jun 2026 11:20:40 GMT"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Leeds United retained list as Karl Darlow and Sam Byram next steps revealed",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/leeds-united-stage-contract-talks-34095816",
+      "publishedAt": "Wed, 10 Jun 2026 11:00:00 +0000"
+    },
+    {
+      "source": "Yorkshire Evening Post",
+      "headline": "Leeds United discuss future of senior trio and youngster offered deal as retained list shows exits",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.yorkshireeveningpost.co.uk/sport/football/leeds-united/leeds-united-news-illan-meslier-sam-byram-karl-darlow-alex-cairns-8667562",
+      "publishedAt": "Wed, 10 Jun 2026 10:59:50 GMT"
+    },
+    {
+      "source": "Yorkshire Evening Post",
+      "headline": "International stars leaving as Leeds United Premier League rivals announce retained lists, ex-Whites man going",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.yorkshireeveningpost.co.uk/sport/football/leeds-united/leeds-united-tottenham-yves-bissouma-sunderland-dan-neil-niall-huggins-8667410",
+      "publishedAt": "Wed, 10 Jun 2026 10:48:07 GMT"
+    },
+    {
+      "source": "Yorkshire Evening Post",
+      "headline": "Leeds United Elland Road expansion latest as new footage shows latest development works",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.yorkshireeveningpost.co.uk/sport/football/leeds-united/leeds-united-elland-road-expansion-latest-footage-video-8667025",
+      "publishedAt": "Wed, 10 Jun 2026 09:59:40 GMT"
+    },
+    {
+      "source": "Yorkshire Evening Post",
+      "headline": "Leeds United reveal summer transfer window exit ahead of retained list announcement",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.yorkshireeveningpost.co.uk/sport/football/leeds-united/leeds-united-transfers-retained-list-illan-meslier-8666927",
+      "publishedAt": "Wed, 10 Jun 2026 08:59:15 GMT"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Leeds United issue statement on Illan Meslier as decision made ahead of transfer window",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/leeds-united-issue-statement-illan-34095448",
+      "publishedAt": "Wed, 10 Jun 2026 08:59:00 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Elland Road expansion update as new floodlights installed amid Leeds United demolition works",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/elland-road-expansion-update-new-34089541",
+      "publishedAt": "Wed, 10 Jun 2026 08:00:00 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Erling Haaland's Leeds United transfer wish, Real Madrid bid and Man City exit stance",
+      "clubDetected": "Leeds United, Man City",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary note: other club terms present: man city;",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/erling-haaland-city-real-leeds-34090684",
+      "publishedAt": "Wed, 10 Jun 2026 06:00:00 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Pascal Struijk future key to Leeds United’s transfer plan amid current reality",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/pascal-struijk-future-key-leeds-34088493",
+      "publishedAt": "Wed, 10 Jun 2026 04:00:00 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "How close Leeds United came to signing Harry Wilson and why this summer is different",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/how-close-leeds-united-came-34087494",
+      "publishedAt": "Tue, 9 Jun 2026 15:02:53 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Manchester United consider stunning move for Leeds United man",
+      "clubDetected": "Leeds United, Manchester United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary note: other club terms present: manchester united;",
+      "link": "https://www.leeds-live.co.uk/sport/manchester-united-consider-stunning-move-34091598",
+      "publishedAt": "Tue, 9 Jun 2026 13:41:16 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Leeds United on the back foot over Karl Darlow transfer interest unless promise made",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/leeds-united-back-foot-over-34090291",
+      "publishedAt": "Tue, 9 Jun 2026 12:05:55 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Eight things to know about what Ethan Ampadu said on Leeds United connection and Daniel Farke",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/eight-things-know-what-ethan-34088020",
+      "publishedAt": "Tue, 9 Jun 2026 11:08:45 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Leeds United transfer priority to be decided as 49ers consider summer strategy",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/leeds-united-transfer-priority-decided-34087810",
+      "publishedAt": "Tue, 9 Jun 2026 09:55:38 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "What new Ethan Ampadu decision means for Leeds United board, Daniel Farke and transfer targets",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/what-new-ethan-ampadu-decision-34086329",
+      "publishedAt": "Tue, 9 Jun 2026 08:00:00 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Leeds United resolving protracted transfer saga could be perfect move for international striker",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/leeds-united-resolving-protracted-transfer-34084995",
+      "publishedAt": "Tue, 9 Jun 2026 06:00:00 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Ethan Ampadu sends Pascal Struijk Leeds United contract renewal message amid transfer question",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/ethan-ampadu-sends-pascal-struijk-34085741",
+      "publishedAt": "Tue, 9 Jun 2026 04:00:00 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Eight things you need to know about Ethan Ampadu's Leeds United goals and Harry Wilson transfer update",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/eight-things-you-need-know-34085159",
+      "publishedAt": "Mon, 8 Jun 2026 16:00:00 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Ethan Ampadu quizzed on ‘selling’ Leeds United transfer to Harry Wilson amid Fulham decision",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/ethan-ampadu-quizzed-selling-leeds-34084720",
+      "publishedAt": "Mon, 8 Jun 2026 13:59:00 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Hayden Hackney gets Leeds United move green light but told Man Utd a big leap",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/hayden-hackney-gets-leeds-united-34084218",
+      "publishedAt": "Mon, 8 Jun 2026 12:17:24 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "Leeds United notebook - Lucas Radebe’s Elland Road sign as Noah Okafor breaks 18-month duck",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/leeds-united-notebook-lucas-radebes-34082299",
+      "publishedAt": "Mon, 8 Jun 2026 10:22:44 +0000"
+    },
+    {
+      "source": "Leeds Live",
+      "headline": "‘On the sunbed with my cake’ - Why Daniel Farke will not be watching much of World Cup",
+      "clubDetected": "Leeds United",
+      "status": "Accepted",
+      "reason": "Accepted: Leeds-focused headline and summary",
+      "link": "https://www.leeds-live.co.uk/sport/leeds-united/on-sunbed-cake-daniel-farke-34078171",
+      "publishedAt": "Mon, 8 Jun 2026 07:28:57 +0000"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "World Cup of Darts starts today! Who is playing and how does it work?",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/darts/news/12040/13550719/world-cup-of-darts-2026-schedule-dates-group-stage-draw-as-luke-littler-and-luke-humphries-return-to-represent-england",
+      "publishedAt": "Tue, 09 Jun 2026 07:00:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "Edwards sacked by Wolves after seven months in charge",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/football/news/12040/13552944/rob-edwards-wolves-sack-head-coach-after-seven-months-in-charge",
+      "publishedAt": "Thu, 11 Jun 2026 08:27:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "Knicks complete thrilling comeback to go one win from NBA glory",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/watch/video/13552934/new-york-knicks-107-106-san-antonio-spurs-nba-finals-game-4-highlights",
+      "publishedAt": "Thu, 11 Jun 2026 07:45:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "Man City latest: Club remain in talks to sign Anderson",
+      "clubDetected": "Man City",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused; primary/competing other club terms: man city;",
+      "link": "https://www.skysports.com/football/live-blog/12040/13025499/man-city-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
+      "publishedAt": "Thu, 11 Jun 2026 08:43:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "'Bedlam at the Garden!' | SCENES as Knicks win in the last second",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/watch/video/13552917/scenes-as-knicks-go-one-win-away-from-glory-in-the-dying-seconds",
+      "publishedAt": "Thu, 11 Jun 2026 06:35:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "'A huge moment' - Can England seize Women's T20 World Cup opportunity?",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/cricket/news/12040/13551969/icc-womens-t20-world-cup-england-want-to-emulate-lionesses-and-inspire-more-women-and-girls-to-play-cricket-ahead-of-tournament",
+      "publishedAt": "Thu, 11 Jun 2026 08:00:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "Latest tennis scores: Raducanu bids for place in Queen's quarters",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/tennis/scores-schedule",
+      "publishedAt": "Thu, 11 Jun 2026 07:00:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "'I got itchy feet' | Rice raring for World Cup after Arsenal's PL success",
+      "clubDetected": "Arsenal",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused; primary/competing other club terms: arsenal;",
+      "link": "https://www.skysports.com/watch/video/13552925/england-declan-rice-hungry-for-world-cup-after-arsenals-pl-glory",
+      "publishedAt": "Thu, 11 Jun 2026 07:11:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "World Cup of Darts: Meet the cult stars you MUST watch",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/darts/news/12040/13551189/world-cup-of-darts-2026-players-to-watch-with-paul-lim-motomu-sakai-man-lok-leung-and-nitin-kumar-in-action",
+      "publishedAt": "Tue, 09 Jun 2026 07:00:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "Q&A: Everything you need to know about Stokes, Atkinson controversy",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/cricket/news/12040/13552762/england-vs-new-zealand-ben-stokes-gus-atkinson-dropped-prompting-questions-over-captaincy-and-test-lineup-qa",
+      "publishedAt": "Thu, 11 Jun 2026 08:55:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "'We want the next level' | Tuchel praises preparation as England eye World Cup",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/watch/video/13552924/england-thomas-tuchel-praises-preparation-for-world-cup-but-demands-the-next-level",
+      "publishedAt": "Thu, 11 Jun 2026 07:10:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "Tuchel: England have 'set tone' for World Cup bid",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/football/news/12040/13552929/thomas-tuchel-england-set-tone-for-world-cup-bid-in-convincing-costa-rica-win-says-three-lions-boss",
+      "publishedAt": "Thu, 11 Jun 2026 07:09:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "Forty Years On returns at Newbury",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/racing/news/12040/13552462/today-on-sky-sports-racing-newbury-worcester-and-yarmouth",
+      "publishedAt": "Thu, 11 Jun 2026 07:00:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "Brook, Root, or Stokes: What now for England's Test captaincy?",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/cricket/news/12040/13552805/englands-test-captain-conundrum-ben-stokes-harry-brook-joe-root-or-someone-else",
+      "publishedAt": "Thu, 11 Jun 2026 07:00:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "'Three's a charm!' - Can Mayer snap UK hoodoo in Cameron showdown?",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/boxing/news/12040/13552757/mikaela-mayer-hopes-to-end-uk-hoodoo-when-she-faces-chantelle-cameron-in-super-welterweight-world-title-clash-in-birmingham",
+      "publishedAt": "Thu, 11 Jun 2026 07:00:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "Knicks fight from 29 points down for record comeback win and 3-1 NBA Finals lead",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/nba/news/12040/13552914/nba-finals-new-york-knicks-fight-from-29-points-down-for-record-breaking-comeback-win-vs-san-antonio-spurs-and-3-1-lead",
+      "publishedAt": "Thu, 11 Jun 2026 06:21:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "Complete guide to all 12 World Cup groups",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/football/story-telling/12040/13550118/world-cup-2026-group-guides-england-and-scotland-group-analysis-fixtures-squads-and-everything-you-need-on-all-12-groups",
+      "publishedAt": "Tue, 02 Jun 2026 13:00:00 BST"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Germany players will pay for 600 fans to travel to game",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/c9v2nvm02llo?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 08:03:10 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Scotland have chip on shoulder in search of history",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cdejng0n6k2o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 06:45:07 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "World Cup fever meets protest in Mexico City",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cjrg4qxz7g4o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 06:38:38 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Messi, Maradona or Pele? Ranking the top 10 World Cup legends",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cgl34ne0g3eo?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 05:51:06 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Who am I? Guess World Cup star No 4",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/c4gv0g74656o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 05:45:44 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Arsenal in hunt for Williams - Thursday's gossip",
+      "clubDetected": "Arsenal, Aston Villa",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused; primary/competing other club terms: arsenal, aston villa;",
+      "link": "https://www.bbc.com/sport/football/articles/ce371zx8zdko?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 22:32:06 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Any early shocks? Sutton's World Cup 2026 score predictions - opening group games",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cvgdxg2v5d7o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 17:25:38 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Everton ordered to pay Burnley £35m over PSR breaches",
+      "clubDetected": "Everton",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused; primary/competing other club terms: everton;",
+      "link": "https://www.bbc.com/sport/football/articles/cqx1wqr3yjno?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 14:17:05 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Who will win the World Cup? BBC pundits make their predictions",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cg7485gyxz9o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 05:24:53 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Follow World Cup 2026 with live lock screen updates on the BBC Sport app",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cvgz23p2q2jo?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Tue, 09 Jun 2026 13:28:47 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Set up BBC Sport website and app to show you more Scotland this World Cup",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cdxp35lp7n5o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Tue, 09 Jun 2026 13:02:34 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Play BBC Sport's new World Cup predictor game",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cn0plqlkl51o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Tue, 09 Jun 2026 08:24:41 GMT"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "World Cup 2026 fixture schedule - your day-by-day guide",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/football/news/12040/13481245/world-cup-2026-fixture-schedule-and-uk-kick-off-times-day-by-day-breakdown-of-all-104-matches-including-england-scotland",
+      "publishedAt": "Tue, 09 Dec 2025 09:23:00 GMT"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "Are England now ready to go and win the World Cup?",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/football/news/12040/13552812/world-cup-england-win-final-warm-up-against-costa-rica-so-are-they-ready-to-challenge-for-tournament-glory",
+      "publishedAt": "Thu, 11 Jun 2026 01:00:00 BST"
+    },
+    {
+      "source": "Sky Sports Football",
+      "headline": "Saracens' Willis wins Prem player of the season",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.skysports.com/rugby-union/news/12040/13552894/gallagher-prem-tom-wills-crowned-prem-player-of-the-season-ahead-of-bordeaux-switch",
+      "publishedAt": "Wed, 10 Jun 2026 23:09:00 BST"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Wolves sack Edwards after seven months",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cqx1w53y1qno?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 07:48:57 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "More than the Score",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.co.uk/sounds/play/p0nr6b3g?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 07:00:00 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "World Cup countdown: Gordon, Gunn or Kelly in goal?",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.co.uk/sounds/play/p0nr9syp?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 07:00:00 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Scotland have chip on shoulder in search of history",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cdejng0n6k2o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 06:45:07 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "The Welsh doctor who sang Back Home on Top of the Pops with the England team",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/news/articles/cd6evxwy9dzo?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 05:22:24 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "How much did the Messi-Ronaldo rivalry drive them both?",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/videos/c05yj4p5gzgo?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 05:20:59 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "The Norway midfielder with the cellist father who overcame Liverpool rejection",
+      "clubDetected": "Liverpool",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused; primary/competing other club terms: liverpool;",
+      "link": "https://www.bbc.com/news/articles/cx2jdww4x3po?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 05:19:10 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "The Wayne Rooney Show",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.co.uk/sounds/play/p0nh9bv0?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 05:00:00 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Bellingham at number 10? Will Saka start? It's decision time for Tuchel",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cz9lxld1892o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Thu, 11 Jun 2026 00:45:16 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Is England v Costa Rica storm delay a sign of things to come?",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused; local/non-football topic;",
+      "link": "https://www.bbc.com/sport/football/articles/cr47lp04n34o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 23:03:25 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Football Daily",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.co.uk/sounds/play/p0nr8m0v?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 22:37:00 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Infantino could have stood up for the World Cup - but he said 'chill, relax'",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cvgj40vymlyo?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 22:28:02 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Haiti forced to alter kit design before World Cup opener",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/clyrvpr5ywyo?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 21:58:21 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "World Cup quiz: How well do you remember these opening games?",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/c7v9l92pvqyo?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 21:24:55 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "'Have you lost control?' - BBC sports editor asks Fifa chief Infantino",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/videos/c9q2ldq4jn4o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 20:59:00 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Essex Police given new Sullivan information",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused; local/non-football topic;",
+      "link": "https://www.bbc.com/news/articles/c802l191rd3o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 19:19:54 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Rashford future uncertain as Barca deal deadline looms",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/c3ryx74peyeo?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 19:01:14 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "BBC Women's Football Weekly",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.co.uk/sounds/play/p0nr7qsv?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 18:24:00 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Family time, not Fulham time - McKenna leaves Ipswich",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cd7wn0erlvwo?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 17:13:51 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Spurs complete Senesi signing after Bournemouth exit",
+      "clubDetected": "Tottenham",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused; primary/competing other club terms: tottenham;",
+      "link": "https://www.bbc.com/sport/football/articles/cddl0glz4p7o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 16:53:26 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Brother's memory inspires Williams for World Cup opener",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cx21lpdl4r6o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 16:27:59 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Referee Omar Artan returns to Somalia",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/videos/c14ylv1eyl0o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 14:40:38 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Scotland's Super Mario and social butterfly who emerged from Man Utd cocoon",
+      "clubDetected": "Manchester United",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused; primary/competing other club terms: manchester united;",
+      "link": "https://www.bbc.com/sport/football/articles/cx2jd7knx15o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 14:38:32 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Scotland's Super Mario and social butterfly who emerged from Man Utd cocoon",
+      "clubDetected": "Manchester United",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused; primary/competing other club terms: manchester united;",
+      "link": "https://www.bbc.com/sport/football/articles/cx2jd7knx15o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 14:38:32 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "USA not totally reliant on Pulisic - Balboa",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/videos/cy5vlg1de26o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 14:29:31 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "FAI bids to host 2029 Women's Champions League final",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cql1rk2ew10o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 14:11:22 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "US official claims banned referee had links with 'terror organisations'",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/c2dylj8kj82o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 14:08:28 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Wilkinson's Wales give themselves World Cup chance",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cx23nyexwz6o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 14:01:28 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "Wilkinson's Wales give themselves World Cup chance",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/cx23nyexwz6o?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 14:01:28 GMT"
+    },
+    {
+      "source": "BBC Football",
+      "headline": "VAR, timewasting and subs - World Cup law changes explained",
+      "clubDetected": "None",
+      "status": "Rejected",
+      "reason": "Rejected: headline not Leeds-focused; body/summary not Leeds-focused;",
+      "link": "https://www.bbc.com/sport/football/articles/ce8jv326d7vo?at_medium=RSS&at_campaign=rss",
+      "publishedAt": "Wed, 10 Jun 2026 13:18:27 GMT"
+    }
+  ]
+}

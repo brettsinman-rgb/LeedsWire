@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": ".test-build",
+    "rootDir": ".",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "incremental": false,
+    "tsBuildInfoFile": ".test-build/tsconfig.test.tsbuildinfo"
+  },
+  "include": [
+    "src/lib/filters.ts",
+    "src/config/newsSources.ts",
+    "src/types/content.ts",
+    "tests/news-filter.test.ts",
+    "tests/article-url.test.ts"
+  ]
+}

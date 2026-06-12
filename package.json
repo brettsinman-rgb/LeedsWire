@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsc -p tsconfig.test.json && node .test-build/tests/news-filter.test.js && node .test-build/tests/article-url.test.js && node .test-build/tests/ad-fallback.test.js",
+    "test": "tsc -p tsconfig.test.json && node .test-build/tests/news-filter.test.js && node .test-build/tests/article-url.test.js && node .test-build/tests/ad-fallback.test.js && node .test-build/tests/freshness.test.js",
     "test:e2e": "playwright test",
     "test:e2e:report": "playwright show-report"
   },

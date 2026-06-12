@@ -12,6 +12,8 @@ export const metadata: Metadata = {
     "Leeds United transfer rumours, done deals, contracts and outgoing news.",
 };
 
+export const revalidate = 300;
+
 export default async function TransfersPage() {
   const transfers = await enrichArticleImages(await getTransferArticles());
 

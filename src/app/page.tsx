@@ -8,6 +8,8 @@ import { enrichArticleImages } from "@/lib/articleImages";
 import { getArticles } from "@/lib/content";
 import { getVideoChannelRows } from "@/lib/youtube";
 
+export const revalidate = 300;
+
 export default async function Home() {
   const articles = await enrichArticleImages(await getArticles());
   const topStory = articles[0];

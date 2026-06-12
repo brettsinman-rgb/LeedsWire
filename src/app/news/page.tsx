@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: "Latest Leeds United football news from trusted local, club and national sources.",
 };
 
+export const revalidate = 300;
+
 export default async function NewsArchivePage() {
   const articles = await enrichArticleImages(await getArticles());
 

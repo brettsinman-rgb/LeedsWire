@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "Latest Premier League stories from BBC Sport.",
 };
 
-export const revalidate = 1800;
+export const revalidate = 300;
 
 export default async function PremierLeagueNewsPage() {
   const articles = await getPremierLeagueArticles();

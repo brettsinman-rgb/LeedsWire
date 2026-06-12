@@ -8,6 +8,7 @@ import { newsSources, type NewsSource } from "../config/newsSources";
 import type { Article, Video } from "../types/content";
 
 export const fallbackImage = "/images/Leeds_United.png";
+export const NEWS_REVALIDATE_SECONDS = 300;
 
 const allArticles: Article[] = [
   {
@@ -153,6 +154,14 @@ function decodeXml(value = "") {
     .trim();
 }
 
+function decodeJsonString(value = "") {
+  try {
+    return JSON.parse(`"${value.replace(/"/g, "\\\"")}"`) as string;
+  } catch {
+    return decodeXml(value.replace(/\\\//g, "/"));
+  }
+}
+
 function getTag(item: string, tagName: string) {
   const match = item.match(
     new RegExp(`<${tagName}[^>]*>([\\s\\S]*?)<\\/${tagName}>`, "i"),
@@ -229,6 +238,7 @@ async function fetchFeed(source: NewsSource) {
       console.warn("[LeedsWire news] live RSS disabled for source", {
         source: source.name,
         ingestionType: source.ingestionType,
+        reason: source.liveDisabledReason ?? "No RSS feed is configured.",
       });
     }
 
@@ -238,7 +248,7 @@ async function fetchFeed(source: NewsSource) {
   try {
     const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
       signal: AbortSignal.timeout(5000),
-      next: { revalidate: 1800 },
+      next: { revalidate: NEWS_REVALIDATE_SECONDS },
     };
     const response = await fetch(source.feedUrl, fetchOptions);
 
@@ -266,6 +276,88 @@ async function fetchFeed(source: NewsSource) {
 
     return [];
   }
+}
+
+function parseMotHomepageItems(html: string, source: NewsSource): RssItem[] {
+  const items: RssItem[] = [];
+  const seenUrls = new Set<string>();
+  const storyPattern =
+    /"headline":"((?:\\.|[^"\\])+)".{0,5000}?"slug":"((?:\\.|[^"\\])+)".{0,5000}?"published-at":(\d+)/g;
+
+  for (const match of html.matchAll(storyPattern)) {
+    const title = decodeJsonString(match[1]);
+    const slug = decodeJsonString(match[2]);
+    const timestamp = Number(match[3]);
+    const url = new URL(slug, source.url).toString();
+
+    if (
+      !title ||
+      !Number.isFinite(timestamp) ||
+      seenUrls.has(url) ||
+      !getArticleUrl({ link: url }, source)
+    ) {
+      continue;
+    }
+
+    seenUrls.add(url);
+    items.push({
+      title,
+      description: title,
+      link: url,
+      guid: url,
+      publishedAt: new Date(timestamp).toISOString(),
+    });
+  }
+
+  return items.slice(0, 12);
+}
+
+async function fetchMotHomepageFallback(source: NewsSource) {
+  if (source.id !== "mot-leeds-news") {
+    return [];
+  }
+
+  try {
+    const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
+      signal: AbortSignal.timeout(5000),
+      headers: {
+        accept: "text/html,application/xhtml+xml",
+        "user-agent": "LeedsWire freshness monitor",
+      },
+      next: { revalidate: NEWS_REVALIDATE_SECONDS },
+    };
+    const response = await fetch(source.url, fetchOptions);
+
+    if (!response.ok) {
+      return [];
+    }
+
+    return parseMotHomepageItems(await response.text(), source);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchSourceItems(source: NewsSource) {
+  const rssItems = await fetchFeed(source);
+  const fallbackItems = await fetchMotHomepageFallback(source);
+  const seenUrls = new Set(
+    rssItems
+      .map((item) => getArticleUrl(item, source))
+      .filter((url): url is string => Boolean(url)),
+  );
+  const newFallbackItems = fallbackItems.filter((item) => {
+    const url = getArticleUrl(item, source);
+
+    if (!url || seenUrls.has(url)) {
+      return false;
+    }
+
+    seenUrls.add(url);
+    return true;
+  });
+
+  return [...rssItems, ...newFallbackItems];
 }
 
 async function getUrlStatus(url: string) {
@@ -335,7 +427,7 @@ async function getLiveArticles() {
       .filter((source) => !source.premierLeagueOnly)
       .map(async (source) => ({
         source,
-        items: await fetchFeed(source),
+        items: await fetchSourceItems(source),
       })),
   );
   const candidates = sourceItems.flatMap(({ source, items }) =>

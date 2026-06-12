@@ -11,6 +11,7 @@ export type NewsSource = {
   approved?: boolean;
   premierLeagueOnly?: boolean;
   publisherImagePreferred: boolean;
+  liveDisabledReason?: string;
 };
 
 export const newsSources: NewsSource[] = [
@@ -39,6 +40,8 @@ export const newsSources: NewsSource[] = [
     ingestionType: "html",
     leedsOnly: true,
     publisherImagePreferred: true,
+    liveDisabledReason:
+      "HTML ingestion is not implemented for the official Leeds United site.",
   },
   {
     id: "sky-sports-leeds",

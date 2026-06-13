@@ -3,23 +3,12 @@ import { AdPreviewPopupButton } from "@/components/AdPreviewPopupButton";
 import { AdSlot } from "@/components/AdSlot";
 import { PageShell } from "@/components/PageShell";
 import {
+  getAdCreativeDiagnostics,
   getActiveAdForPlacement,
   getFallbackChainForPlacement,
+  knownAdAssetPaths,
   type AdPlacementId,
 } from "@/config/ads.config";
-
-const expectedAssets = [
-  "/ads/homepage-top.jpg",
-  "/ads/homepage-top-mobile.jpg",
-  "/ads/homepage-mid.jpg",
-  "/ads/homepage-mid-mobile.jpg",
-  "/ads/homepage-bottom.jpg",
-  "/ads/homepage-bottom-mobile.jpg",
-  "/ads/side-skin-left.jpg",
-  "/ads/side-skin-right.jpg",
-  "/ads/top-sponsor-bg.jpg",
-  "/ads/popup-sponsor.jpg",
-];
 
 const pageAdGroups = [
   {
@@ -38,6 +27,28 @@ const pageAdGroups = [
     prefix: "media",
   },
 ] as const;
+
+const placementLabels: Partial<Record<AdPlacementId, string>> = {
+  "homepage-top": "Homepage Top",
+  "homepage-mid": "Homepage Mid",
+  "homepage-bottom": "Homepage Bottom",
+  "premier-league-news-top": "Premier League News Top",
+  "premier-league-news-mid": "Premier League News Mid",
+  "premier-league-news-bottom": "Premier League News Bottom",
+  "media-top": "Media Top",
+  "media-mid": "Media Mid",
+  "media-bottom": "Media Bottom",
+  "top-sponsor-background": "Sponsor Background",
+  "sideskin-left": "Side Skin Left",
+  "sideskin-right": "Side Skin Right",
+  popup: "Popup Sponsor",
+};
+
+function fallbackChainLabel(placementId: AdPlacementId) {
+  return getFallbackChainForPlacement(placementId)
+    .map((item) => `${item.label}: ${item.status}`)
+    .join(" -> ");
+}
 
 function CampaignSummary({ placementId }: { placementId: AdPlacementId }) {
   const active = getActiveAdForPlacement(placementId);
@@ -91,6 +102,8 @@ function CampaignSummary({ placementId }: { placementId: AdPlacementId }) {
 }
 
 export default function AdPreviewPage() {
+  const diagnostics = getAdCreativeDiagnostics();
+
   return (
     <PageShell>
       <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
@@ -260,7 +273,7 @@ export default function AdPreviewPage() {
             <p>Popup: 1200x1200</p>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            {expectedAssets.map((asset) => (
+            {knownAdAssetPaths.map((asset) => (
               <div
                 key={asset}
                 className="rounded-[0.65rem] border border-white/[0.08] bg-[#071827]/72 px-4 py-3 font-mono text-xs text-zinc-300 [overflow-wrap:anywhere]"
@@ -268,6 +281,71 @@ export default function AdPreviewPage() {
                 {asset}
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="mt-10 rounded-[1rem] border border-white/[0.08] bg-[#0b1726]/82 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.22)]">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#EFBF04]">
+            Diagnostics
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white">
+            Configured creative status
+          </h2>
+          <p className="mt-2 text-sm text-zinc-400">
+            Local image paths are checked against the approved files in
+            public/ads. Missing creatives fall back before a broken image can
+            render.
+          </p>
+          <div className="mt-5 overflow-x-auto rounded-[0.85rem] border border-white/[0.08]">
+            <table className="min-w-[880px] w-full border-collapse text-left text-sm">
+              <thead className="bg-white/[0.06] text-xs uppercase tracking-[0.14em] text-zinc-400">
+                <tr>
+                  <th className="px-4 py-3">Placement</th>
+                  <th className="px-4 py-3">Campaign</th>
+                  <th className="px-4 py-3">Slot</th>
+                  <th className="px-4 py-3">Image path</th>
+                  <th className="px-4 py-3">Found</th>
+                  <th className="px-4 py-3">Fallback chain</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/[0.08] text-zinc-300">
+                {diagnostics.map((item) => (
+                  <tr key={`${item.campaignId}-${item.slot}`}>
+                    <td className="px-4 py-3 font-semibold text-white">
+                      {placementLabels[item.placementId] ?? item.placementId}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="block font-medium text-zinc-200">
+                        {item.campaignLabel ?? item.campaignId}
+                      </span>
+                      <span className="mt-1 block font-mono text-xs text-zinc-500">
+                        {item.campaignId}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 uppercase tracking-[0.12em] text-zinc-400">
+                      {item.slot}
+                    </td>
+                    <td className="px-4 py-3 font-mono text-xs [overflow-wrap:anywhere]">
+                      {item.path}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] ${
+                          item.found
+                            ? "bg-emerald-400/12 text-emerald-300"
+                            : "bg-red-400/12 text-red-300"
+                        }`}
+                      >
+                        {item.found ? "true" : "false"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-zinc-400">
+                      {fallbackChainLabel(item.placementId)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </section>
       </div>

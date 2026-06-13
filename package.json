@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:ads": "NEXT_PUBLIC_LEEDSWIRE_TEST_ADS=true NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP=true NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP_FORCE_VIEW=true next dev",
+    "prebuild": "node scripts/validate-ad-assets.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

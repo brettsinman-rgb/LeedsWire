@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { popupConfig, type PopupConfig } from "@/config/popup.config";
-import { isSafeAdUrl } from "@/config/ads.config";
+import { isConfiguredAdAssetAvailable, isSafeAdUrl } from "@/config/ads.config";
 
 const DISMISSED_KEY = "leedswire-popup-dismissed";
 const ALLOWED_PATHS = new Set(["/", "/premier-league-news", "/media", "/ad-preview"]);
@@ -30,7 +30,7 @@ function isInDateWindow(config: PopupConfig) {
 
 function hasCreative(config: PopupConfig) {
   if (config.creativeType === "image" || config.creativeType === "gif") {
-    return Boolean(config.imageUrl);
+    return Boolean(config.imageUrl && isConfiguredAdAssetAvailable(config.imageUrl));
   }
 
   if (config.creativeType === "iframe") {
@@ -58,7 +58,25 @@ function trackPopup(
   }
 }
 
+function PopupFallback() {
+  return (
+    <div className="flex min-h-[360px] w-full flex-col items-center justify-center bg-[radial-gradient(circle_at_top,rgba(239,191,4,0.18),transparent_42%),linear-gradient(135deg,rgba(14,29,48,0.98),rgba(8,24,42,0.96))] px-8 text-center">
+      <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#EFBF04]">
+        LeedsWire
+      </p>
+      <p className="mt-4 max-w-[26rem] text-3xl font-semibold tracking-tight text-white">
+        Sponsor LeedsWire
+      </p>
+      <p className="mt-3 max-w-[30rem] text-sm leading-6 text-zinc-400">
+        Premium placements for Leeds United supporters, sponsors and partners.
+      </p>
+    </div>
+  );
+}
+
 function Creative({ config }: { config: PopupConfig }) {
+  const [hasFailed, setHasFailed] = useState(false);
+
   if (config.creativeType === "iframe" && config.iframeUrl) {
     return (
       <iframe
@@ -70,7 +88,12 @@ function Creative({ config }: { config: PopupConfig }) {
     );
   }
 
-  if ((config.creativeType === "image" || config.creativeType === "gif") && config.imageUrl) {
+  if (
+    (config.creativeType === "image" || config.creativeType === "gif") &&
+    config.imageUrl &&
+    isConfiguredAdAssetAvailable(config.imageUrl) &&
+    !hasFailed
+  ) {
     return (
       // Promo creatives can be JPG, PNG, or GIF and should render as supplied.
       // eslint-disable-next-line @next/next/no-img-element
@@ -78,11 +101,12 @@ function Creative({ config }: { config: PopupConfig }) {
         src={config.imageUrl}
         alt={config.campaignName ?? "Promotional popup"}
         className="h-auto w-full object-contain"
+        onError={() => setHasFailed(true)}
       />
     );
   }
 
-  return null;
+  return <PopupFallback />;
 }
 
 export function PromotionalPopup() {

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   getActiveAdForPlacement,
+  isConfiguredAdAssetAvailable,
   isSafeAdUrl,
   type AdPlacementId,
   type AdCampaign,
@@ -108,7 +109,7 @@ function ImageCreative({
       ? campaign.mobileSrc
       : campaign.desktopSrc;
 
-  if (!src || hasFailed) {
+  if (!src || !isConfiguredAdAssetAvailable(src) || hasFailed) {
     return <HouseCreative campaign={campaign} />;
   }
 
@@ -226,6 +227,10 @@ export function AdSlot({
     ? { src: backgroundSponsorImage, enabled: true }
     : getActiveAdForPlacement("top-sponsor-background");
   const sponsorSrc = getCreativeSrc(sponsor);
+  const safeSponsorSrc =
+    sponsorSrc && isConfiguredAdAssetAvailable(sponsorSrc)
+      ? sponsorSrc
+      : undefined;
   const resolvedDesktop = desktopSize ?? [970, 250];
   const resolvedMobile = mobileSize ?? resolvedDesktop;
 
@@ -243,10 +248,10 @@ export function AdSlot({
       aria-label="Advertisement"
       data-testid={`adslot-${placementId}`}
     >
-      {placementId.endsWith("-top") && sponsorSrc ? (
+      {placementId.endsWith("-top") && safeSponsorSrc ? (
         <div
           className="absolute inset-0 -z-10 bg-cover bg-center opacity-45"
-          style={{ backgroundImage: `url(${sponsorSrc})` }}
+          style={{ backgroundImage: `url(${safeSponsorSrc})` }}
           data-testid="top-sponsor-background"
         />
       ) : null}
@@ -285,6 +290,37 @@ export function AdSlot({
         />
       </div>
     </section>
+  );
+}
+
+function SideSkinImage({
+  src,
+  side,
+}: {
+  src: string;
+  side: "left" | "right";
+}) {
+  const [hasFailed, setHasFailed] = useState(false);
+
+  if (!isConfiguredAdAssetAvailable(src) || hasFailed) {
+    return null;
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt=""
+      data-testid={`sideskin-${side}`}
+      width={SIDE_SKIN_WIDTH}
+      height={SIDE_SKIN_HEIGHT}
+      onError={() => setHasFailed(true)}
+      className={`pointer-events-auto fixed top-32 h-[var(--side-skin-height)] w-[var(--side-skin-width)] object-cover ${
+        side === "left"
+          ? "[left:max(0px,calc((100vw_-_var(--side-skin-content-width))_/_2_-_var(--side-skin-width)_-_var(--side-skin-gap)))]"
+          : "[right:max(0px,calc((100vw_-_var(--side-skin-content-width))_/_2_-_var(--side-skin-width)_-_var(--side-skin-gap)))]"
+      }`}
+    />
   );
 }
 
@@ -336,28 +372,8 @@ export function SideSkins({
       style={sideSkinStyle}
       data-side-skin-min-viewport={SIDE_SKIN_MIN_VIEWPORT}
     >
-      {leftSrc ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={leftSrc}
-          alt=""
-          data-testid="sideskin-left"
-          width={SIDE_SKIN_WIDTH}
-          height={SIDE_SKIN_HEIGHT}
-          className="pointer-events-auto fixed top-32 h-[var(--side-skin-height)] w-[var(--side-skin-width)] object-cover [left:max(0px,calc((100vw_-_var(--side-skin-content-width))_/_2_-_var(--side-skin-width)_-_var(--side-skin-gap)))]"
-        />
-      ) : null}
-      {rightSrc ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={rightSrc}
-          alt=""
-          data-testid="sideskin-right"
-          width={SIDE_SKIN_WIDTH}
-          height={SIDE_SKIN_HEIGHT}
-          className="pointer-events-auto fixed top-32 h-[var(--side-skin-height)] w-[var(--side-skin-width)] object-cover [right:max(0px,calc((100vw_-_var(--side-skin-content-width))_/_2_-_var(--side-skin-width)_-_var(--side-skin-gap)))]"
-        />
-      ) : null}
+      {leftSrc ? <SideSkinImage src={leftSrc} side="left" /> : null}
+      {rightSrc ? <SideSkinImage src={rightSrc} side="right" /> : null}
     </div>
   );
 }

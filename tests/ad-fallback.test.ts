@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import {
+  getMissingAdAssetDiagnostics,
   selectActiveAdForPlacement,
+  validateConfiguredAdAssets,
   type AdCampaign,
 } from "../src/config/ads.config";
 
@@ -15,7 +17,7 @@ function campaign(overrides: Partial<AdCampaign>): AdCampaign {
     priority: 1,
     enabled: true,
     creativeType: "image",
-    desktopSrc: "/ads/test.jpg",
+    desktopSrc: "/ads/homepage-top.jpg",
     ...overrides,
   };
 }
@@ -103,6 +105,19 @@ assert.equal(
 );
 
 assert.equal(
+  select([
+    campaign({
+      id: "paid-missing-asset",
+      campaignType: "paid",
+      desktopSrc: "/ads/missing-paid.jpg",
+    }),
+    campaign({ id: "house", campaignType: "house", desktopSrc: undefined }),
+  ])?.id,
+  "house",
+  "missing paid local image falls back before rendering a broken image",
+);
+
+assert.equal(
   select([], true)?.campaignType,
   "placeholder",
   "placeholder only appears in development when no fallback exists",
@@ -112,6 +127,28 @@ assert.equal(
   select([], false),
   null,
   "production collapses when no ad or fallback exists",
+);
+
+assert.equal(
+  getMissingAdAssetDiagnostics().length,
+  0,
+  "default ad configuration only references known local ad assets",
+);
+
+assert.deepEqual(
+  validateConfiguredAdAssets([
+    campaign({
+      id: "broken-campaign",
+      campaignType: "paid",
+      desktopSrc: "/ads/broken.jpg",
+    }),
+  ]).map((item) => ({
+    campaignId: item.campaignId,
+    path: item.path,
+    found: item.found,
+  })),
+  [{ campaignId: "broken-campaign", path: "/ads/broken.jpg", found: false }],
+  "asset validation reports missing local creative paths",
 );
 
 console.info("ad-fallback priority tests passed");

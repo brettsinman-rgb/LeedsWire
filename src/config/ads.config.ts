@@ -45,6 +45,16 @@ export type AdFallbackStatus = {
   campaign?: AdCampaign;
 };
 
+export type AdCreativeAssetDiagnostic = {
+  campaignId: string;
+  campaignLabel?: string;
+  placementId: AdPlacementId;
+  campaignType: AdCampaignType;
+  slot: "desktop" | "mobile";
+  path: string;
+  found: boolean;
+};
+
 type AdSelectionOptions = {
   now?: number;
   development?: boolean;
@@ -69,6 +79,21 @@ const pagePrefixes = [
   "premier-league-news",
   "media",
 ] as const;
+
+export const knownAdAssetPaths = [
+  "/ads/homepage-top.jpg",
+  "/ads/homepage-top-mobile.jpg",
+  "/ads/homepage-mid.jpg",
+  "/ads/homepage-mid-mobile.jpg",
+  "/ads/homepage-bottom.jpg",
+  "/ads/homepage-bottom-mobile.jpg",
+  "/ads/side-skin-left.jpg",
+  "/ads/side-skin-right.jpg",
+  "/ads/popup-sponsor.jpg",
+  "/ads/top-sponsor-bg.jpg",
+] as const;
+
+const knownAdAssetPathSet = new Set<string>(knownAdAssetPaths);
 
 const campaignTypeRank: Record<AdCampaignType, number> = {
   paid: 0,
@@ -119,8 +144,6 @@ function createPageCampaigns(): AdCampaign[] {
       priority: 10,
       enabled: true,
       creativeType: "image",
-      desktopSrc: "/ads/house/house-top.jpg",
-      mobileSrc: "/ads/house/house-mobile-300x100.jpg",
       clickUrl: "/ad-preview",
       label: "Advertise with LeedsWire",
     },
@@ -143,8 +166,6 @@ function createPageCampaigns(): AdCampaign[] {
       priority: 10,
       enabled: true,
       creativeType: "image",
-      desktopSrc: "/ads/house/house-mid.jpg",
-      mobileSrc: "/ads/house/house-mobile-300x600.jpg",
       clickUrl: "/ad-preview",
       label: "Sponsor this LeedsWire placement",
     },
@@ -167,8 +188,6 @@ function createPageCampaigns(): AdCampaign[] {
       priority: 10,
       enabled: true,
       creativeType: "image",
-      desktopSrc: "/ads/house/house-bottom.jpg",
-      mobileSrc: "/ads/house/house-mobile-300x250.jpg",
       clickUrl: "/ad-preview",
       label: "Follow LeedsWire",
     },
@@ -240,6 +259,22 @@ export function isSafeAdUrl(value?: string) {
   }
 }
 
+export function isLocalAdAssetPath(value?: string) {
+  return Boolean(value?.startsWith("/ads/"));
+}
+
+export function isConfiguredAdAssetAvailable(value?: string) {
+  if (!value) {
+    return false;
+  }
+
+  if (isLocalAdAssetPath(value)) {
+    return knownAdAssetPathSet.has(value);
+  }
+
+  return isSafeAdUrl(value);
+}
+
 export function isRenderableCreative(campaign: AdCampaign) {
   if (campaign.creativeType === "third-party-tag" || campaign.creativeType === "html") {
     return false;
@@ -249,14 +284,16 @@ export function isRenderableCreative(campaign: AdCampaign) {
     campaign.campaignType === "house" &&
     (campaign.creativeType === "image" || campaign.creativeType === "gif")
   ) {
-    return true;
+    return !campaign.desktopSrc || isConfiguredAdAssetAvailable(campaign.desktopSrc);
   }
 
   if (campaign.creativeType === "iframe") {
     return Boolean(campaign.desktopSrc && isSafeAdUrl(campaign.desktopSrc));
   }
 
-  return Boolean(campaign.desktopSrc);
+  return Boolean(
+    campaign.desktopSrc && isConfiguredAdAssetAvailable(campaign.desktopSrc),
+  );
 }
 
 export function getCampaignsForPlacement(placementId: AdPlacementId) {
@@ -364,3 +401,55 @@ export function getFallbackChainForPlacement(
     };
   });
 }
+
+export function getAdCreativeDiagnostics(
+  campaigns: AdCampaign[] = adCampaigns,
+): AdCreativeAssetDiagnostic[] {
+  return campaigns.flatMap((campaign) => {
+    if (campaign.creativeType !== "image" && campaign.creativeType !== "gif") {
+      return [];
+    }
+
+    return [
+      { slot: "desktop" as const, path: campaign.desktopSrc },
+      { slot: "mobile" as const, path: campaign.mobileSrc },
+    ]
+      .filter(
+        (creative): creative is { slot: "desktop" | "mobile"; path: string } =>
+          Boolean(creative.path && isLocalAdAssetPath(creative.path)),
+      )
+      .map((creative) => ({
+        campaignId: campaign.id,
+        campaignLabel: campaign.label,
+        placementId: campaign.placementId,
+        campaignType: campaign.campaignType,
+        slot: creative.slot,
+        path: creative.path,
+        found: knownAdAssetPathSet.has(creative.path),
+      }));
+  });
+}
+
+export function getMissingAdAssetDiagnostics(
+  campaigns: AdCampaign[] = adCampaigns,
+) {
+  return getAdCreativeDiagnostics(campaigns).filter((item) => !item.found);
+}
+
+export function validateConfiguredAdAssets(
+  campaigns: AdCampaign[] = adCampaigns,
+) {
+  const missingAssets = getMissingAdAssetDiagnostics(campaigns);
+
+  for (const asset of missingAssets) {
+    console.warn("Missing ad asset:", asset.path, {
+      campaign: asset.campaignId,
+      placement: asset.placementId,
+      slot: asset.slot,
+    });
+  }
+
+  return missingAssets;
+}
+
+validateConfiguredAdAssets();

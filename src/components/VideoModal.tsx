@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { getYouTubeSource } from "@/config/youtubeSources";
 import type { VideoChannelRow } from "@/lib/youtube";
 import { formatDuration, formatRelativeTime } from "@/lib/format";
+import { getMediaChannelAnchorId } from "@/lib/mediaChannels";
 import type { Video } from "@/types/content";
 import { SafeImage } from "@/components/SafeImage";
 
@@ -14,6 +15,33 @@ type VideoModalProps = {
 type VideoChannelRowsProps = {
   rows: VideoChannelRow[];
 };
+
+const mobileMediaQuery = "(max-width: 767px)";
+
+function subscribeToMobileViewport(onStoreChange: () => void) {
+  const mediaQuery = window.matchMedia(mobileMediaQuery);
+  mediaQuery.addEventListener("change", onStoreChange);
+
+  return () => {
+    mediaQuery.removeEventListener("change", onStoreChange);
+  };
+}
+
+function getIsMobileSnapshot() {
+  return window.matchMedia(mobileMediaQuery).matches;
+}
+
+function getServerIsMobileSnapshot() {
+  return false;
+}
+
+function useIsMobileViewport() {
+  return useSyncExternalStore(
+    subscribeToMobileViewport,
+    getIsMobileSnapshot,
+    getServerIsMobileSnapshot,
+  );
+}
 
 function VideoCard({
   video,
@@ -124,48 +152,58 @@ function VideoModal({
 
 export function VideoChannelRows({ rows }: VideoChannelRowsProps) {
   const [activeVideo, setActiveVideo] = useState<Video | null>(null);
+  const isMobile = useIsMobileViewport();
+  const videosToShow = isMobile ? 2 : 4;
 
   return (
     <>
       <div className="space-y-12">
-        {rows.map(({ source, videos, unavailableReason }) => (
-          <section key={source.id}>
-            <div className="mb-4 flex items-end justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
-                  {source.name}
-                </h2>
-                <p className="mt-1.5 text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[#ffdd00]/85">
-                  {source.typeLabel}
-                </p>
+        {rows.map(({ source, videos, unavailableReason }) => {
+          const visibleVideos = videos.slice(0, videosToShow);
+
+          return (
+            <section
+              key={source.id}
+              id={getMediaChannelAnchorId(source.id)}
+              className="scroll-mt-[236px]"
+            >
+              <div className="mb-4 flex items-end justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
+                    {source.name}
+                  </h2>
+                  <p className="mt-1.5 text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[#ffdd00]/85">
+                    {source.typeLabel}
+                  </p>
+                </div>
+                <a
+                  href={source.channelUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="shrink-0 border-b border-white/15 pb-1 text-xs font-bold uppercase tracking-[0.12em] text-zinc-400 transition hover:border-[#ffdd00] hover:text-[#ffdd00] sm:text-sm"
+                >
+                  View channel
+                </a>
               </div>
-              <a
-                href={source.channelUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="shrink-0 border-b border-white/15 pb-1 text-xs font-bold uppercase tracking-[0.12em] text-zinc-400 transition hover:border-[#ffdd00] hover:text-[#ffdd00] sm:text-sm"
-              >
-                View channel
-              </a>
-            </div>
-            {videos.length > 0 ? (
-              <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-4">
-                {videos.map((video) => (
-                  <VideoCard
-                    key={video.id}
-                    video={video}
-                    onSelect={setActiveVideo}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-xl bg-[#0b1726]/70 p-5 text-sm font-semibold text-zinc-400 ring-1 ring-white/[0.08]">
-                {unavailableReason ??
-                  "Channel unavailable in development. Check the channel handle, API key, quota and filtering logs."}
-              </div>
-            )}
-          </section>
-        ))}
+              {visibleVideos.length > 0 ? (
+                <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  {visibleVideos.map((video) => (
+                    <VideoCard
+                      key={video.id}
+                      video={video}
+                      onSelect={setActiveVideo}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl bg-[#0b1726]/70 p-5 text-sm font-semibold text-zinc-400 ring-1 ring-white/[0.08]">
+                  {unavailableReason ??
+                    "Channel unavailable in development. Check the channel handle, API key, quota and filtering logs."}
+                </div>
+              )}
+            </section>
+          );
+        })}
       </div>
 
       {activeVideo ? (

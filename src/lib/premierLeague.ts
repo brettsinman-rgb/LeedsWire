@@ -1,24 +1,20 @@
 import { getNewsSource } from "@/config/newsSources";
 import { isSpecificArticleUrl } from "@/lib/articleUrls";
+import { normalizeDecodedText } from "@/lib/text";
 import type { Article } from "@/types/content";
 
 const BBC_PREMIER_LEAGUE_SOURCE_ID = "bbc-premier-league";
 const MAX_DISCOVERED_ARTICLES = 18;
 
 function decodeHtml(value = "") {
-  return value
-    .replace(/\\u003C/g, "<")
-    .replace(/\\u003E/g, ">")
-    .replace(/\\u002F/g, "/")
-    .replace(/\\u0026/g, "&")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, "\"")
-    .replace(/&#39;/g, "'")
-    .replace(/&apos;/g, "'")
-    .replace(/&nbsp;/g, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return normalizeDecodedText(
+    value
+      .replace(/\\u003C/g, "<")
+      .replace(/\\u003E/g, ">")
+      .replace(/\\u002F/g, "/")
+      .replace(/\\u0026/g, "&")
+      .replace(/<[^>]+>/g, " "),
+  );
 }
 
 function slugFromUrl(url: string) {
@@ -146,7 +142,7 @@ async function articleFromBbcUrl(url: string): Promise<Article | null> {
       sourceUrl: url,
       imageUrl: getHeroImage(html, url),
       category: "news",
-      tags: ["Premier League", "BBC Sport", "football"],
+      tags: ["Premier League", "BBC Sport", "football"].map(normalizeDecodedText),
       readMinutes: 3,
     };
   } catch (error) {

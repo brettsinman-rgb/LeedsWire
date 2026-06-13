@@ -4,6 +4,7 @@ import {
   isLongFormYouTubeVideo,
 } from "./filters";
 import { getArticleUrl } from "./articleUrls";
+import { normalizeDecodedText } from "./text";
 import { newsSources, type NewsSource } from "../config/newsSources";
 import type { Article, Video } from "../types/content";
 
@@ -142,21 +143,18 @@ type RssItem = {
 const articleUrlStatusCache = new Map<string, number | "error">();
 
 function decodeXml(value = "") {
-  return value
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, "\"")
-    .replace(/&#39;/g, "'")
-    .replace(/&apos;/g, "'")
-    .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return normalizeDecodedText(
+    value
+      .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+      .replace(/<[^>]+>/g, " "),
+  );
 }
 
 function decodeJsonString(value = "") {
   try {
-    return JSON.parse(`"${value.replace(/"/g, "\\\"")}"`) as string;
+    return normalizeDecodedText(
+      JSON.parse(`"${value.replace(/"/g, "\\\"")}"`) as string,
+    );
   } catch {
     return decodeXml(value.replace(/\\\//g, "/"));
   }
@@ -408,15 +406,15 @@ function itemToArticle(item: RssItem, source: NewsSource): Article | null {
 
   return {
     id: `${source.id}-${sourceUrl}`,
-    title: item.title,
-    standfirst: item.description,
+    title: normalizeDecodedText(item.title),
+    standfirst: normalizeDecodedText(item.description),
     sourceId: source.id,
     publishedAt: item.publishedAt,
     url: sourceUrl,
     sourceUrl,
     imageUrl: item.imageUrl,
     category: "news",
-    tags: ["Leeds United", "football", source.name],
+    tags: ["Leeds United", "football", normalizeDecodedText(source.name)],
     readMinutes: 3,
   };
 }

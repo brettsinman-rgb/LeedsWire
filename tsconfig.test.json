@@ -14,12 +14,14 @@
     "src/lib/articleUrls.ts",
     "src/lib/content.ts",
     "src/lib/cronWarmNews.ts",
+    "src/lib/text.ts",
     "src/config/ads.config.ts",
     "src/config/newsSources.ts",
     "src/types/content.ts",
     "tests/news-filter.test.ts",
     "tests/article-url.test.ts",
     "tests/ad-fallback.test.ts",
-    "tests/freshness.test.ts"
+    "tests/freshness.test.ts",
+    "tests/text.test.ts"
   ]
 }

@@ -1,6 +1,7 @@
 import { youtubeSources, type YouTubeSource } from "@/config/youtubeSources";
 import { getFallbackVideosByChannel } from "@/lib/content";
 import { isLongFormYouTubeVideo } from "@/lib/filters";
+import { mediaChannelLinks } from "@/lib/mediaChannels";
 import type { Video } from "@/types/content";
 
 type YouTubeThumbnail = {
@@ -62,6 +63,9 @@ export type VideoChannelRow = {
 const YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3";
 const CANDIDATE_VIDEO_COUNT = 24;
 const VIDEO_LIMIT_PER_CHANNEL = 4;
+const MEDIA_CHANNEL_DISPLAY_ORDER = new Map(
+  mediaChannelLinks.map((channel, index) => [channel.sourceId, index]),
+);
 
 function getApiKey() {
   const apiKey = process.env.YOUTUBE_API_KEY?.trim();
@@ -334,26 +338,31 @@ export async function getVideoChannelRows(): Promise<VideoChannelRow[]> {
   if (!apiKey) {
     const videosByChannel = getFallbackVideosByChannel();
 
-    return youtubeSources
-      .map((source) => {
-        const videos = videosByChannel[source.id].slice(0, VIDEO_LIMIT_PER_CHANNEL);
+    return sortVideoChannelRows(
+      youtubeSources
+        .map((source) => {
+          const videos = videosByChannel[source.id].slice(
+            0,
+            VIDEO_LIMIT_PER_CHANNEL,
+          );
 
-        logChannelResult({
-          channelName: source.name,
-          channelUrl: source.channelUrl,
-          resolvedChannelId: undefined,
-          fetchedCount: videosByChannel[source.id].length,
-          afterShortsFilter: videos.length,
-          afterDurationFilter: videos.length,
-          renderedCount: videos.length,
-        });
+          logChannelResult({
+            channelName: source.name,
+            channelUrl: source.channelUrl,
+            resolvedChannelId: undefined,
+            fetchedCount: videosByChannel[source.id].length,
+            afterShortsFilter: videos.length,
+            afterDurationFilter: videos.length,
+            renderedCount: videos.length,
+          });
 
-        return {
-          source,
-          videos,
-        };
-      })
-      .filter((row) => row.videos.length > 0);
+          return {
+            source,
+            videos,
+          };
+        })
+        .filter((row) => row.videos.length > 0),
+    );
   }
 
   const rows = await Promise.all(
@@ -394,5 +403,15 @@ export async function getVideoChannelRows(): Promise<VideoChannelRow[]> {
     }),
   );
 
-  return rows.filter((row) => row.videos.length > 0 || row.unavailableReason);
+  return sortVideoChannelRows(
+    rows.filter((row) => row.videos.length > 0 || row.unavailableReason),
+  );
+}
+
+function sortVideoChannelRows(rows: VideoChannelRow[]) {
+  return [...rows].sort(
+    (a, b) =>
+      (MEDIA_CHANNEL_DISPLAY_ORDER.get(a.source.id) ?? Number.MAX_SAFE_INTEGER) -
+      (MEDIA_CHANNEL_DISPLAY_ORDER.get(b.source.id) ?? Number.MAX_SAFE_INTEGER),
+  );
 }

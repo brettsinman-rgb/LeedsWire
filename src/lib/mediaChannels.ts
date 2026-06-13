@@ -7,14 +7,14 @@ export const mediaChannelLinks = [
     anchorId: "leeds-official",
   },
   {
-    sourceId: "the-square-ball",
-    label: "The Square Ball",
-    anchorId: "the-square-ball",
-  },
-  {
     sourceId: "the-leeds-view",
     label: "Leeds View",
     anchorId: "leeds-view",
+  },
+  {
+    sourceId: "the-square-ball",
+    label: "The Square Ball",
+    anchorId: "the-square-ball",
   },
   {
     sourceId: "one-leeds",

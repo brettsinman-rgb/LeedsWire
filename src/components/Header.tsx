@@ -142,22 +142,29 @@ export function Header() {
             />
           </span>
         </Link>
-        <nav className="flex w-full items-center justify-center gap-5 overflow-x-auto border-t border-black/[0.08] pt-2 lg:border-t-0 lg:pt-0">
-          {navItems.map((item) => {
+        <nav className="flex w-full items-center justify-center gap-5 overflow-x-auto whitespace-nowrap border-t border-black/[0.08] pt-2 lg:justify-end lg:gap-4 lg:border-t-0 lg:pt-0">
+          {navItems.map((item, index) => {
             const isActive = !item.href.includes("#") && pathname === item.href;
 
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={
-                  isActive
-                    ? "shrink-0 border-b-2 border-[#EFBF04] pb-1 text-[0.72rem] font-extrabold uppercase tracking-[0.13em] text-[#EFBF04] transition duration-300"
-                    : "shrink-0 border-b-2 border-transparent pb-1 text-[0.72rem] font-bold uppercase tracking-[0.13em] text-[#111111] transition duration-300 hover:border-[#EFBF04]/50 hover:text-[#EFBF04]"
-                }
-              >
-                {item.label}
-              </Link>
+              <span key={item.href} className="flex shrink-0 items-center gap-4">
+                {index > 0 ? (
+                  <span
+                    aria-hidden="true"
+                    className="hidden h-3 w-px shrink-0 bg-[rgba(255,255,255,0.35)] lg:block"
+                  />
+                ) : null}
+                <Link
+                  href={item.href}
+                  className={
+                    isActive
+                      ? "shrink-0 border-b-2 border-[#EFBF04] pb-1 text-[0.72rem] font-extrabold uppercase tracking-[0.13em] text-[#EFBF04] transition duration-300"
+                      : "shrink-0 border-b-2 border-transparent pb-1 text-[0.72rem] font-bold uppercase tracking-[0.13em] text-[#111111] transition duration-300 hover:border-[#EFBF04]/50 hover:text-[#EFBF04]"
+                  }
+                >
+                  {item.label}
+                </Link>
+              </span>
             );
           })}
         </nav>

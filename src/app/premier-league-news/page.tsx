@@ -41,14 +41,22 @@ export default async function PremierLeagueNewsPage() {
       <div className="mx-auto max-w-7xl px-4 pb-14 pt-8 sm:px-6 sm:pb-16 sm:pt-10 lg:px-8">
         {articles.length > 0 ? (
           <div className="space-y-10 sm:space-y-12">
-            <ArticleGrid articles={firstStories} layout="uniform" />
+            <ArticleGrid
+              articles={firstStories}
+              layout="uniform"
+              mobileColumns={2}
+            />
             <AdPlacementSet
               page="premier-league-news"
               placement="mid"
               className="py-1"
             />
             {remainingStories.length > 0 ? (
-              <ArticleGrid articles={remainingStories} layout="uniform" />
+              <ArticleGrid
+                articles={remainingStories}
+                layout="uniform"
+                mobileColumns={2}
+              />
             ) : null}
             <AdPlacementSet
               page="premier-league-news"

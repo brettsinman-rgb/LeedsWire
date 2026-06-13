@@ -35,7 +35,11 @@ export default async function Home() {
             href="/news"
             cta="View all news"
           />
-          <ArticleGrid articles={latest.slice(0, 6)} layout="uniform" />
+          <ArticleGrid
+            articles={latest.slice(0, 6)}
+            layout="uniform"
+            mobileColumns={2}
+          />
         </section>
 
         <AdPlacementSet

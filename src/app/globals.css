@@ -52,6 +52,33 @@ body {
   pointer-events: none;
 }
 
+.lw-clamp-2,
+.lw-clamp-3,
+.lw-excerpt-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.lw-clamp-2 {
+  -webkit-line-clamp: 2;
+}
+
+.lw-clamp-3,
+.lw-excerpt-clamp {
+  -webkit-line-clamp: 3;
+}
+
+@media (max-width: 639px) {
+  .lw-excerpt-clamp {
+    -webkit-line-clamp: 2;
+  }
+
+  .lw-mobile-hidden {
+    display: none !important;
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .shine-card:hover .image-wrap::after {
     transform: translateX(130%) skewX(-18deg);

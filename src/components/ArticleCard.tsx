@@ -3,19 +3,39 @@ import { getArticleCtaUrl } from "@/lib/articleUrls";
 import { formatRelativeTime } from "@/lib/format";
 import type { Article } from "@/types/content";
 import { SafeImage } from "@/components/SafeImage";
+import type { CSSProperties } from "react";
 
 type ArticleCardProps = {
   article: Article;
   variant?: "standard" | "compact" | "wide";
+  denseMobile?: boolean;
 };
 
-export function ArticleCard({ article, variant = "standard" }: ArticleCardProps) {
+const clamp2Style = {
+  display: "-webkit-box",
+  WebkitBoxOrient: "vertical",
+  WebkitLineClamp: 2,
+  overflow: "hidden",
+} satisfies CSSProperties;
+
+const clamp3Style = {
+  display: "-webkit-box",
+  WebkitBoxOrient: "vertical",
+  WebkitLineClamp: 3,
+  overflow: "hidden",
+} satisfies CSSProperties;
+
+export function ArticleCard({
+  article,
+  variant = "standard",
+  denseMobile = false,
+}: ArticleCardProps) {
   const source = getNewsSource(article.sourceId);
   const isWide = variant === "wide";
   const categoryLabel = article.transferType ?? (article.category === "transfer" ? "Transfers" : "General");
-  const isCompact = variant === "compact";
   const ctaUrl = getArticleCtaUrl(article);
   const Wrapper = ctaUrl ? "a" : "div";
+  const shouldHideExcerptOnMobile = denseMobile && !isWide;
 
   return (
     <article
@@ -35,7 +55,15 @@ export function ArticleCard({ article, variant = "standard" }: ArticleCardProps)
           : {})}
         className={isWide ? "grid gap-0 md:grid-cols-[1.08fr_0.92fr] lg:max-h-[520px] lg:min-h-[420px]" : "flex h-full w-full flex-col"}
       >
-        <div className={isWide ? "image-wrap aspect-[1.35] md:aspect-auto lg:max-h-[520px] lg:min-h-[420px]" : "image-wrap aspect-video"}>
+        <div
+          className={
+            isWide
+              ? "image-wrap aspect-[1.35] md:aspect-auto lg:max-h-[520px] lg:min-h-[420px]"
+              : denseMobile
+                ? "image-wrap aspect-[1.2] sm:aspect-video"
+                : "image-wrap aspect-video"
+          }
+        >
           <SafeImage
             src={article.imageUrl}
             alt=""
@@ -47,45 +75,86 @@ export function ArticleCard({ article, variant = "standard" }: ArticleCardProps)
           className={
             isWide
               ? "flex min-h-[360px] flex-col justify-center p-6 sm:p-7 lg:min-h-[420px] lg:max-h-[520px]"
-              : "flex flex-1 flex-col p-4 sm:min-h-[260px] sm:p-5"
+              : denseMobile
+                ? "flex flex-1 flex-col p-3 sm:min-h-[260px] sm:p-5"
+                : "flex flex-1 flex-col p-4 sm:min-h-[260px] sm:p-5"
           }
         >
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-white/[0.055] px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-[0.13em] text-zinc-300 ring-1 ring-white/[0.08]">
+          <div
+            className={
+              denseMobile
+                ? "mb-2 flex flex-wrap items-center gap-1.5 sm:mb-3 sm:gap-2"
+                : "mb-3 flex flex-wrap items-center gap-2"
+            }
+          >
+            <span
+              className={
+                denseMobile
+                  ? "rounded-full bg-white/[0.055] px-1.5 py-1 text-[0.52rem] font-bold uppercase tracking-[0.04em] text-zinc-300 ring-1 ring-white/[0.08] sm:px-2.5 sm:text-[0.62rem] sm:tracking-[0.13em]"
+                  : "rounded-full bg-white/[0.055] px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-[0.13em] text-zinc-300 ring-1 ring-white/[0.08]"
+              }
+            >
               {source?.name}
             </span>
-            <span className="rounded-full bg-[#ffdd00]/8 px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#ffdd00]/85 ring-1 ring-[#ffdd00]/20">
+            <span
+              className={
+                denseMobile
+                  ? "rounded-full bg-[#ffdd00]/8 px-1.5 py-1 text-[0.52rem] font-bold uppercase tracking-[0.04em] text-[#ffdd00]/85 ring-1 ring-[#ffdd00]/20 sm:px-2.5 sm:text-[0.62rem] sm:tracking-[0.14em]"
+                  : "rounded-full bg-[#ffdd00]/8 px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#ffdd00]/85 ring-1 ring-[#ffdd00]/20"
+              }
+            >
               {categoryLabel}
             </span>
           </div>
           <h3
             className={
               isWide
-                ? "line-clamp-3 text-2xl font-semibold leading-[1.06] tracking-tight text-white sm:text-3xl lg:text-[2.15rem]"
-                : "line-clamp-3 text-lg font-semibold leading-tight tracking-tight text-white sm:text-xl"
+                ? "lw-clamp-3 text-2xl font-semibold leading-[1.06] tracking-tight text-white sm:text-3xl lg:text-[2.15rem]"
+                : denseMobile
+                  ? "lw-clamp-3 text-[0.86rem] font-semibold leading-snug tracking-tight text-white [overflow-wrap:anywhere] sm:text-xl sm:leading-tight"
+                  : "lw-clamp-3 text-lg font-semibold leading-tight tracking-tight text-white sm:text-xl"
             }
+            style={clamp3Style}
           >
             {article.title}
           </h3>
-          {!isCompact || !isWide ? (
+          {isWide ? (
             <p
-              className={
-                isWide
-                  ? "mt-4 line-clamp-2 text-sm leading-6 text-zinc-400 sm:text-base sm:leading-7"
-                  : "mt-3 line-clamp-2 text-sm leading-6 text-zinc-500"
-              }
+              className="lw-clamp-2 mt-4 text-sm leading-6 text-zinc-400 sm:text-base sm:leading-7"
+              style={clamp2Style}
             >
               {article.standfirst}
             </p>
-          ) : null}
-          <div className="mt-auto pt-5">
-            <div className="mb-4 h-px bg-white/[0.08]" />
-            <div className="flex items-center justify-between gap-4">
-              <time className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+          ) : (
+            <>
+              {shouldHideExcerptOnMobile ? null : (
+                <p
+                  className="lw-clamp-2 mt-3 text-sm leading-6 text-zinc-500 sm:hidden"
+                  style={clamp2Style}
+                >
+                  {article.standfirst}
+                </p>
+              )}
+              <p
+                className={
+                  shouldHideExcerptOnMobile
+                    ? "lw-clamp-3 lw-mobile-hidden mt-3 text-sm leading-6 text-zinc-500 sm:block"
+                    : "lw-clamp-3 mt-3 hidden text-sm leading-6 text-zinc-500 sm:block"
+                }
+                style={clamp3Style}
+              >
+                {article.standfirst}
+              </p>
+            </>
+          )}
+          <div className={denseMobile ? "mt-auto pt-4 sm:pt-5" : "mt-auto pt-5"}>
+            <div className={denseMobile ? "mb-3 h-px bg-white/[0.08] sm:mb-4" : "mb-4 h-px bg-white/[0.08]"} />
+            <div className="flex items-center justify-between gap-2 sm:gap-4">
+              <time className={denseMobile ? "text-[0.62rem] font-semibold uppercase tracking-[0.08em] text-zinc-500 sm:text-xs sm:tracking-[0.12em]" : "text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500"}>
                 {formatRelativeTime(article.publishedAt)}
               </time>
               {ctaUrl ? (
-                <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#ffdd00]/85 transition group-hover:translate-x-1 group-hover:text-white">
+                <span className={denseMobile ? "inline-flex items-center gap-1 text-[0.62rem] font-bold uppercase tracking-[0.08em] text-[#ffdd00]/85 transition group-hover:translate-x-1 group-hover:text-white sm:gap-2 sm:text-xs sm:tracking-[0.12em]" : "inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#ffdd00]/85 transition group-hover:translate-x-1 group-hover:text-white"}>
                   Read
                   <span className="text-base leading-none">→</span>
                 </span>

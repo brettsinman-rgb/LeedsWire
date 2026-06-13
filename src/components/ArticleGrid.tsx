@@ -4,14 +4,32 @@ import type { Article } from "@/types/content";
 type ArticleGridProps = {
   articles: Article[];
   layout?: "featured" | "uniform";
+  mobileColumns?: 1 | 2;
 };
 
-export function ArticleGrid({ articles, layout = "featured" }: ArticleGridProps) {
+export function ArticleGrid({
+  articles,
+  layout = "featured",
+  mobileColumns = 1,
+}: ArticleGridProps) {
   if (layout === "uniform") {
+    const useMobileTwoColumns = mobileColumns === 2;
+
     return (
-      <div className="grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div
+        className={
+          useMobileTwoColumns
+            ? "grid grid-cols-2 items-stretch gap-3 sm:gap-6 md:grid-cols-2 xl:grid-cols-3"
+            : "grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3"
+        }
+      >
         {articles.map((article) => (
-          <ArticleCard key={article.id} article={article} variant="standard" />
+          <ArticleCard
+            key={article.id}
+            article={article}
+            variant="standard"
+            denseMobile={useMobileTwoColumns}
+          />
         ))}
       </div>
     );

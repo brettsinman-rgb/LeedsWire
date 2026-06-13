@@ -124,10 +124,10 @@ export function Header() {
       style={headerStyle}
       onFocusCapture={revealHeader}
     >
-      <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3 px-4 py-3 sm:px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-3 sm:px-6 lg:grid lg:grid-cols-[auto_1fr] lg:gap-x-8 lg:px-8">
         <Link
           href="/"
-          className="group flex min-w-0 items-center"
+          className="group flex min-w-0 items-center justify-center lg:justify-start"
           aria-label="LeedsWire home"
         >
           <span className="relative flex h-[94px] w-[94px] shrink-0 items-center justify-center overflow-hidden sm:h-[118px] sm:w-[118px] lg:h-[132px] lg:w-[132px]">
@@ -142,7 +142,7 @@ export function Header() {
             />
           </span>
         </Link>
-        <nav className="order-3 col-span-2 flex items-center gap-5 overflow-x-auto border-t border-black/[0.08] pt-2 lg:order-none lg:col-span-1 lg:justify-center lg:border-t-0 lg:pt-0">
+        <nav className="flex w-full items-center justify-center gap-5 overflow-x-auto border-t border-black/[0.08] pt-2 lg:border-t-0 lg:pt-0">
           {navItems.map((item) => {
             const isActive = !item.href.includes("#") && pathname === item.href;
 
@@ -161,16 +161,6 @@ export function Header() {
             );
           })}
         </nav>
-        <div className="flex justify-end gap-2">
-          <button className="group flex h-9 items-center gap-2 rounded-full bg-white px-3 text-[0.68rem] font-bold uppercase tracking-[0.13em] text-[#111111] ring-1 ring-black/[0.12] transition hover:bg-[#EFBF04]/10 hover:text-[#111111]">
-            <span className="relative size-4 rounded-full border-2 border-[#EFBF04] before:absolute before:-bottom-1 before:-right-1 before:h-2 before:w-0.5 before:rotate-[-45deg] before:bg-[#EFBF04]" />
-            <span className="hidden sm:inline">Search</span>
-          </button>
-          <button className="group hidden size-9 rounded-full bg-white ring-1 ring-black/[0.12] transition hover:bg-[#EFBF04]/10 sm:block" aria-label="Profile coming soon">
-            <span className="mx-auto mt-2 block size-3 rounded-full bg-[#111111] transition group-hover:bg-[#EFBF04]" />
-            <span className="mx-auto mt-1 block h-2 w-5 rounded-t-full bg-[#111111] transition group-hover:bg-[#EFBF04]" />
-          </button>
-        </div>
       </div>
     </header>
   );

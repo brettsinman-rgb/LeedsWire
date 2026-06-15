@@ -507,8 +507,30 @@ function isUnsafeZipPath(path: string) {
   );
 }
 
+function isMacMetadataZipPath(path: string) {
+  if (
+    path.startsWith("/") ||
+    path.startsWith("\\") ||
+    path.includes("\\") ||
+    path.split("/").some((segment) => segment === "..")
+  ) {
+    return false;
+  }
+
+  const parts = path.split("/").filter(Boolean);
+
+  return parts.some(
+    (part) =>
+      part === "__MACOSX" ||
+      part === ".DS_Store" ||
+      (part.startsWith("._") && part.length > 2),
+  );
+}
+
 function normalizeHtml5ZipEntries(fileMap: Record<string, Uint8Array>) {
-  const entries = Object.entries(fileMap).filter(([path]) => !path.endsWith("/"));
+  const entries = Object.entries(fileMap).filter(
+    ([path]) => !path.endsWith("/") && !isMacMetadataZipPath(path),
+  );
 
   if (entries.length === 0) {
     throw new AdCreativeError({
@@ -521,7 +543,7 @@ function normalizeHtml5ZipEntries(fileMap: Record<string, Uint8Array>) {
     if (isUnsafeZipPath(path)) {
       throw new AdCreativeError({
         code: "INVALID_CREATIVE",
-        message: "HTML5 ZIP contains an unsafe file path.",
+        message: `Unsafe ZIP path: ${path}`,
       });
     }
 

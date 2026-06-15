@@ -213,6 +213,43 @@ async function run() {
     true,
   );
 
+  const uploadsBeforeMacMetadata = storageUploads.length;
+  const uploadedWithMacMetadata = await uploadAdCreative({
+    placement: "homepage-top",
+    creativeVariant: "desktop",
+    creativeType: "html5",
+    file: new File(
+      [
+        zipSync({
+          "index.html": strToU8("<!doctype html>"),
+          "assets/styles.css": strToU8("body{margin:0}"),
+          "__MACOSX/._index.html": strToU8("metadata"),
+          ".DS_Store": strToU8("metadata"),
+          "assets/.DS_Store": strToU8("metadata"),
+          "assets/._styles.css": strToU8("metadata"),
+        }),
+      ],
+      "mac-metadata.zip",
+      { type: "application/zip" },
+    ),
+    uploadedBy: "LeedsWire Admin",
+  });
+
+  assert.equal(uploadedWithMacMetadata.is_active, true);
+  assert.equal(storageUploads.length - uploadsBeforeMacMetadata, 2);
+  assert.equal(
+    storageUploads.slice(uploadsBeforeMacMetadata).some((url) => url.includes("__MACOSX")),
+    false,
+  );
+  assert.equal(
+    storageUploads.slice(uploadsBeforeMacMetadata).some((url) => url.includes(".DS_Store")),
+    false,
+  );
+  assert.equal(
+    storageUploads.slice(uploadsBeforeMacMetadata).some((url) => url.includes("._")),
+    false,
+  );
+
   await assert.rejects(
     uploadAdCreative({
       placement: "homepage-top",
@@ -244,7 +281,25 @@ async function run() {
     (error) =>
       error instanceof AdCreativeError &&
       error.code === "INVALID_CREATIVE" &&
-      error.message.includes("unsafe"),
+      error.message === "Unsafe ZIP path: ../index.html",
+  );
+
+  await assert.rejects(
+    uploadAdCreative({
+      placement: "homepage-top",
+      creativeVariant: "desktop",
+      creativeType: "html5",
+      file: new File(
+        [zipSync({ "/index.html": strToU8("<!doctype html>") })],
+        "absolute.zip",
+        { type: "application/zip" },
+      ),
+      uploadedBy: "LeedsWire Admin",
+    }),
+    (error) =>
+      error instanceof AdCreativeError &&
+      error.code === "INVALID_CREATIVE" &&
+      error.message === "Unsafe ZIP path: /index.html",
   );
 
   await assert.rejects(

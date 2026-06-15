@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import {
   getAdSettingKey,
+  isPlacementEnabled,
   type AdControlKey,
   type AdControlSettings,
   type AdSettingKey,
@@ -277,9 +278,11 @@ function formatUploadDate(value?: string | null) {
 
 function CreativeLibrary({
   creatives,
+  settings,
   onCreativesChange,
 }: {
   creatives: AdCreative[];
+  settings: AdControlSettings;
   onCreativesChange: (creatives: AdCreative[]) => void;
 }) {
   const [message, setMessage] = useState<string | null>(null);
@@ -291,8 +294,11 @@ function CreativeLibrary({
   );
 
   function setCreative(nextCreative: AdCreative) {
+    const exists = creatives.some((creative) => creative.id === nextCreative.id);
+    const nextCreatives = exists ? creatives : [nextCreative, ...creatives];
+
     onCreativesChange(
-      creatives
+      nextCreatives
         .map((creative) =>
           creative.id === nextCreative.id
             ? nextCreative
@@ -351,9 +357,13 @@ function CreativeLibrary({
           return;
         }
 
-        onCreativesChange([data.creative, ...creatives]);
+        setCreative(data.creative);
         form.reset();
-        setMessage("Creative uploaded. Activate it to publish.");
+        setMessage(
+          isPlacementEnabled(data.creative.placement, settings)
+            ? "Creative uploaded and activated."
+            : "Creative uploaded and active, but placement is disabled by toggle.",
+        );
       } catch {
         setMessage("Unable to upload creative.");
       }
@@ -438,6 +448,7 @@ function CreativeLibrary({
           );
           const isUploading = uploadingSlot === slotKey;
           const selectedCreativeType = creativeTypes[slotKey] ?? "image";
+          const placementEnabled = isPlacementEnabled(placement.placement, settings);
 
           return (
             <article
@@ -481,6 +492,11 @@ function CreativeLibrary({
                       {activeCreative.creative_type === "html5" ? (
                         <p className="mt-1 truncate text-xs text-zinc-500">
                           Entry: index.html
+                        </p>
+                      ) : null}
+                      {!placementEnabled ? (
+                        <p className="mt-1 text-xs font-semibold text-amber-200">
+                          Active but disabled by toggle.
                         </p>
                       ) : null}
                     </div>
@@ -694,7 +710,9 @@ function CreativeLibrary({
                   disabled={isUploading}
                   className="mt-3 h-9 w-full rounded-full bg-[#ffdd00] text-[0.68rem] font-black uppercase tracking-[0.12em] text-[#06111f] transition hover:bg-[#ffe95c] disabled:cursor-wait disabled:bg-zinc-600 disabled:text-zinc-300"
                 >
-                  {isUploading ? `Uploading ${uploadProgress}%` : "Upload Creative"}
+                  {isUploading
+                    ? `Uploading ${uploadProgress}%`
+                    : "Upload & Activate Creative"}
                 </button>
               </form>
             </article>
@@ -910,6 +928,7 @@ export function AdSettingsDashboard({
 
       <CreativeLibrary
         creatives={creatives}
+        settings={settings}
         onCreativesChange={setCreatives}
       />
 

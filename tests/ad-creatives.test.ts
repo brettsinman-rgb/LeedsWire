@@ -152,6 +152,7 @@ async function run() {
 
   const storageUploads: string[] = [];
   const insertBodies: unknown[] = [];
+  const deactivateBodies: unknown[] = [];
   const validZip = zipSync({
     "index.html": strToU8("<!doctype html><script src=\"main.js\"></script>"),
     "main.js": strToU8("window.clickTag = window.clickTag || '';"),
@@ -163,6 +164,14 @@ async function run() {
     if (url.includes("/storage/v1/object/ads/")) {
       storageUploads.push(url);
       return new Response("{}", { status: 200 });
+    }
+
+    if (
+      url.includes("/rest/v1/ad_creatives?placement=eq.homepage-top") &&
+      init?.method === "PATCH"
+    ) {
+      deactivateBodies.push(JSON.parse(String(init.body)));
+      return new Response(null, { status: 204 });
     }
 
     if (url.endsWith("/rest/v1/ad_creatives")) {
@@ -193,8 +202,11 @@ async function run() {
   });
 
   assert.equal(uploaded.creative_type, "html5");
+  assert.equal(uploaded.is_active, true);
   assert.equal(uploaded.original_filename, "creative.zip");
   assert.equal(uploaded.entry_url?.endsWith("/index.html"), true);
+  assert.deepEqual(deactivateBodies[0], { is_active: false });
+  assert.equal((insertBodies[0] as { is_active?: boolean }).is_active, true);
   assert.equal(storageUploads.length, 2);
   assert.equal(
     storageUploads.every((url) => url.includes("/storage/v1/object/ads/html5/")),

@@ -32,7 +32,12 @@ export type AdCreative = {
   height?: number | null;
 };
 
-export type CreativeAction = "upload" | "delete" | "activate" | "deactivate";
+export type CreativeAction =
+  | "upload"
+  | "upload_and_activate"
+  | "delete"
+  | "activate"
+  | "deactivate";
 
 export type AdCreativeErrorCode =
   | "MISSING_SUPABASE_ENV"
@@ -960,6 +965,24 @@ export async function uploadAdCreative({
     fileUrl = publicStorageUrl(config.url, objectPath);
   }
 
+  const deactivateResponse = await fetch(
+    `${config.url}/rest/v1/ad_creatives?placement=eq.${placement}&creative_variant=eq.${creativeVariant}&is_active=eq.true`,
+    {
+      method: "PATCH",
+      headers: headers(config.serviceKey),
+      body: JSON.stringify({ is_active: false }),
+      cache: "no-store",
+    },
+  );
+
+  if (!deactivateResponse.ok) {
+    throw await createCreativeError({
+      response: deactivateResponse,
+      code: "CREATIVE_WRITE_FAILED",
+      action: "deactivate previous creatives before upload",
+    });
+  }
+
   const insertResponse = await fetch(`${config.url}/rest/v1/ad_creatives`, {
     method: "POST",
     headers: {
@@ -976,7 +999,7 @@ export async function uploadAdCreative({
       entry_url: entryUrl,
       original_filename: file.name,
       click_url: safeClickUrl,
-      is_active: false,
+      is_active: true,
       uploaded_at: new Date().toISOString(),
       uploaded_by: uploadedBy,
       start_date: startDate || null,
@@ -999,7 +1022,7 @@ export async function uploadAdCreative({
 
   await writeCreativeAudit({
     creativeId: creative.id,
-    action: "upload",
+    action: "upload_and_activate",
     performedBy: uploadedBy,
   });
   clearAdCreativesCache();

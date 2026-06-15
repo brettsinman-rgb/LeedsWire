@@ -206,16 +206,19 @@ test.describe("LeedsWire private beta QA", () => {
             .locator('a[href="https://example.com"]')
             .first(),
         ).toBeVisible();
-        await expect(page.getByTestId("sideskin-left")).toBeVisible();
-        await expect(page.getByTestId("sideskin-right")).toBeVisible();
-        await expect(page.locator("a").filter({ has: page.getByTestId("sideskin-left") })).toHaveAttribute(
-          "href",
-          "https://www.leedswire.com/advertise",
-        );
-        await expect(page.locator("a").filter({ has: page.getByTestId("sideskin-right") })).toHaveAttribute(
-          "href",
-          "https://www.leedswire.com/advertise",
-        );
+        if (adPage.prefix === "media") {
+          await expect(page.getByTestId("sideskin-left")).toBeHidden();
+          await expect(page.getByTestId("sideskin-right")).toBeHidden();
+        } else {
+          await expect(page.getByTestId("sideskin-left")).toBeVisible();
+          await expect(page.getByTestId("sideskin-right")).toBeVisible();
+          await expect(
+            page.locator("a").filter({ has: page.getByTestId("sideskin-left") }),
+          ).toHaveAttribute("href", "https://www.leedswire.com/advertise");
+          await expect(
+            page.locator("a").filter({ has: page.getByTestId("sideskin-right") }),
+          ).toHaveAttribute("href", "https://www.leedswire.com/advertise");
+        }
       } else {
         expect(top!.height).toBe(250);
         expect(mid!.height).toBe(250);

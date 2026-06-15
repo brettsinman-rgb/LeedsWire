@@ -8,13 +8,20 @@ import { getAdvertisingSettings } from "@/lib/adSettings";
 
 type PageShellProps = {
   children: ReactNode;
+  pathname?: string;
 };
 
-export async function PageShell({ children }: PageShellProps) {
+const sideSkinExcludedPathnames = new Set(["/media"]);
+
+export async function PageShell({ children, pathname }: PageShellProps) {
   const { settings } = await getAdvertisingSettings();
+  const sideSkinsExcluded = pathname
+    ? sideSkinExcludedPathnames.has(pathname)
+    : false;
   const sideSkinsEnabled =
-    isPlacementEnabled("sideskin-left", settings) ||
-    isPlacementEnabled("sideskin-right", settings);
+    !sideSkinsExcluded &&
+    (isPlacementEnabled("sideskin-left", settings) ||
+      isPlacementEnabled("sideskin-right", settings));
   const leftSideSkin = sideSkinsEnabled
     ? getActiveAdForPlacement("sideskin-left", settings)
     : null;

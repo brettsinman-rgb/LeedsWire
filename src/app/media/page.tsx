@@ -19,7 +19,7 @@ export default async function MediaPage() {
   const remainingRows = channelRows.slice(2);
 
   return (
-    <PageShell>
+    <PageShell pathname="/media">
       <AdPlacementSet
         page="media"
         placement="top"

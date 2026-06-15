@@ -21,7 +21,7 @@ import {
   type ManagedAdPlacement,
   type UploadedCreativeType,
 } from "@/lib/adCreatives";
-import { appendHtml5ClickTags } from "@/lib/adHtml5";
+import { appendHtml5ClickTags, html5CreativeRouteSrc } from "@/lib/adHtml5";
 
 type PlacementControl = {
   label: string;
@@ -190,7 +190,7 @@ function CampaignPreview({
         title={campaign.label ?? "HTML5 creative preview"}
         className="size-12 shrink-0 rounded-lg border-0 bg-white/[0.06] ring-1 ring-white/[0.1]"
         scrolling="no"
-        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
       />
     );
   }
@@ -221,13 +221,13 @@ function CreativePreview({
     return (
       <iframe
         src={appendHtml5ClickTags(
-          creative.entry_url ?? creative.file_url,
+          html5CreativeRouteSrc(creative.id),
           creative.click_url ?? undefined,
         )}
         title={creative.name}
         className={`${className} border-0 bg-white/[0.06]`}
         scrolling="no"
-        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
       />
     );
   }

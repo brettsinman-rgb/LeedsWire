@@ -89,7 +89,7 @@ function Creative({ config }: { config: PopupConfig }) {
         title={config.campaignName ?? "Promotional popup"}
         className="aspect-video w-full border-0"
         scrolling="no"
-        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
       />
     );
   }

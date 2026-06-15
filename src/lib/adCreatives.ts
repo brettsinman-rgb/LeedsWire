@@ -1,5 +1,6 @@
 import type { AdCampaign, AdPlacementId } from "../config/ads.config";
 import { unzipSync } from "fflate";
+import { html5CreativeRouteSrc } from "./adHtml5";
 
 export type ManagedAdPlacement =
   | "homepage-top"
@@ -446,8 +447,7 @@ function sanitizeFileName(value: string) {
 
 function sanitizePathSegment(value: string) {
   return value
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/[^A-Za-z0-9._-]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80) || "asset";
 }
@@ -832,11 +832,11 @@ export function creativeToCampaign(
     creativeType: creative.creative_type === "html5" ? "html5" : "image",
     desktopSrc:
       creative.creative_type === "html5"
-        ? (creative.entry_url ?? creative.file_url)
+        ? html5CreativeRouteSrc(creative.id)
         : creative.file_url,
     mobileSrc:
       creative.creative_type === "html5"
-        ? (creative.entry_url ?? creative.file_url)
+        ? html5CreativeRouteSrc(creative.id)
         : creative.file_url,
     clickUrl: creative.click_url ?? undefined,
     startDate: creative.start_date ?? undefined,

@@ -179,7 +179,7 @@ function Html5Creative({ campaign }: { campaign: AdCampaign }) {
       className="h-full w-full border-0"
       loading="lazy"
       scrolling="no"
-      sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+      sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
     />
   );
 }
@@ -305,7 +305,7 @@ export function AdSlot({
             title={sponsorCampaign?.label ?? "Sponsor background"}
             className="absolute inset-0 z-0 h-full w-full border-0 opacity-45"
             scrolling="no"
-            sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+            sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
             data-testid="top-sponsor-background"
           />
         ) : sponsorClickUrl ? (
@@ -400,7 +400,7 @@ function SideSkinImage({
         height={SIDE_SKIN_HEIGHT}
         className="h-full w-full border-0"
         scrolling="no"
-        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
       />
     ) : (
     // eslint-disable-next-line @next/next/no-img-element

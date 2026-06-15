@@ -121,7 +121,10 @@ async function run() {
   const html5Campaign = creativeToCampaign(html5Creative);
 
   assert.equal(html5Campaign.creativeType, "html5");
-  assert.equal(html5Campaign.desktopSrc, "https://cdn.example.com/html5/index.html");
+  assert.equal(
+    html5Campaign.desktopSrc,
+    "/api/ads/html5/creative-html5/index.html",
+  );
 
   const taggedUrl = appendHtml5ClickTags(
     "https://cdn.example.com/html5/index.html?existing=1",
@@ -148,6 +151,13 @@ async function run() {
       "javascript:alert(1)",
     ),
     "https://cdn.example.com/html5/index.html",
+  );
+  assert.equal(
+    appendHtml5ClickTags(
+      "/api/ads/html5/creative-html5/index.html",
+      "https://www.leedswire.com/advertise",
+    ),
+    "/api/ads/html5/creative-html5/index.html?clickTag=https%3A%2F%2Fwww.leedswire.com%2Fadvertise&clickTAG=https%3A%2F%2Fwww.leedswire.com%2Fadvertise&clicktag=https%3A%2F%2Fwww.leedswire.com%2Fadvertise",
   );
 
   const storageUploads: string[] = [];

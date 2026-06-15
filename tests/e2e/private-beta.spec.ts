@@ -215,12 +215,18 @@ test.describe("LeedsWire private beta QA", () => {
           "href",
           "https://www.leedswire.com/advertise",
         );
-        await expect(
-          page
-            .getByTestId(`adslot-${adPage.prefix}-top`)
-            .locator('a[href="https://example.com"]')
-            .first(),
-        ).toBeVisible();
+        const topSlot = page.getByTestId(`adslot-${adPage.prefix}-top`);
+        const html5Creative = topSlot
+          .locator('iframe[src^="/api/ads/html5/"]')
+          .first();
+
+        if ((await html5Creative.count()) > 0) {
+          await expect(html5Creative).toBeVisible();
+        } else {
+          await expect(
+            topSlot.locator('a[href="https://example.com"]').first(),
+          ).toBeVisible();
+        }
         if (adPage.prefix === "media") {
           await expect(page.getByTestId("sideskin-left")).toBeHidden();
           await expect(page.getByTestId("sideskin-right")).toBeHidden();

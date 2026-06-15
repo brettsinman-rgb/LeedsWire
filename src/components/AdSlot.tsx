@@ -27,6 +27,7 @@ type AdSlotProps = {
   sideSkinLeft?: string;
   sideSkinRight?: string;
   campaignOverride?: AdCampaign | null;
+  mobileCampaignOverride?: AdCampaign | null;
   sponsorOverride?: AdCampaign | OverrideCreative | null;
   placementEnabledOverride?: boolean;
   sponsorEnabledOverride?: boolean;
@@ -245,6 +246,7 @@ export function AdSlot({
   className = "",
   backgroundSponsorImage,
   campaignOverride,
+  mobileCampaignOverride,
   sponsorOverride,
   placementEnabledOverride,
   sponsorEnabledOverride,
@@ -257,6 +259,8 @@ export function AdSlot({
     campaignOverride === undefined
       ? getActiveAdForPlacement(placementId)
       : campaignOverride;
+  const mobileCampaign =
+    mobileCampaignOverride === undefined ? campaign : mobileCampaignOverride ?? campaign;
   const sponsor =
     sponsorOverride !== undefined
       ? sponsorOverride
@@ -340,7 +344,7 @@ export function AdSlot({
         }}
       >
         <Creative
-          campaign={campaign}
+          campaign={mobileCampaign}
           placementId={placementId}
           desktopSize={resolvedDesktop}
           mobileSize={resolvedMobile}

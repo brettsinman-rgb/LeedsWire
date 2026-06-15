@@ -13,6 +13,12 @@ import {
   type CampaignStatusGroup,
 } from "@/config/adCampaignStatus";
 import type { AdSettingsAuditEntry, AdSettingsSource } from "@/lib/adSettings";
+import {
+  managedAdPlacements,
+  type AdCreative,
+  type CreativeVariant,
+  type ManagedAdPlacement,
+} from "@/lib/adCreatives";
 
 type PlacementControl = {
   label: string;
@@ -27,6 +33,7 @@ type AdSettingsDashboardProps = {
   placementControls: PlacementControl[];
   campaignGroups: CampaignStatusGroup[];
   auditEntries: AdSettingsAuditEntry[];
+  initialCreatives: AdCreative[];
 };
 
 function SectionHeading({
@@ -201,6 +208,387 @@ function formatUpdatedAt(value?: string) {
   }).format(new Date(value));
 }
 
+function formatUploadDate(value?: string | null) {
+  if (!value) {
+    return "Not uploaded";
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function CreativeLibrary({
+  creatives,
+  onCreativesChange,
+}: {
+  creatives: AdCreative[];
+  onCreativesChange: (creatives: AdCreative[]) => void;
+}) {
+  const [message, setMessage] = useState<string | null>(null);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [uploadingSlot, setUploadingSlot] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  function setCreative(nextCreative: AdCreative) {
+    onCreativesChange(
+      creatives
+        .map((creative) =>
+          creative.id === nextCreative.id
+            ? nextCreative
+            : nextCreative.is_active &&
+                creative.placement === nextCreative.placement &&
+                creative.creative_variant === nextCreative.creative_variant
+              ? { ...creative, is_active: false }
+              : creative,
+        )
+        .sort(
+          (a, b) =>
+            Date.parse(b.uploaded_at ?? "1970-01-01") -
+            Date.parse(a.uploaded_at ?? "1970-01-01"),
+        ),
+    );
+  }
+
+  function uploadCreative({
+    placement,
+    variant,
+    form,
+  }: {
+    placement: ManagedAdPlacement;
+    variant: CreativeVariant;
+    form: HTMLFormElement;
+  }) {
+    const formData = new FormData(form);
+    formData.set("placement", placement);
+    formData.set("creativeVariant", variant);
+    const slotKey = `${placement}:${variant}`;
+    setMessage(null);
+    setUploadingSlot(slotKey);
+    setUploadProgress(1);
+
+    const request = new XMLHttpRequest();
+    request.open("POST", "/api/admin/ads/creatives/upload");
+    request.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        setUploadProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    };
+    request.onload = () => {
+      setUploadingSlot(null);
+      setUploadProgress(0);
+
+      try {
+        const data = JSON.parse(request.responseText) as {
+          ok?: boolean;
+          error?: string;
+          details?: string;
+          creative?: AdCreative;
+        };
+
+        if (request.status >= 400 || !data.ok || !data.creative) {
+          setMessage([data.error, data.details].filter(Boolean).join(" "));
+          return;
+        }
+
+        onCreativesChange([data.creative, ...creatives]);
+        form.reset();
+        setMessage("Creative uploaded. Activate it to publish.");
+      } catch {
+        setMessage("Unable to upload creative.");
+      }
+    };
+    request.onerror = () => {
+      setUploadingSlot(null);
+      setUploadProgress(0);
+      setMessage("Unable to upload creative.");
+    };
+    request.send(formData);
+  }
+
+  async function updateCreative(creative: AdCreative, action: string) {
+    setMessage(null);
+    setPendingId(creative.id);
+
+    try {
+      const response = await fetch("/api/admin/ads/creatives/update", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          creativeId: creative.id,
+          action,
+        }),
+      });
+      const data = (await response.json()) as {
+        ok?: boolean;
+        error?: string;
+        details?: string;
+        creative?: AdCreative;
+        deleted?: { id: string };
+      };
+
+      if (!response.ok || !data.ok) {
+        throw new Error([data.error, data.details].filter(Boolean).join(" "));
+      }
+
+      if (data.deleted) {
+        onCreativesChange(
+          creatives.filter((item) => item.id !== data.deleted?.id),
+        );
+        setMessage("Creative deleted.");
+      } else if (data.creative) {
+        setCreative(data.creative);
+        setMessage(
+          action === "activate" ? "Creative activated." : "Creative deactivated.",
+        );
+      }
+    } catch (error) {
+      setMessage(
+        error instanceof Error && error.message
+          ? error.message
+          : "Unable to update creative.",
+      );
+    } finally {
+      setPendingId(null);
+    }
+  }
+
+  return (
+    <section className="mt-6 border-t border-white/[0.08] pt-6">
+      <SectionHeading
+        eyebrow="Creative Management"
+        title="Creative Library"
+        description="Upload, preview and publish advertising creatives without a deployment."
+      />
+      {message ? (
+        <div className="mt-4 rounded-xl bg-white/[0.06] px-4 py-3 text-sm leading-6 text-zinc-200 ring-1 ring-white/[0.1]">
+          {message}
+        </div>
+      ) : null}
+      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {managedAdPlacements.map((placement) => {
+          const slotKey = `${placement.placement}:${placement.variant}`;
+          const placementCreatives = creatives.filter(
+            (creative) =>
+              creative.placement === placement.placement &&
+              creative.creative_variant === placement.variant,
+          );
+          const activeCreative = placementCreatives.find(
+            (creative) => creative.is_active,
+          );
+          const isUploading = uploadingSlot === slotKey;
+
+          return (
+            <article
+              key={slotKey}
+              className="flex min-h-[390px] flex-col rounded-xl bg-white/[0.045] p-3 ring-1 ring-white/[0.09]"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="truncate text-sm font-semibold text-white">
+                    {placement.groupLabel}
+                  </h3>
+                  <p className="mt-1 text-[0.66rem] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                    {placement.label} - {placement.sizeLabel}
+                  </p>
+                </div>
+                <StatusBadge enabled={Boolean(activeCreative)} />
+              </div>
+
+              <div className="mt-3 flex gap-3 rounded-lg bg-black/14 p-2.5 ring-1 ring-white/[0.06]">
+                {activeCreative ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={activeCreative.file_url}
+                      alt=""
+                      className="h-16 w-24 shrink-0 rounded-lg object-cover ring-1 ring-white/[0.12]"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-white">
+                        {activeCreative.name}
+                      </p>
+                      <p className="mt-1 text-xs text-zinc-500">
+                        Active since {formatUploadDate(activeCreative.uploaded_at)}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-zinc-400">
+                        {clickUrlValue(activeCreative.click_url ?? undefined)}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex h-16 w-24 shrink-0 items-center justify-center rounded-lg bg-white/[0.055] px-2 text-center text-[0.58rem] font-bold uppercase leading-tight tracking-[0.08em] text-zinc-500 ring-1 ring-white/[0.08]">
+                      No creative
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-white">
+                        No active creative
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-zinc-500">
+                        The site will render the configured fallback when available.
+                      </p>
+                      <p className="mt-1 truncate text-xs text-zinc-400">
+                        {clickUrlValue(undefined)}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="mt-3 min-h-0 flex-1 overflow-hidden rounded-lg ring-1 ring-white/[0.08]">
+                {placementCreatives.length > 0 ? (
+                  <div className="max-h-36 divide-y divide-white/[0.07] overflow-y-auto">
+                    {placementCreatives.map((creative) => (
+                      <div
+                        key={creative.id}
+                        className="grid grid-cols-[auto_1fr] gap-2 bg-white/[0.025] p-2"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={creative.file_url}
+                          alt=""
+                          className="h-10 w-14 rounded-md object-cover ring-1 ring-white/[0.1]"
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate text-xs font-semibold text-white">
+                                {creative.name}
+                              </p>
+                              <p className="mt-0.5 truncate text-[0.68rem] text-zinc-500">
+                                {formatUploadDate(creative.uploaded_at)} -{" "}
+                                {clickUrlValue(creative.click_url ?? undefined)}
+                              </p>
+                            </div>
+                            {creative.is_active ? (
+                              <span className="shrink-0 rounded-full bg-emerald-400/10 px-2 py-0.5 text-[0.62rem] font-bold text-emerald-100 ring-1 ring-emerald-300/20">
+                                Active
+                              </span>
+                            ) : null}
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {creative.is_active ? (
+                              <button
+                                type="button"
+                                disabled={pendingId === creative.id}
+                                onClick={() => updateCreative(creative, "deactivate")}
+                                className="rounded-full bg-zinc-700 px-2.5 py-1 text-[0.65rem] font-bold text-white transition hover:bg-zinc-600 disabled:opacity-60"
+                              >
+                                Deactivate
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={pendingId === creative.id}
+                                onClick={() => updateCreative(creative, "activate")}
+                                className="rounded-full bg-emerald-400 px-2.5 py-1 text-[0.65rem] font-bold text-[#06111f] transition hover:bg-emerald-300 disabled:opacity-60"
+                              >
+                                Activate
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              disabled={pendingId === creative.id}
+                              onClick={() => updateCreative(creative, "delete")}
+                              className="rounded-full bg-red-500/15 px-2.5 py-1 text-[0.65rem] font-bold text-red-100 ring-1 ring-red-300/20 transition hover:bg-red-500/25 disabled:opacity-60"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="px-3 py-3 text-xs text-zinc-500">
+                    No uploads yet.
+                  </p>
+                )}
+              </div>
+
+              <form
+                className="mt-3 border-t border-white/[0.08] pt-3"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  uploadCreative({
+                    placement: placement.placement,
+                    variant: placement.variant,
+                    form: event.currentTarget,
+                  });
+                }}
+              >
+                <div className="grid gap-2">
+                  <label className="block text-[0.65rem] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                    File
+                    <input
+                      required
+                      name="file"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="mt-1.5 block w-full text-xs text-zinc-300 file:mr-2 file:rounded-full file:border-0 file:bg-[#ffdd00] file:px-2.5 file:py-1.5 file:text-[0.65rem] file:font-bold file:text-[#06111f]"
+                    />
+                  </label>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <label className="block text-[0.65rem] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                      Campaign
+                      <input
+                        name="name"
+                        className="mt-1.5 h-9 w-full rounded-lg border border-white/[0.1] bg-white/[0.06] px-2.5 text-xs text-white outline-none focus:border-[#ffdd00]/60"
+                        placeholder="Campaign name"
+                      />
+                    </label>
+                    <label className="block text-[0.65rem] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                      Click URL
+                      <input
+                        name="clickUrl"
+                        className="mt-1.5 h-9 w-full rounded-lg border border-white/[0.1] bg-white/[0.06] px-2.5 text-xs text-white outline-none focus:border-[#ffdd00]/60"
+                        placeholder="https://..."
+                      />
+                    </label>
+                  </div>
+                  <details className="rounded-lg bg-black/12 px-2.5 py-2 text-xs text-zinc-400 ring-1 ring-white/[0.06]">
+                    <summary className="cursor-pointer font-bold uppercase tracking-[0.12em] text-zinc-500">
+                      Schedule
+                    </summary>
+                    <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                      <label className="block text-[0.65rem] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                        Start
+                        <input
+                          name="startDate"
+                          type="datetime-local"
+                          className="mt-1.5 h-9 w-full rounded-lg border border-white/[0.1] bg-white/[0.06] px-2.5 text-xs text-white outline-none focus:border-[#ffdd00]/60"
+                        />
+                      </label>
+                      <label className="block text-[0.65rem] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                        End
+                        <input
+                          name="endDate"
+                          type="datetime-local"
+                          className="mt-1.5 h-9 w-full rounded-lg border border-white/[0.1] bg-white/[0.06] px-2.5 text-xs text-white outline-none focus:border-[#ffdd00]/60"
+                        />
+                      </label>
+                    </div>
+                  </details>
+                </div>
+                <button
+                  type="submit"
+                  disabled={isUploading}
+                  className="mt-3 h-9 w-full rounded-full bg-[#ffdd00] text-[0.68rem] font-black uppercase tracking-[0.12em] text-[#06111f] transition hover:bg-[#ffe95c] disabled:cursor-wait disabled:bg-zinc-600 disabled:text-zinc-300"
+                >
+                  {isUploading ? `Uploading ${uploadProgress}%` : "Upload Creative"}
+                </button>
+              </form>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export function AdSettingsDashboard({
   initialSettings,
   source,
@@ -209,11 +597,13 @@ export function AdSettingsDashboard({
   placementControls,
   campaignGroups,
   auditEntries,
+  initialCreatives,
 }: AdSettingsDashboardProps) {
   const [settings, setSettings] = useState(initialSettings);
   const [lastUpdated, setLastUpdated] = useState(updatedAt);
   const [error, setError] = useState<string | null>(null);
   const [audit, setAudit] = useState(auditEntries);
+  const [creatives, setCreatives] = useState(initialCreatives);
   const [pendingKey, setPendingKey] = useState<AdSettingKey | null>(null);
   const [isPending, startTransition] = useTransition();
   const enabledPlacementCount = placementControls.filter(
@@ -224,8 +614,8 @@ export function AdSettingsDashboard({
     [source],
   );
   const campaignRows = useMemo(
-    () => getCampaignStatusRows(settings, campaignGroups),
-    [campaignGroups, settings],
+    () => getCampaignStatusRows(settings, campaignGroups, creatives),
+    [campaignGroups, creatives, settings],
   );
 
   function updateSetting(controlKey: AdControlKey, nextValue: boolean) {
@@ -402,6 +792,11 @@ export function AdSettingsDashboard({
         </div>
       </section>
 
+      <CreativeLibrary
+        creatives={creatives}
+        onCreativesChange={setCreatives}
+      />
+
       <section className="mt-6 border-t border-white/[0.08] pt-6">
         <SectionHeading
           eyebrow="Audit"
@@ -457,10 +852,13 @@ export function AdSettingsDashboard({
                 <th className="w-[15%] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
                   Status
                 </th>
-                <th className="w-[16%] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+                <th className="w-[14%] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
                   Creative
                 </th>
-                <th className="w-[25%] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+                <th className="w-[13%] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+                  Uploaded
+                </th>
+                <th className="w-[22%] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
                   Click URL
                 </th>
                 <th className="px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
@@ -482,7 +880,9 @@ export function AdSettingsDashboard({
                           {row.label}
                         </p>
                         <p className="mt-1 truncate text-xs text-zinc-500">
-                          {row.primaryPlacementId ?? `${row.configuredCount} configured`}
+                          {row.sizeLabel
+                            ? `${row.sizeLabel} | ${row.primaryPlacementId ?? `${row.configuredCount} configured`}`
+                            : row.primaryPlacementId ?? `${row.configuredCount} configured`}
                         </p>
                       </div>
                     </div>
@@ -497,6 +897,11 @@ export function AdSettingsDashboard({
                     </p>
                     <p className="mt-1 truncate text-xs text-zinc-500">
                       {textValue(row.active?.campaignType ?? row.configuredPrimary?.campaignType)}
+                    </p>
+                  </td>
+                  <td className="px-4 py-4">
+                    <p className="truncate text-sm text-zinc-300">
+                      {formatUploadDate(row.uploadedAt)}
                     </p>
                   </td>
                   <td className="px-4 py-4">
@@ -538,8 +943,10 @@ export function AdSettingsDashboard({
                       <h3 className="truncate text-sm font-semibold text-white">
                         {row.label}
                       </h3>
-                      <p className="mt-1 truncate text-xs text-zinc-500">
-                        {row.primaryPlacementId ?? `${row.configuredCount} configured`}
+                        <p className="mt-1 truncate text-xs text-zinc-500">
+                        {row.sizeLabel
+                          ? `${row.sizeLabel} | ${row.primaryPlacementId ?? `${row.configuredCount} configured`}`
+                          : row.primaryPlacementId ?? `${row.configuredCount} configured`}
                       </p>
                     </div>
                     <StatusBadge enabled={row.statusEnabled} />
@@ -554,6 +961,14 @@ export function AdSettingsDashboard({
                         {textValue(
                           row.active?.creativeType ?? row.configuredPrimary?.creativeType,
                         )}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+                        Uploaded
+                      </dt>
+                      <dd className="mt-1 truncate text-zinc-300">
+                        {formatUploadDate(row.uploadedAt)}
                       </dd>
                     </div>
                     <div>

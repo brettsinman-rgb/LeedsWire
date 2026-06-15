@@ -1,6 +1,13 @@
 import { AdSlot } from "@/components/AdSlot";
-import { getActiveAdForPlacement, type AdPlacementId } from "@/config/ads.config";
+import {
+  getActiveAdForPlacement,
+  type AdPlacementId,
+} from "@/config/ads.config";
 import { isPlacementEnabled } from "@/config/adControls";
+import {
+  getActiveCreativeCampaignForPlacement,
+  type ManagedAdPlacement,
+} from "@/lib/adCreatives";
 import { getAdvertisingSettings } from "@/lib/adSettings";
 
 type PageAdPrefix = "homepage" | "premier-league-news" | "media";
@@ -40,9 +47,23 @@ export async function AdPlacementSet({
   const { settings } = await getAdvertisingSettings();
   const placementEnabled = isPlacementEnabled(placementId, settings);
   const sponsorEnabled = isPlacementEnabled("top-sponsor-background", settings);
-  const campaign = getActiveAdForPlacement(placementId, settings);
+  const managedPlacementId = placementId as ManagedAdPlacement;
+  const desktopCreative = await getActiveCreativeCampaignForPlacement(
+    managedPlacementId,
+    "desktop",
+  );
+  const mobileCreative = await getActiveCreativeCampaignForPlacement(
+    managedPlacementId,
+    "mobile",
+  );
+  const sponsorCreative = sponsorEnabled
+    ? await getActiveCreativeCampaignForPlacement("top-sponsor-background", "default")
+    : null;
+  const fallbackCampaign = getActiveAdForPlacement(placementId, settings);
+  const campaign = desktopCreative ?? fallbackCampaign;
+  const mobileCampaign = mobileCreative ?? desktopCreative ?? fallbackCampaign;
   const sponsor = sponsorEnabled
-    ? getActiveAdForPlacement("top-sponsor-background", settings)
+    ? sponsorCreative ?? getActiveAdForPlacement("top-sponsor-background", settings)
     : null;
 
   return (
@@ -52,6 +73,7 @@ export async function AdPlacementSet({
       mobileSize={resolvedSizes.mobile}
       className={className}
       campaignOverride={campaign}
+      mobileCampaignOverride={mobileCampaign}
       sponsorOverride={sponsor}
       placementEnabledOverride={placementEnabled}
       sponsorEnabledOverride={sponsorEnabled}

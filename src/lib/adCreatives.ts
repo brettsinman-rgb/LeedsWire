@@ -1,0 +1,763 @@
+import type { AdCampaign, AdPlacementId } from "../config/ads.config";
+
+export type ManagedAdPlacement =
+  | "homepage-top"
+  | "homepage-mid"
+  | "homepage-bottom"
+  | "sideskin-left"
+  | "sideskin-right"
+  | "top-sponsor-background"
+  | "popup";
+
+export type CreativeVariant = "desktop" | "mobile" | "left" | "right" | "default";
+
+export type AdCreative = {
+  id: string;
+  placement: ManagedAdPlacement;
+  creative_variant: CreativeVariant;
+  name: string;
+  file_url: string;
+  click_url?: string | null;
+  is_active: boolean;
+  uploaded_at: string;
+  uploaded_by?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  width?: number | null;
+  height?: number | null;
+};
+
+export type CreativeAction = "upload" | "delete" | "activate" | "deactivate";
+
+export type AdCreativeErrorCode =
+  | "MISSING_SUPABASE_ENV"
+  | "MISSING_CREATIVE_TABLE"
+  | "INVALID_CREATIVE"
+  | "INVALID_CLICK_URL"
+  | "STORAGE_UPLOAD_FAILED"
+  | "CREATIVE_READ_FAILED"
+  | "CREATIVE_WRITE_FAILED";
+
+export class AdCreativeError extends Error {
+  code: AdCreativeErrorCode;
+  status?: number;
+  details?: string;
+
+  constructor({
+    code,
+    message,
+    status,
+    details,
+  }: {
+    code: AdCreativeErrorCode;
+    message: string;
+    status?: number;
+    details?: string;
+  }) {
+    super(message);
+    this.name = "AdCreativeError";
+    this.code = code;
+    this.status = status;
+    this.details = details;
+  }
+}
+
+export const managedAdPlacements = [
+  {
+    placement: "homepage-top",
+    variant: "desktop",
+    label: "Homepage Top Billboard Desktop",
+    groupLabel: "Homepage Top Billboard",
+    sizeLabel: "970x250",
+    width: 970,
+    height: 250,
+    folder: "homepage-top",
+  },
+  {
+    placement: "homepage-top",
+    variant: "mobile",
+    label: "Homepage Top Billboard Mobile",
+    groupLabel: "Homepage Top Billboard",
+    sizeLabel: "300x100",
+    width: 300,
+    height: 100,
+    folder: "homepage-top/mobile",
+  },
+  {
+    placement: "homepage-mid",
+    variant: "desktop",
+    label: "Homepage Mid Billboard Desktop",
+    groupLabel: "Homepage Mid Billboard",
+    sizeLabel: "970x250",
+    width: 970,
+    height: 250,
+    folder: "homepage-mid",
+  },
+  {
+    placement: "homepage-mid",
+    variant: "mobile",
+    label: "Homepage Mid Billboard Mobile",
+    groupLabel: "Homepage Mid Billboard",
+    sizeLabel: "300x600",
+    width: 300,
+    height: 600,
+    folder: "homepage-mid/mobile",
+  },
+  {
+    placement: "homepage-bottom",
+    variant: "desktop",
+    label: "Homepage Bottom Billboard Desktop",
+    groupLabel: "Homepage Bottom Billboard",
+    sizeLabel: "970x250",
+    width: 970,
+    height: 250,
+    folder: "homepage-bottom",
+  },
+  {
+    placement: "homepage-bottom",
+    variant: "mobile",
+    label: "Homepage Bottom Billboard Mobile",
+    groupLabel: "Homepage Bottom Billboard",
+    sizeLabel: "300x250",
+    width: 300,
+    height: 250,
+    folder: "homepage-bottom/mobile",
+  },
+  {
+    placement: "sideskin-left",
+    variant: "left",
+    label: "Left Side Skin",
+    groupLabel: "Side Skins",
+    sizeLabel: "160x1080",
+    width: 160,
+    height: 1080,
+    folder: "side-skin-left",
+  },
+  {
+    placement: "sideskin-right",
+    variant: "right",
+    label: "Right Side Skin",
+    groupLabel: "Side Skins",
+    sizeLabel: "160x1080",
+    width: 160,
+    height: 1080,
+    folder: "side-skin-right",
+  },
+  {
+    placement: "top-sponsor-background",
+    variant: "default",
+    label: "Sponsor Background",
+    groupLabel: "Sponsor Background",
+    sizeLabel: "1920x1080",
+    width: 1920,
+    height: 1080,
+    folder: "sponsor-background",
+  },
+  {
+    placement: "popup",
+    variant: "default",
+    label: "Popup",
+    groupLabel: "Popup",
+    sizeLabel: "1200x1200",
+    width: 1200,
+    height: 1200,
+    folder: "popup",
+  },
+] as const satisfies Array<{
+  placement: ManagedAdPlacement;
+  variant: CreativeVariant;
+  label: string;
+  groupLabel: string;
+  sizeLabel: string;
+  width: number;
+  height: number;
+  folder: string;
+}>;
+
+const managedPlacementSet = new Set<string>(
+  managedAdPlacements.map((item) => item.placement),
+);
+const creativeSlotKey = (placement: ManagedAdPlacement, variant: CreativeVariant) =>
+  `${placement}:${variant}`;
+const creativeSlotMap = new Map(
+  managedAdPlacements.map((item) => [
+    creativeSlotKey(item.placement, item.variant),
+    item,
+  ]),
+);
+const CACHE_MS = 60_000;
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const allowedMimeTypes = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
+const allowedExtensions = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
+
+let cachedCreatives:
+  | {
+      rows: AdCreative[];
+      expiresAt: number;
+    }
+  | undefined;
+
+function getSupabaseConfig() {
+  const url = process.env.SUPABASE_URL?.replace(/\/$/, "");
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !serviceKey) {
+    const missing = [
+      !url ? "SUPABASE_URL" : null,
+      !serviceKey ? "SUPABASE_SERVICE_ROLE_KEY" : null,
+    ].filter(Boolean);
+
+    throw new AdCreativeError({
+      code: "MISSING_SUPABASE_ENV",
+      message: `Missing Supabase environment variable${missing.length === 1 ? "" : "s"}: ${missing.join(", ")}.`,
+      details:
+        "Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local and Vercel.",
+    });
+  }
+
+  return { url, serviceKey };
+}
+
+function headers(serviceKey: string) {
+  return {
+    apikey: serviceKey,
+    authorization: `Bearer ${serviceKey}`,
+    "content-type": "application/json",
+  };
+}
+
+function isMissingTableResponse(status: number, body: string) {
+  return (
+    status === 404 ||
+    body.includes("PGRST205") ||
+    body.includes("42P01") ||
+    body.toLowerCase().includes("relation") ||
+    body.toLowerCase().includes("does not exist") ||
+    body.toLowerCase().includes("schema cache")
+  );
+}
+
+async function createCreativeError({
+  response,
+  code,
+  action,
+}: {
+  response: Response;
+  code: Exclude<AdCreativeErrorCode, "MISSING_SUPABASE_ENV" | "INVALID_CREATIVE" | "INVALID_CLICK_URL">;
+  action: string;
+}) {
+  const body = await response.text().catch(() => "");
+
+  if (isMissingTableResponse(response.status, body)) {
+    return new AdCreativeError({
+      code: "MISSING_CREATIVE_TABLE",
+      message:
+        "Missing Supabase ad creative tables. Run supabase/migrations/002_ad_creatives.sql.",
+      status: response.status,
+      details: body.slice(0, 500),
+    });
+  }
+
+  return new AdCreativeError({
+    code,
+    message: `Supabase creative ${action} failed with status ${response.status}.`,
+    status: response.status,
+    details: body.slice(0, 500),
+  });
+}
+
+function devLog(message: string, error: unknown) {
+  if (process.env.NODE_ENV === "development") {
+    console.warn(`[LeedsWire creatives] ${message}`, error);
+  }
+}
+
+export function clearAdCreativesCache() {
+  cachedCreatives = undefined;
+}
+
+export function isManagedAdPlacement(value: string): value is ManagedAdPlacement {
+  return managedPlacementSet.has(value);
+}
+
+export function isCreativeVariant(value: string): value is CreativeVariant {
+  return (
+    value === "desktop" ||
+    value === "mobile" ||
+    value === "left" ||
+    value === "right" ||
+    value === "default"
+  );
+}
+
+function getCreativeSlot(placement: ManagedAdPlacement, variant: CreativeVariant) {
+  return creativeSlotMap.get(creativeSlotKey(placement, variant));
+}
+
+export function isValidClickUrl(value?: string | null) {
+  if (!value) {
+    return true;
+  }
+
+  try {
+    const url = new URL(value);
+
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function validateUploadFile(file: File) {
+  const extension = file.name.split(".").pop()?.toLowerCase();
+
+  if (!extension || !allowedExtensions.has(extension)) {
+    throw new AdCreativeError({
+      code: "INVALID_CREATIVE",
+      message: "Creative must be a JPG, PNG, WebP or GIF file.",
+    });
+  }
+
+  if (!allowedMimeTypes.has(file.type)) {
+    throw new AdCreativeError({
+      code: "INVALID_CREATIVE",
+      message: "Creative file type is not supported.",
+    });
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    throw new AdCreativeError({
+      code: "INVALID_CREATIVE",
+      message: "Creative must be 10MB or smaller.",
+    });
+  }
+}
+
+function normalizeClickUrl(value?: string | null) {
+  const trimmed = value?.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  if (!isValidClickUrl(trimmed)) {
+    throw new AdCreativeError({
+      code: "INVALID_CLICK_URL",
+      message: "Click URL must start with http:// or https://.",
+    });
+  }
+
+  return trimmed;
+}
+
+function sanitizeFileName(value: string) {
+  const extension = value.split(".").pop()?.toLowerCase() ?? "jpg";
+  const base = value
+    .replace(/\.[^.]+$/, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+
+  return `${base || "creative"}-${Date.now()}.${extension}`;
+}
+
+function publicStorageUrl(url: string, objectPath: string) {
+  return `${url}/storage/v1/object/public/ads/${objectPath}`;
+}
+
+export async function getAdCreatives(options: { refresh?: boolean } = {}) {
+  const now = Date.now();
+
+  if (!options.refresh && cachedCreatives && cachedCreatives.expiresAt > now) {
+    return cachedCreatives.rows;
+  }
+
+  try {
+    const config = getSupabaseConfig();
+    const response = await fetch(
+      `${config.url}/rest/v1/ad_creatives?select=id,placement,creative_variant,name,file_url,click_url,is_active,uploaded_at,uploaded_by,start_date,end_date,width,height&order=uploaded_at.desc`,
+      {
+        headers: headers(config.serviceKey),
+        next: { revalidate: 60 },
+      } as RequestInit & { next: { revalidate: number } },
+    );
+
+    if (!response.ok) {
+      throw await createCreativeError({
+        response,
+        code: "CREATIVE_READ_FAILED",
+        action: "read",
+      });
+    }
+
+    const rows = ((await response.json()) as AdCreative[])
+      .filter((row) => isManagedAdPlacement(row.placement))
+      .map((row) => ({
+        ...row,
+        creative_variant: isCreativeVariant(row.creative_variant)
+          ? row.creative_variant
+          : row.placement === "sideskin-left"
+            ? "left"
+            : row.placement === "sideskin-right"
+              ? "right"
+              : "default",
+      }));
+
+    cachedCreatives = { rows, expiresAt: now + CACHE_MS };
+    return rows;
+  } catch (error) {
+    devLog("failed to read ad creatives; falling back to built-in creatives", error);
+    cachedCreatives = { rows: [], expiresAt: now + CACHE_MS };
+    return [];
+  }
+}
+
+export async function getActiveCreativeForPlacement(
+  placement: ManagedAdPlacement,
+  options: { refresh?: boolean; variant?: CreativeVariant } = {},
+) {
+  const creatives = await getAdCreatives(options);
+  const now = Date.now();
+  const variant = options.variant ?? "default";
+
+  return creatives.find((creative) => {
+    if (
+      creative.placement !== placement ||
+      creative.creative_variant !== variant ||
+      !creative.is_active
+    ) {
+      return false;
+    }
+
+    const startsAt = creative.start_date ? Date.parse(creative.start_date) : Number.NaN;
+    const endsAt = creative.end_date ? Date.parse(creative.end_date) : Number.NaN;
+
+    if (!Number.isNaN(startsAt) && now < startsAt) {
+      return false;
+    }
+
+    if (!Number.isNaN(endsAt) && now > endsAt) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+export async function getActiveCreativeCampaignForPlacement(
+  placementId: AdPlacementId,
+  variant: CreativeVariant = "default",
+) {
+  if (!isManagedAdPlacement(placementId)) {
+    return null;
+  }
+
+  const creative = await getActiveCreativeForPlacement(placementId, { variant });
+
+  if (!creative) {
+    return null;
+  }
+
+  return creativeToCampaign(creative, placementId);
+}
+
+export function creativeToCampaign(
+  creative: AdCreative,
+  placementId: AdPlacementId = creative.placement as AdPlacementId,
+): AdCampaign {
+  return {
+    id: creative.id,
+    placementId,
+    campaignType: "paid",
+    priority: 1_000,
+    enabled: creative.is_active,
+    creativeType: "image",
+    desktopSrc: creative.file_url,
+    mobileSrc: creative.file_url,
+    clickUrl: creative.click_url ?? undefined,
+    startDate: creative.start_date ?? undefined,
+    endDate: creative.end_date ?? undefined,
+    label: creative.name,
+  };
+}
+
+async function writeCreativeAudit({
+  creativeId,
+  action,
+  performedBy,
+}: {
+  creativeId: string;
+  action: CreativeAction;
+  performedBy: string;
+}) {
+  try {
+    const config = getSupabaseConfig();
+    const response = await fetch(`${config.url}/rest/v1/ad_creative_audit`, {
+      method: "POST",
+      headers: headers(config.serviceKey),
+      body: JSON.stringify({
+        creative_id: creativeId,
+        action,
+        performed_by: performedBy,
+        timestamp: new Date().toISOString(),
+      }),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      devLog(
+        "failed to write creative audit",
+        await createCreativeError({
+          response,
+          code: "CREATIVE_WRITE_FAILED",
+          action: "audit write",
+        }),
+      );
+    }
+  } catch (error) {
+    devLog("failed to write creative audit", error);
+  }
+}
+
+export async function uploadAdCreative({
+  placement,
+  creativeVariant,
+  file,
+  name,
+  clickUrl,
+  startDate,
+  endDate,
+  uploadedBy,
+}: {
+  placement: ManagedAdPlacement;
+  creativeVariant: CreativeVariant;
+  file: File;
+  name?: string;
+  clickUrl?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  uploadedBy: string;
+}) {
+  if (!isManagedAdPlacement(placement)) {
+    throw new AdCreativeError({
+      code: "INVALID_CREATIVE",
+      message: "Unknown advertising placement.",
+    });
+  }
+
+  const slot = getCreativeSlot(placement, creativeVariant);
+
+  if (!slot) {
+    throw new AdCreativeError({
+      code: "INVALID_CREATIVE",
+      message: "Unknown creative placement variant.",
+    });
+  }
+
+  validateUploadFile(file);
+  const safeClickUrl = normalizeClickUrl(clickUrl);
+  const config = getSupabaseConfig();
+  const folder = slot.folder;
+  const objectPath = `${folder}/${sanitizeFileName(file.name)}`;
+  const storageResponse = await fetch(
+    `${config.url}/storage/v1/object/ads/${objectPath}`,
+    {
+      method: "POST",
+      headers: {
+        apikey: config.serviceKey,
+        authorization: `Bearer ${config.serviceKey}`,
+        "content-type": file.type,
+        "x-upsert": "false",
+      },
+      body: file,
+      cache: "no-store",
+    },
+  );
+
+  if (!storageResponse.ok) {
+    throw await createCreativeError({
+      response: storageResponse,
+      code: "STORAGE_UPLOAD_FAILED",
+      action: "storage upload",
+    });
+  }
+
+  const fileUrl = publicStorageUrl(config.url, objectPath);
+  const insertResponse = await fetch(`${config.url}/rest/v1/ad_creatives`, {
+    method: "POST",
+    headers: {
+      ...headers(config.serviceKey),
+      prefer: "return=representation",
+    },
+    body: JSON.stringify({
+      placement,
+      creative_variant: creativeVariant,
+      name: name?.trim() || file.name,
+      file_url: fileUrl,
+      click_url: safeClickUrl,
+      is_active: false,
+      uploaded_at: new Date().toISOString(),
+      uploaded_by: uploadedBy,
+      start_date: startDate || null,
+      end_date: endDate || null,
+      width: slot.width,
+      height: slot.height,
+    }),
+    cache: "no-store",
+  });
+
+  if (!insertResponse.ok) {
+    throw await createCreativeError({
+      response: insertResponse,
+      code: "CREATIVE_WRITE_FAILED",
+      action: "insert",
+    });
+  }
+
+  const [creative] = (await insertResponse.json()) as AdCreative[];
+
+  await writeCreativeAudit({
+    creativeId: creative.id,
+    action: "upload",
+    performedBy: uploadedBy,
+  });
+  clearAdCreativesCache();
+
+  return creative;
+}
+
+export async function setCreativeActive({
+  creativeId,
+  active,
+  performedBy,
+}: {
+  creativeId: string;
+  active: boolean;
+  performedBy: string;
+}) {
+  const config = getSupabaseConfig();
+  const readResponse = await fetch(
+    `${config.url}/rest/v1/ad_creatives?select=id,placement,creative_variant&id=eq.${creativeId}&limit=1`,
+    {
+      headers: headers(config.serviceKey),
+      cache: "no-store",
+    },
+  );
+
+  if (!readResponse.ok) {
+    throw await createCreativeError({
+      response: readResponse,
+      code: "CREATIVE_READ_FAILED",
+      action: "read creative",
+    });
+  }
+
+  const [creative] = (await readResponse.json()) as Pick<
+    AdCreative,
+    "id" | "placement" | "creative_variant"
+  >[];
+
+  if (
+    !creative ||
+    !isManagedAdPlacement(creative.placement) ||
+    !isCreativeVariant(creative.creative_variant)
+  ) {
+    throw new AdCreativeError({
+      code: "INVALID_CREATIVE",
+      message: "Creative not found.",
+    });
+  }
+
+  if (active) {
+    const deactivateResponse = await fetch(
+      `${config.url}/rest/v1/ad_creatives?placement=eq.${creative.placement}&creative_variant=eq.${creative.creative_variant}&is_active=eq.true`,
+      {
+        method: "PATCH",
+        headers: headers(config.serviceKey),
+        body: JSON.stringify({ is_active: false }),
+        cache: "no-store",
+      },
+    );
+
+    if (!deactivateResponse.ok) {
+      throw await createCreativeError({
+        response: deactivateResponse,
+        code: "CREATIVE_WRITE_FAILED",
+        action: "deactivate previous creatives",
+      });
+    }
+  }
+
+  const updateResponse = await fetch(
+    `${config.url}/rest/v1/ad_creatives?id=eq.${creativeId}`,
+    {
+      method: "PATCH",
+      headers: {
+        ...headers(config.serviceKey),
+        prefer: "return=representation",
+      },
+      body: JSON.stringify({ is_active: active }),
+      cache: "no-store",
+    },
+  );
+
+  if (!updateResponse.ok) {
+    throw await createCreativeError({
+      response: updateResponse,
+      code: "CREATIVE_WRITE_FAILED",
+      action: active ? "activate" : "deactivate",
+    });
+  }
+
+  const [updated] = (await updateResponse.json()) as AdCreative[];
+
+  await writeCreativeAudit({
+    creativeId,
+    action: active ? "activate" : "deactivate",
+    performedBy,
+  });
+  clearAdCreativesCache();
+
+  return updated;
+}
+
+export async function deleteAdCreative({
+  creativeId,
+  performedBy,
+}: {
+  creativeId: string;
+  performedBy: string;
+}) {
+  const config = getSupabaseConfig();
+  const deleteResponse = await fetch(
+    `${config.url}/rest/v1/ad_creatives?id=eq.${creativeId}`,
+    {
+      method: "DELETE",
+      headers: headers(config.serviceKey),
+      cache: "no-store",
+    },
+  );
+
+  if (!deleteResponse.ok) {
+    throw await createCreativeError({
+      response: deleteResponse,
+      code: "CREATIVE_WRITE_FAILED",
+      action: "delete",
+    });
+  }
+
+  await writeCreativeAudit({
+    creativeId,
+    action: "delete",
+    performedBy,
+  });
+  clearAdCreativesCache();
+
+  return { id: creativeId };
+}

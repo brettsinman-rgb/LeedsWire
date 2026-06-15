@@ -146,6 +146,21 @@ test.describe("LeedsWire private beta QA", () => {
     });
 
     expect(response.status()).toBe(401);
+
+    const creativeUpdate = await request.post("/api/admin/ads/creatives/update", {
+      data: {
+        creativeId: "00000000-0000-0000-0000-000000000000",
+        action: "activate",
+      },
+    });
+    expect(creativeUpdate.status()).toBe(401);
+
+    const creativeUpload = await request.post("/api/admin/ads/creatives/upload", {
+      multipart: {
+        placement: "homepage-top",
+      },
+    });
+    expect(creativeUpload.status()).toBe(401);
   });
 
   test("ad placements render at expected responsive sizes", async ({ page }, testInfo) => {

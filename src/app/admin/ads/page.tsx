@@ -4,6 +4,7 @@ import { type AdControlKey } from "@/config/adControls";
 import type { CampaignStatusGroup } from "@/config/adCampaignStatus";
 import { AdSettingsDashboard } from "@/components/admin/AdSettingsDashboard";
 import { getAdvertisingSettings, getAdSettingsAudit } from "@/lib/adSettings";
+import { getAdCreatives } from "@/lib/adCreatives";
 import { hasAdminSession, isAdminPasswordConfigured } from "@/lib/admin/auth";
 import { logoutAction } from "@/app/admin/login/actions";
 
@@ -28,34 +29,74 @@ const placementControls: Array<{ label: string; key: AdControlKey }> = [
 
 const campaignGroups: CampaignStatusGroup[] = [
   {
-    label: "Top Billboard",
+    label: "Homepage Top Billboard Desktop",
     key: "topAdEnabled",
-    ids: ["homepage-top", "premier-league-news-top", "media-top"],
+    ids: ["homepage-top"],
+    creativeVariant: "desktop",
+    sizeLabel: "970x250",
   },
   {
-    label: "Mid Billboard",
+    label: "Homepage Top Billboard Mobile",
+    key: "topAdEnabled",
+    ids: ["homepage-top"],
+    creativeVariant: "mobile",
+    sizeLabel: "300x100",
+  },
+  {
+    label: "Homepage Mid Billboard Desktop",
     key: "midAdEnabled",
-    ids: ["homepage-mid", "premier-league-news-mid", "media-mid"],
+    ids: ["homepage-mid"],
+    creativeVariant: "desktop",
+    sizeLabel: "970x250",
   },
   {
-    label: "Bottom Billboard",
+    label: "Homepage Mid Billboard Mobile",
+    key: "midAdEnabled",
+    ids: ["homepage-mid"],
+    creativeVariant: "mobile",
+    sizeLabel: "300x600",
+  },
+  {
+    label: "Homepage Bottom Billboard Desktop",
     key: "bottomAdEnabled",
-    ids: ["homepage-bottom", "premier-league-news-bottom", "media-bottom"],
+    ids: ["homepage-bottom"],
+    creativeVariant: "desktop",
+    sizeLabel: "970x250",
   },
   {
-    label: "Side Skins",
+    label: "Homepage Bottom Billboard Mobile",
+    key: "bottomAdEnabled",
+    ids: ["homepage-bottom"],
+    creativeVariant: "mobile",
+    sizeLabel: "300x250",
+  },
+  {
+    label: "Side Skin Left",
     key: "sideSkinsEnabled",
-    ids: ["sideskin-left", "sideskin-right"],
+    ids: ["sideskin-left"],
+    creativeVariant: "left",
+    sizeLabel: "160x1080",
+  },
+  {
+    label: "Side Skin Right",
+    key: "sideSkinsEnabled",
+    ids: ["sideskin-right"],
+    creativeVariant: "right",
+    sizeLabel: "160x1080",
   },
   {
     label: "Sponsor Background",
     key: "sponsorBackgroundEnabled",
     ids: ["top-sponsor-background"],
+    creativeVariant: "default",
+    sizeLabel: "1920x1080",
   },
   {
     label: "Popup",
     key: "popupEnabled",
     ids: ["popup"],
+    creativeVariant: "default",
+    sizeLabel: "1200x1200",
   },
 ];
 
@@ -87,8 +128,12 @@ export default async function AdminAdsPage() {
     redirect("/admin/login");
   }
 
-  const [{ settings, source, warning, updatedAt }, auditEntries] =
-    await Promise.all([getAdvertisingSettings(), getAdSettingsAudit(10)]);
+  const [{ settings, source, warning, updatedAt }, auditEntries, creatives] =
+    await Promise.all([
+      getAdvertisingSettings(),
+      getAdSettingsAudit(10),
+      getAdCreatives(),
+    ]);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_18%_0%,rgba(255,221,0,0.06),transparent_28%),linear-gradient(180deg,#081b2f_0%,#06111f_46%,#050c17_100%)] px-4 py-6 text-white sm:px-6 lg:px-8">
@@ -124,6 +169,7 @@ export default async function AdminAdsPage() {
           placementControls={placementControls}
           campaignGroups={campaignGroups}
           auditEntries={auditEntries}
+          initialCreatives={creatives}
         />
       </section>
     </main>

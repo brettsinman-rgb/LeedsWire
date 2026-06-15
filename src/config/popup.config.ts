@@ -25,33 +25,36 @@ export type PopupConfig = {
 
 const activePopupCampaign = getActiveAdForPlacement("popup");
 
-export const popupConfig: PopupConfig = {
-  enabled: Boolean(activePopupCampaign),
-  campaignId: activePopupCampaign?.id,
-  campaignType: activePopupCampaign?.campaignType,
-  campaignName: activePopupCampaign?.label ?? "Sponsor popup",
-  priority: activePopupCampaign?.priority ?? 0,
-  creativeType:
-    activePopupCampaign?.creativeType === "third-party-tag"
-      ? "tag"
-      : activePopupCampaign?.creativeType ?? "image",
-  imageUrl:
-    activePopupCampaign?.creativeType === "image" ||
-    activePopupCampaign?.creativeType === "gif"
-      ? activePopupCampaign.desktopSrc
-      : undefined,
-  iframeUrl:
-    activePopupCampaign?.creativeType === "iframe"
-      ? activePopupCampaign.desktopSrc
-      : undefined,
-  html: activePopupCampaign?.html,
-  clickUrl: activePopupCampaign?.clickUrl,
-  showOncePerSession: true,
-  showDelaySeconds: 2,
-  forceView: false,
-  forceViewSeconds: 3,
-  startDate: "2026-06-01",
-  endDate: "2026-06-30",
-  impressions: 0,
-  clicks: 0,
-};
+export function getPopupConfigForCampaign(
+  campaign: AdCampaign | null | undefined,
+): PopupConfig {
+  return {
+    enabled: Boolean(campaign),
+    campaignId: campaign?.id,
+    campaignType: campaign?.campaignType,
+    campaignName: campaign?.label ?? "Sponsor popup",
+    priority: campaign?.priority ?? 0,
+    creativeType:
+      campaign?.creativeType === "third-party-tag"
+        ? "tag"
+        : campaign?.creativeType ?? "image",
+    imageUrl:
+      campaign?.creativeType === "image" || campaign?.creativeType === "gif"
+        ? campaign.desktopSrc
+        : undefined,
+    iframeUrl:
+      campaign?.creativeType === "iframe" ? campaign.desktopSrc : undefined,
+    html: campaign?.html,
+    clickUrl: campaign?.clickUrl,
+    showOncePerSession: true,
+    showDelaySeconds: 2,
+    forceView: false,
+    forceViewSeconds: 3,
+    startDate: campaign?.startDate,
+    endDate: campaign?.endDate,
+    impressions: 0,
+    clicks: 0,
+  };
+}
+
+export const popupConfig: PopupConfig = getPopupConfigForCampaign(activePopupCampaign);

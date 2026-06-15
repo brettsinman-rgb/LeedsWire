@@ -41,6 +41,7 @@ function hasCreative(config: PopupConfig) {
 }
 
 function trackPopup(
+  config: PopupConfig,
   event:
     | "Popup Viewed"
     | "Force View Completed"
@@ -49,11 +50,11 @@ function trackPopup(
 ) {
   if (process.env.NODE_ENV === "development") {
     console.info(`[LeedsWire popup] ${event}`, {
-      campaignName: popupConfig.campaignName,
-      campaignId: popupConfig.campaignId,
-      campaignType: popupConfig.campaignType,
-      creativeType: popupConfig.creativeType,
-      clickUrl: popupConfig.clickUrl,
+      campaignName: config.campaignName,
+      campaignId: config.campaignId,
+      campaignType: config.campaignType,
+      creativeType: config.creativeType,
+      clickUrl: config.clickUrl,
     });
   }
 }
@@ -109,22 +110,22 @@ function Creative({ config }: { config: PopupConfig }) {
   return <PopupFallback />;
 }
 
-export function PromotionalPopup() {
+export function PromotionalPopup({ config = popupConfig }: { config?: PopupConfig }) {
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(false);
   const [forceViewRemaining, setForceViewRemaining] = useState(0);
-  const canClose = !popupConfig.forceView || forceViewRemaining <= 0;
-  const safeClickUrl = getSafeClickUrl(popupConfig.clickUrl, {
+  const canClose = !config.forceView || forceViewRemaining <= 0;
+  const safeClickUrl = getSafeClickUrl(config.clickUrl, {
     placementId: "popup",
-    campaignId: popupConfig.campaignId,
+    campaignId: config.campaignId,
   });
   const canRender = useMemo(
     () =>
       ALLOWED_PATHS.has(pathname) &&
-      popupConfig.enabled &&
-      hasCreative(popupConfig) &&
-      isInDateWindow(popupConfig),
-    [pathname],
+      config.enabled &&
+      hasCreative(config) &&
+      isInDateWindow(config),
+    [config, pathname],
   );
 
   useEffect(() => {
@@ -133,25 +134,25 @@ export function PromotionalPopup() {
     }
 
     if (
-      popupConfig.showOncePerSession &&
+      config.showOncePerSession &&
       window.sessionStorage.getItem(DISMISSED_KEY) === "true"
     ) {
       return;
     }
 
-    const delayMs = Math.max(0, popupConfig.showDelaySeconds ?? 2) * 1000;
+    const delayMs = Math.max(0, config.showDelaySeconds ?? 2) * 1000;
     const timeout = window.setTimeout(() => {
       setForceViewRemaining(
-        popupConfig.forceView
-          ? Math.max(1, Math.ceil(popupConfig.forceViewSeconds ?? 3))
+        config.forceView
+          ? Math.max(1, Math.ceil(config.forceViewSeconds ?? 3))
           : 0,
       );
       setIsVisible(true);
-      trackPopup("Popup Viewed");
+      trackPopup(config, "Popup Viewed");
     }, delayMs);
 
     return () => window.clearTimeout(timeout);
-  }, [canRender]);
+  }, [canRender, config]);
 
   useEffect(() => {
     function handlePreviewRequest() {
@@ -161,12 +162,12 @@ export function PromotionalPopup() {
 
       window.sessionStorage.removeItem(DISMISSED_KEY);
       setForceViewRemaining(
-        popupConfig.forceView
-          ? Math.max(1, Math.ceil(popupConfig.forceViewSeconds ?? 3))
+        config.forceView
+          ? Math.max(1, Math.ceil(config.forceViewSeconds ?? 3))
           : 0,
       );
       setIsVisible(true);
-      trackPopup("Popup Viewed");
+      trackPopup(config, "Popup Viewed");
     }
 
     window.addEventListener("leedswire:show-popup-preview", handlePreviewRequest);
@@ -176,10 +177,10 @@ export function PromotionalPopup() {
         "leedswire:show-popup-preview",
         handlePreviewRequest,
       );
-  }, [canRender]);
+  }, [canRender, config]);
 
   useEffect(() => {
-    if (!isVisible || !popupConfig.forceView || forceViewRemaining <= 0) {
+    if (!isVisible || !config.forceView || forceViewRemaining <= 0) {
       return;
     }
 
@@ -188,7 +189,7 @@ export function PromotionalPopup() {
         const next = Math.max(0, remaining - 1);
 
         if (next === 0) {
-          trackPopup("Force View Completed");
+          trackPopup(config, "Force View Completed");
         }
 
         return next;
@@ -196,7 +197,7 @@ export function PromotionalPopup() {
     }, 1000);
 
     return () => window.clearTimeout(timeout);
-  }, [forceViewRemaining, isVisible]);
+  }, [config, forceViewRemaining, isVisible]);
 
   useEffect(() => {
     if (!isVisible) {
@@ -223,16 +224,16 @@ export function PromotionalPopup() {
       return;
     }
 
-    if (popupConfig.showOncePerSession) {
+    if (config.showOncePerSession) {
       window.sessionStorage.setItem(DISMISSED_KEY, "true");
     }
 
     setIsVisible(false);
-    trackPopup("Popup Closed");
+    trackPopup(config, "Popup Closed");
   }
 
   function handleCreativeClick() {
-    trackPopup("Popup Clicked");
+    trackPopup(config, "Popup Clicked");
   }
 
   return (
@@ -240,7 +241,7 @@ export function PromotionalPopup() {
       className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-md"
       role="dialog"
       aria-modal="true"
-      aria-label={popupConfig.campaignName ?? "Promotional popup"}
+      aria-label={config.campaignName ?? "Promotional popup"}
       data-testid="promo-popup"
     >
       <div className="relative max-h-[88vh] w-full max-w-[800px] overflow-visible">
@@ -273,11 +274,11 @@ export function PromotionalPopup() {
               aria-label="Open promotion"
               data-testid="promo-popup-creative"
             >
-              <Creative config={popupConfig} />
+              <Creative config={config} />
             </a>
           ) : (
             <div className="max-h-[88vh] overflow-auto">
-              <Creative config={popupConfig} />
+              <Creative config={config} />
             </div>
           )}
         </div>

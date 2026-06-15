@@ -11,11 +11,18 @@ import {
   type AdControlKey,
   type AdControlSettings,
 } from "./adControls";
+import {
+  creativeToCampaign,
+  type AdCreative,
+  type CreativeVariant,
+} from "../lib/adCreatives";
 
 export type CampaignStatusGroup = {
   label: string;
   key: AdControlKey;
   ids: AdPlacementId[];
+  creativeVariant?: CreativeVariant;
+  sizeLabel?: string;
 };
 
 export type CampaignStatusRow = CampaignStatusGroup & {
@@ -29,6 +36,8 @@ export type CampaignStatusRow = CampaignStatusGroup & {
   statusEnabled: boolean;
   statusDetail: string;
   renderReason: string;
+  uploadedAt?: string;
+  sizeLabel?: string;
 };
 
 const campaignTypeLabel: Record<AdCampaignType, string> = {
@@ -163,15 +172,28 @@ function getRenderReason({
 export function getCampaignStatusRows(
   settings: AdControlSettings,
   groups: CampaignStatusGroup[],
+  creatives: AdCreative[] = [],
 ): CampaignStatusRow[] {
   return groups.map((group) => {
+    const activeCreative = creatives.find(
+      (creative) =>
+        group.ids.includes(creative.placement as AdPlacementId) &&
+        creative.creative_variant === (group.creativeVariant ?? "default") &&
+        creative.is_active,
+    );
+    const activeCreativeCampaign = activeCreative
+      ? creativeToCampaign(activeCreative, activeCreative.placement as AdPlacementId)
+      : undefined;
     const configuredCampaigns = adCampaigns.filter((campaign) =>
       group.ids.includes(campaign.placementId),
     );
     const activeCampaigns = group.ids
       .map((placementId) => ({
         placementId,
-        campaign: getActiveAdForPlacement(placementId, settings),
+        campaign:
+          activeCreativeCampaign?.placementId === placementId
+            ? activeCreativeCampaign
+            : getActiveAdForPlacement(placementId, settings),
       }))
       .filter(
         (item): item is { placementId: AdPlacementId; campaign: AdCampaign } =>
@@ -226,6 +248,8 @@ export function getCampaignStatusRows(
       statusEnabled,
       statusDetail,
       renderReason,
+      uploadedAt: activeCreative?.uploaded_at,
+      sizeLabel: group.sizeLabel,
     };
   });
 }

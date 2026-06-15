@@ -10,6 +10,7 @@ import {
   type AdCampaign,
 } from "@/config/ads.config";
 import { isPlacementEnabled } from "@/config/adControls";
+import { appendHtml5ClickTags } from "@/lib/adHtml5";
 
 const SIDE_SKIN_WIDTH = 160;
 const SIDE_SKIN_HEIGHT = 1080;
@@ -166,18 +167,19 @@ function ImageCreative({
   );
 }
 
-function IframeCreative({ campaign }: { campaign: AdCampaign }) {
+function Html5Creative({ campaign }: { campaign: AdCampaign }) {
   if (!campaign.desktopSrc || !isSafeAdUrl(campaign.desktopSrc)) {
     return <HouseCreative campaign={campaign} />;
   }
 
   return (
     <iframe
-      src={campaign.desktopSrc}
+      src={appendHtml5ClickTags(campaign.desktopSrc, campaign.clickUrl)}
       title={campaign.label ?? "Advertisement"}
       className="h-full w-full border-0"
       loading="lazy"
-      sandbox="allow-popups allow-popups-to-escape-sandbox allow-scripts allow-same-origin"
+      scrolling="no"
+      sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
     />
   );
 }
@@ -225,8 +227,8 @@ function Creative({
     return <ImageCreative campaign={campaign} placementId={placementId} slot={slot} />;
   }
 
-  if (campaign.creativeType === "iframe") {
-    return <IframeCreative campaign={campaign} />;
+  if (campaign.creativeType === "html5" || campaign.creativeType === "iframe") {
+    return <Html5Creative campaign={campaign} />;
   }
 
   if (
@@ -271,6 +273,10 @@ export function AdSlot({
           : getActiveAdForPlacement("top-sponsor-background");
   const sponsorSrc = getCreativeSrc(sponsor);
   const sponsorClickUrl = getCreativeClickUrl(sponsor, "top-sponsor-background");
+  const sponsorCampaign = sponsor && "desktopSrc" in sponsor ? sponsor : null;
+  const sponsorIsHtml5 =
+    sponsorCampaign?.creativeType === "html5" ||
+    sponsorCampaign?.creativeType === "iframe";
   const safeSponsorSrc =
     sponsorSrc && isConfiguredAdAssetAvailable(sponsorSrc)
       ? sponsorSrc
@@ -293,7 +299,16 @@ export function AdSlot({
       data-testid={`adslot-${placementId}`}
     >
       {placementId.endsWith("-top") && safeSponsorSrc ? (
-        sponsorClickUrl ? (
+        sponsorIsHtml5 ? (
+          <iframe
+            src={appendHtml5ClickTags(safeSponsorSrc, sponsorClickUrl)}
+            title={sponsorCampaign?.label ?? "Sponsor background"}
+            className="absolute inset-0 z-0 h-full w-full border-0 opacity-45"
+            scrolling="no"
+            sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+            data-testid="top-sponsor-background"
+          />
+        ) : sponsorClickUrl ? (
           <a
             href={sponsorClickUrl}
             target="_blank"
@@ -375,7 +390,19 @@ function SideSkinImage({
     return null;
   }
 
-  const image = (
+  const creative =
+    campaign?.creativeType === "html5" || campaign?.creativeType === "iframe" ? (
+      <iframe
+        src={appendHtml5ClickTags(src ?? "", clickUrl)}
+        title={`${side} side skin sponsor`}
+        data-testid={`sideskin-${side}`}
+        width={SIDE_SKIN_WIDTH}
+        height={SIDE_SKIN_HEIGHT}
+        className="h-full w-full border-0"
+        scrolling="no"
+        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+      />
+    ) : (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
@@ -386,7 +413,7 @@ function SideSkinImage({
       onError={() => setHasFailed(true)}
       className="h-full w-full object-cover"
     />
-  );
+    );
 
   const positionClass =
     side === "left"
@@ -398,7 +425,17 @@ function SideSkinImage({
       <div
         className={`pointer-events-auto fixed top-32 h-[var(--side-skin-height)] w-[var(--side-skin-width)] ${positionClass}`}
       >
-        {image}
+        {creative}
+      </div>
+    );
+  }
+
+  if (campaign?.creativeType === "html5" || campaign?.creativeType === "iframe") {
+    return (
+      <div
+        className={`pointer-events-auto fixed top-32 h-[var(--side-skin-height)] w-[var(--side-skin-width)] ${positionClass}`}
+      >
+        {creative}
       </div>
     );
   }
@@ -414,7 +451,7 @@ function SideSkinImage({
         trackClick(side === "left" ? "sideskin-left" : "sideskin-right", campaign)
       }
     >
-      {image}
+      {creative}
     </a>
   );
 }

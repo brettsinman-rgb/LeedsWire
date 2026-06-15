@@ -18,7 +18,9 @@ import {
   type AdCreative,
   type CreativeVariant,
   type ManagedAdPlacement,
+  type UploadedCreativeType,
 } from "@/lib/adCreatives";
+import { appendHtml5ClickTags } from "@/lib/adHtml5";
 
 type PlacementControl = {
   label: string;
@@ -152,6 +154,10 @@ function getCampaignPreview(campaign?: AdCampaign | null) {
     return undefined;
   }
 
+  if (campaign.creativeType === "html5" || campaign.creativeType === "iframe") {
+    return campaign.desktopSrc ?? campaign.mobileSrc;
+  }
+
   if (campaign.creativeType === "image" || campaign.creativeType === "gif") {
     return campaign.desktopSrc ?? campaign.mobileSrc;
   }
@@ -176,6 +182,18 @@ function CampaignPreview({
     );
   }
 
+  if (campaign?.creativeType === "html5" || campaign?.creativeType === "iframe") {
+    return (
+      <iframe
+        src={appendHtml5ClickTags(src, campaign.clickUrl)}
+        title={campaign.label ?? "HTML5 creative preview"}
+        className="size-12 shrink-0 rounded-lg border-0 bg-white/[0.06] ring-1 ring-white/[0.1]"
+        scrolling="no"
+        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+      />
+    );
+  }
+
   return (
     // Admin previews intentionally render the configured creative as supplied.
     // eslint-disable-next-line @next/next/no-img-element
@@ -183,6 +201,43 @@ function CampaignPreview({
       src={src}
       alt=""
       className="size-12 shrink-0 rounded-lg object-cover ring-1 ring-white/[0.1]"
+    />
+  );
+}
+
+function creativeTypeLabel(value?: UploadedCreativeType | string | null) {
+  return value === "html5" ? "HTML5" : "Image";
+}
+
+function CreativePreview({
+  creative,
+  className,
+}: {
+  creative: AdCreative;
+  className: string;
+}) {
+  if (creative.creative_type === "html5") {
+    return (
+      <iframe
+        src={appendHtml5ClickTags(
+          creative.entry_url ?? creative.file_url,
+          creative.click_url ?? undefined,
+        )}
+        title={creative.name}
+        className={`${className} border-0 bg-white/[0.06]`}
+        scrolling="no"
+        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+      />
+    );
+  }
+
+  return (
+    // Admin previews intentionally render the configured creative as supplied.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={creative.file_url}
+      alt=""
+      className={`${className} object-cover`}
     />
   );
 }
@@ -231,6 +286,9 @@ function CreativeLibrary({
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [uploadingSlot, setUploadingSlot] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [creativeTypes, setCreativeTypes] = useState<Record<string, UploadedCreativeType>>(
+    {},
+  );
 
   function setCreative(nextCreative: AdCreative) {
     onCreativesChange(
@@ -379,6 +437,7 @@ function CreativeLibrary({
             (creative) => creative.is_active,
           );
           const isUploading = uploadingSlot === slotKey;
+          const selectedCreativeType = creativeTypes[slotKey] ?? "image";
 
           return (
             <article
@@ -400,22 +459,30 @@ function CreativeLibrary({
               <div className="mt-3 flex gap-3 rounded-lg bg-black/14 p-2.5 ring-1 ring-white/[0.06]">
                 {activeCreative ? (
                   <>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={activeCreative.file_url}
-                      alt=""
-                      className="h-16 w-24 shrink-0 rounded-lg object-cover ring-1 ring-white/[0.12]"
+                    <CreativePreview
+                      creative={activeCreative}
+                      className="h-16 w-24 shrink-0 rounded-lg ring-1 ring-white/[0.12]"
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-white">
-                        {activeCreative.name}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="truncate text-sm font-semibold text-white">
+                          {activeCreative.name}
+                        </p>
+                        <span className="shrink-0 rounded-full bg-white/[0.08] px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-[0.08em] text-zinc-300 ring-1 ring-white/[0.1]">
+                          {creativeTypeLabel(activeCreative.creative_type)}
+                        </span>
+                      </div>
                       <p className="mt-1 text-xs text-zinc-500">
                         Active since {formatUploadDate(activeCreative.uploaded_at)}
                       </p>
                       <p className="mt-1 truncate text-xs text-zinc-400">
                         {clickUrlValue(activeCreative.click_url ?? undefined)}
                       </p>
+                      {activeCreative.creative_type === "html5" ? (
+                        <p className="mt-1 truncate text-xs text-zinc-500">
+                          Entry: index.html
+                        </p>
+                      ) : null}
                     </div>
                   </>
                 ) : (
@@ -446,22 +513,30 @@ function CreativeLibrary({
                         key={creative.id}
                         className="grid grid-cols-[auto_1fr] gap-2 bg-white/[0.025] p-2"
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={creative.file_url}
-                          alt=""
-                          className="h-10 w-14 rounded-md object-cover ring-1 ring-white/[0.1]"
+                        <CreativePreview
+                          creative={creative}
+                          className="h-10 w-14 rounded-md ring-1 ring-white/[0.1]"
                         />
                         <div className="min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
-                              <p className="truncate text-xs font-semibold text-white">
-                                {creative.name}
-                              </p>
+                              <div className="flex items-center gap-1.5">
+                                <p className="truncate text-xs font-semibold text-white">
+                                  {creative.name}
+                                </p>
+                                <span className="shrink-0 rounded-full bg-white/[0.08] px-1.5 py-0.5 text-[0.55rem] font-bold uppercase text-zinc-300">
+                                  {creativeTypeLabel(creative.creative_type)}
+                                </span>
+                              </div>
                               <p className="mt-0.5 truncate text-[0.68rem] text-zinc-500">
                                 {formatUploadDate(creative.uploaded_at)} -{" "}
                                 {clickUrlValue(creative.click_url ?? undefined)}
                               </p>
+                              {creative.creative_type === "html5" ? (
+                                <p className="mt-0.5 truncate text-[0.68rem] text-zinc-500">
+                                  Entry: index.html
+                                </p>
+                              ) : null}
                             </div>
                             {creative.is_active ? (
                               <span className="shrink-0 rounded-full bg-emerald-400/10 px-2 py-0.5 text-[0.62rem] font-bold text-emerald-100 ring-1 ring-emerald-300/20">
@@ -521,13 +596,54 @@ function CreativeLibrary({
                 }}
               >
                 <div className="grid gap-2">
+                  <div>
+                    <p className="text-[0.65rem] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                      Creative Type
+                    </p>
+                    <div className="mt-1.5 grid grid-cols-2 gap-1.5 rounded-full bg-black/18 p-1 ring-1 ring-white/[0.08]">
+                      {(["image", "html5"] as const).map((type) => (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() =>
+                            setCreativeTypes((current) => ({
+                              ...current,
+                              [slotKey]: type,
+                            }))
+                          }
+                          className={[
+                            "rounded-full px-2.5 py-1.5 text-[0.62rem] font-black uppercase tracking-[0.1em] transition",
+                            selectedCreativeType === type
+                              ? "bg-[#ffdd00] text-[#06111f]"
+                              : "text-zinc-400 hover:bg-white/[0.08] hover:text-white",
+                          ].join(" ")}
+                        >
+                          {type === "image" ? "Static Image" : "HTML5 ZIP"}
+                        </button>
+                      ))}
+                    </div>
+                    <input
+                      type="hidden"
+                      name="creativeType"
+                      value={selectedCreativeType}
+                    />
+                    <p className="mt-1.5 text-[0.68rem] leading-4 text-zinc-500">
+                      {selectedCreativeType === "html5"
+                        ? "ZIP must include index.html at root or inside a first-level folder."
+                        : `Required size: ${placement.sizeLabel}.`}
+                    </p>
+                  </div>
                   <label className="block text-[0.65rem] font-bold uppercase tracking-[0.12em] text-zinc-500">
                     File
                     <input
                       required
                       name="file"
                       type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      accept={
+                        selectedCreativeType === "html5"
+                          ? ".zip,application/zip,application/x-zip-compressed"
+                          : "image/jpeg,image/png,image/webp,image/gif"
+                      }
                       className="mt-1.5 block w-full text-xs text-zinc-300 file:mr-2 file:rounded-full file:border-0 file:bg-[#ffdd00] file:px-2.5 file:py-1.5 file:text-[0.65rem] file:font-bold file:text-[#06111f]"
                     />
                   </label>

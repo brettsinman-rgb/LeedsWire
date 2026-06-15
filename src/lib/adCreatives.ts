@@ -1,4 +1,5 @@
 import type { AdCampaign, AdPlacementId } from "../config/ads.config";
+import { unzipSync } from "fflate";
 
 export type ManagedAdPlacement =
   | "homepage-top"
@@ -10,6 +11,7 @@ export type ManagedAdPlacement =
   | "popup";
 
 export type CreativeVariant = "desktop" | "mobile" | "left" | "right" | "default";
+export type UploadedCreativeType = "image" | "html5";
 
 export type AdCreative = {
   id: string;
@@ -17,6 +19,9 @@ export type AdCreative = {
   creative_variant: CreativeVariant;
   name: string;
   file_url: string;
+  creative_type?: UploadedCreativeType;
+  entry_url?: string | null;
+  original_filename?: string | null;
   click_url?: string | null;
   is_active: boolean;
   uploaded_at: string;
@@ -187,6 +192,7 @@ const creativeSlotMap = new Map(
 );
 const CACHE_MS = 60_000;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const HTML5_STORAGE_PREFIX = "html5";
 const allowedMimeTypes = new Set([
   "image/jpeg",
   "image/png",
@@ -194,6 +200,38 @@ const allowedMimeTypes = new Set([
   "image/gif",
 ]);
 const allowedExtensions = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
+const allowedHtml5Extensions = new Set([
+  "html",
+  "css",
+  "js",
+  "json",
+  "png",
+  "jpg",
+  "jpeg",
+  "webp",
+  "gif",
+  "svg",
+  "woff",
+  "woff2",
+  "ttf",
+  "mp4",
+  "webm",
+]);
+const dangerousHtml5Extensions = new Set([
+  "php",
+  "exe",
+  "sh",
+  "bat",
+  "cmd",
+  "py",
+  "rb",
+  "jar",
+  "pl",
+  "cgi",
+  "asp",
+  "aspx",
+  "jsp",
+]);
 
 let cachedCreatives:
   | {
@@ -295,6 +333,10 @@ export function isCreativeVariant(value: string): value is CreativeVariant {
   );
 }
 
+export function isUploadedCreativeType(value: string): value is UploadedCreativeType {
+  return value === "image" || value === "html5";
+}
+
 function getCreativeSlot(placement: ManagedAdPlacement, variant: CreativeVariant) {
   return creativeSlotMap.get(creativeSlotKey(placement, variant));
 }
@@ -313,7 +355,7 @@ export function isValidClickUrl(value?: string | null) {
   }
 }
 
-function validateUploadFile(file: File) {
+function validateImageUploadFile(file: File) {
   const extension = file.name.split(".").pop()?.toLowerCase();
 
   if (!extension || !allowedExtensions.has(extension)) {
@@ -334,6 +376,36 @@ function validateUploadFile(file: File) {
     throw new AdCreativeError({
       code: "INVALID_CREATIVE",
       message: "Creative must be 10MB or smaller.",
+    });
+  }
+}
+
+function validateZipUploadFile(file: File) {
+  const extension = file.name.split(".").pop()?.toLowerCase();
+
+  if (extension !== "zip") {
+    throw new AdCreativeError({
+      code: "INVALID_CREATIVE",
+      message: "HTML5 creative must be a ZIP file.",
+    });
+  }
+
+  if (
+    file.type &&
+    !["application/zip", "application/x-zip-compressed", "multipart/x-zip"].includes(
+      file.type,
+    )
+  ) {
+    throw new AdCreativeError({
+      code: "INVALID_CREATIVE",
+      message: "HTML5 creative ZIP file type is not supported.",
+    });
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    throw new AdCreativeError({
+      code: "INVALID_CREATIVE",
+      message: "HTML5 creative ZIP must be 10MB or smaller.",
     });
   }
 }
@@ -367,8 +439,261 @@ function sanitizeFileName(value: string) {
   return `${base || "creative"}-${Date.now()}.${extension}`;
 }
 
+function sanitizePathSegment(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80) || "asset";
+}
+
+function sanitizeRelativePath(value: string) {
+  return value
+    .split("/")
+    .filter(Boolean)
+    .map((segment) => sanitizePathSegment(segment))
+    .join("/");
+}
+
+function contentTypeForPath(path: string) {
+  const extension = path.split(".").pop()?.toLowerCase();
+
+  switch (extension) {
+    case "html":
+      return "text/html; charset=utf-8";
+    case "css":
+      return "text/css; charset=utf-8";
+    case "js":
+      return "application/javascript; charset=utf-8";
+    case "json":
+      return "application/json; charset=utf-8";
+    case "png":
+      return "image/png";
+    case "jpg":
+    case "jpeg":
+      return "image/jpeg";
+    case "webp":
+      return "image/webp";
+    case "gif":
+      return "image/gif";
+    case "svg":
+      return "image/svg+xml";
+    case "woff":
+      return "font/woff";
+    case "woff2":
+      return "font/woff2";
+    case "ttf":
+      return "font/ttf";
+    case "mp4":
+      return "video/mp4";
+    case "webm":
+      return "video/webm";
+    default:
+      return "application/octet-stream";
+  }
+}
+
+function isUnsafeZipPath(path: string) {
+  return (
+    path.startsWith("/") ||
+    path.startsWith("\\") ||
+    path.includes("\\") ||
+    path.split("/").some((segment) => segment === ".." || segment.startsWith("."))
+  );
+}
+
+function normalizeHtml5ZipEntries(fileMap: Record<string, Uint8Array>) {
+  const entries = Object.entries(fileMap).filter(([path]) => !path.endsWith("/"));
+
+  if (entries.length === 0) {
+    throw new AdCreativeError({
+      code: "INVALID_CREATIVE",
+      message: "HTML5 ZIP is empty.",
+    });
+  }
+
+  for (const [path] of entries) {
+    if (isUnsafeZipPath(path)) {
+      throw new AdCreativeError({
+        code: "INVALID_CREATIVE",
+        message: "HTML5 ZIP contains an unsafe file path.",
+      });
+    }
+
+    const extension = path.split(".").pop()?.toLowerCase();
+
+    if (!extension) {
+      throw new AdCreativeError({
+        code: "INVALID_CREATIVE",
+        message: "HTML5 ZIP contains a file without an extension.",
+      });
+    }
+
+    if (
+      dangerousHtml5Extensions.has(extension) ||
+      !allowedHtml5Extensions.has(extension)
+    ) {
+      throw new AdCreativeError({
+        code: "INVALID_CREATIVE",
+        message: `HTML5 ZIP contains an unsupported file type: .${extension}.`,
+      });
+    }
+  }
+
+  const paths = entries.map(([path]) => path);
+  const rootIndex = paths.find((path) => path.toLowerCase() === "index.html");
+  const firstLevelIndex = paths.find((path) => {
+    const parts = path.split("/");
+
+    return parts.length === 2 && parts[1].toLowerCase() === "index.html";
+  });
+  const entryPath = rootIndex ?? firstLevelIndex;
+
+  if (!entryPath) {
+    throw new AdCreativeError({
+      code: "INVALID_CREATIVE",
+      message: "HTML5 ZIP must include index.html at root or inside a first-level folder.",
+    });
+  }
+
+  const prefix =
+    !rootIndex && firstLevelIndex ? `${firstLevelIndex.split("/")[0]}/` : "";
+  const normalizedEntries = entries
+    .filter(([path]) => !prefix || path.startsWith(prefix))
+    .map(([path, data]) => ({
+      relativePath: sanitizeRelativePath(prefix ? path.slice(prefix.length) : path),
+      data,
+    }))
+    .filter((entry) => entry.relativePath);
+
+  return {
+    entries: normalizedEntries,
+    entryRelativePath: "index.html",
+  };
+}
+
 function publicStorageUrl(url: string, objectPath: string) {
   return `${url}/storage/v1/object/public/ads/${objectPath}`;
+}
+
+async function uploadStorageObject({
+  config,
+  objectPath,
+  body,
+  contentType,
+}: {
+  config: { url: string; serviceKey: string };
+  objectPath: string;
+  body: BodyInit;
+  contentType: string;
+}) {
+  const storageResponse = await fetch(
+    `${config.url}/storage/v1/object/ads/${objectPath}`,
+    {
+      method: "POST",
+      headers: {
+        apikey: config.serviceKey,
+        authorization: `Bearer ${config.serviceKey}`,
+        "content-type": contentType,
+        "x-upsert": "false",
+      },
+      body,
+      cache: "no-store",
+    },
+  );
+
+  if (!storageResponse.ok) {
+    throw await createCreativeError({
+      response: storageResponse,
+      code: "STORAGE_UPLOAD_FAILED",
+      action: "storage upload",
+    });
+  }
+}
+
+type SupabaseStorageListItem = {
+  name?: string;
+  id?: string | null;
+  metadata?: unknown;
+};
+
+async function listStorageObjectPaths({
+  config,
+  prefix,
+}: {
+  config: { url: string; serviceKey: string };
+  prefix: string;
+}) {
+  const response = await fetch(`${config.url}/storage/v1/object/list/ads`, {
+    method: "POST",
+    headers: headers(config.serviceKey),
+    body: JSON.stringify({
+      prefix,
+      limit: 1000,
+      offset: 0,
+      sortBy: { column: "name", order: "asc" },
+    }),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw await createCreativeError({
+      response,
+      code: "CREATIVE_READ_FAILED",
+      action: "storage list",
+    });
+  }
+
+  const items = (await response.json()) as SupabaseStorageListItem[];
+  const files: string[] = [];
+
+  for (const item of items) {
+    if (!item.name) {
+      continue;
+    }
+
+    const path = `${prefix}/${item.name}`;
+
+    if (item.id || item.metadata) {
+      files.push(path);
+    } else {
+      files.push(
+        ...(await listStorageObjectPaths({
+          config,
+          prefix: path,
+        })),
+      );
+    }
+  }
+
+  return files;
+}
+
+async function deleteStorageObjects({
+  config,
+  prefixes,
+}: {
+  config: { url: string; serviceKey: string };
+  prefixes: string[];
+}) {
+  if (prefixes.length === 0) {
+    return;
+  }
+
+  const response = await fetch(`${config.url}/storage/v1/object/ads`, {
+    method: "DELETE",
+    headers: headers(config.serviceKey),
+    body: JSON.stringify({ prefixes }),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw await createCreativeError({
+      response,
+      code: "CREATIVE_WRITE_FAILED",
+      action: "storage delete",
+    });
+  }
 }
 
 export async function getAdCreatives(options: { refresh?: boolean } = {}) {
@@ -381,7 +706,7 @@ export async function getAdCreatives(options: { refresh?: boolean } = {}) {
   try {
     const config = getSupabaseConfig();
     const response = await fetch(
-      `${config.url}/rest/v1/ad_creatives?select=id,placement,creative_variant,name,file_url,click_url,is_active,uploaded_at,uploaded_by,start_date,end_date,width,height&order=uploaded_at.desc`,
+      `${config.url}/rest/v1/ad_creatives?select=id,placement,creative_variant,name,file_url,creative_type,entry_url,original_filename,click_url,is_active,uploaded_at,uploaded_by,start_date,end_date,width,height&order=uploaded_at.desc`,
       {
         headers: headers(config.serviceKey),
         next: { revalidate: 60 },
@@ -477,9 +802,15 @@ export function creativeToCampaign(
     campaignType: "paid",
     priority: 1_000,
     enabled: creative.is_active,
-    creativeType: "image",
-    desktopSrc: creative.file_url,
-    mobileSrc: creative.file_url,
+    creativeType: creative.creative_type === "html5" ? "html5" : "image",
+    desktopSrc:
+      creative.creative_type === "html5"
+        ? (creative.entry_url ?? creative.file_url)
+        : creative.file_url,
+    mobileSrc:
+      creative.creative_type === "html5"
+        ? (creative.entry_url ?? creative.file_url)
+        : creative.file_url,
     clickUrl: creative.click_url ?? undefined,
     startDate: creative.start_date ?? undefined,
     endDate: creative.end_date ?? undefined,
@@ -529,6 +860,7 @@ export async function uploadAdCreative({
   placement,
   creativeVariant,
   file,
+  creativeType = "image",
   name,
   clickUrl,
   startDate,
@@ -538,6 +870,7 @@ export async function uploadAdCreative({
   placement: ManagedAdPlacement;
   creativeVariant: CreativeVariant;
   file: File;
+  creativeType?: UploadedCreativeType;
   name?: string;
   clickUrl?: string | null;
   startDate?: string | null;
@@ -560,35 +893,73 @@ export async function uploadAdCreative({
     });
   }
 
-  validateUploadFile(file);
-  const safeClickUrl = normalizeClickUrl(clickUrl);
-  const config = getSupabaseConfig();
-  const folder = slot.folder;
-  const objectPath = `${folder}/${sanitizeFileName(file.name)}`;
-  const storageResponse = await fetch(
-    `${config.url}/storage/v1/object/ads/${objectPath}`,
-    {
-      method: "POST",
-      headers: {
-        apikey: config.serviceKey,
-        authorization: `Bearer ${config.serviceKey}`,
-        "content-type": file.type,
-        "x-upsert": "false",
-      },
-      body: file,
-      cache: "no-store",
-    },
-  );
-
-  if (!storageResponse.ok) {
-    throw await createCreativeError({
-      response: storageResponse,
-      code: "STORAGE_UPLOAD_FAILED",
-      action: "storage upload",
+  if (!isUploadedCreativeType(creativeType)) {
+    throw new AdCreativeError({
+      code: "INVALID_CREATIVE",
+      message: "Creative type must be image or HTML5.",
     });
   }
 
-  const fileUrl = publicStorageUrl(config.url, objectPath);
+  const safeClickUrl = normalizeClickUrl(clickUrl);
+  const config = getSupabaseConfig();
+  const creativeId = crypto.randomUUID();
+  let fileUrl = "";
+  let entryUrl: string | null = null;
+
+  if (creativeType === "html5") {
+    validateZipUploadFile(file);
+    const zipBuffer = new Uint8Array(await file.arrayBuffer());
+    let zipEntries: ReturnType<typeof normalizeHtml5ZipEntries>;
+
+    try {
+      zipEntries = normalizeHtml5ZipEntries(unzipSync(zipBuffer));
+    } catch (error) {
+      if (error instanceof AdCreativeError) {
+        throw error;
+      }
+
+      throw new AdCreativeError({
+        code: "INVALID_CREATIVE",
+        message: "HTML5 ZIP could not be read.",
+      });
+    }
+
+    const html5Folder = `${HTML5_STORAGE_PREFIX}/${slot.folder}/${creativeId}`;
+
+    for (const entry of zipEntries.entries) {
+      const contentType = contentTypeForPath(entry.relativePath);
+      const bytes = new Uint8Array(entry.data.length);
+
+      bytes.set(entry.data);
+
+      await uploadStorageObject({
+        config,
+        objectPath: `${html5Folder}/${entry.relativePath}`,
+        body: new Blob([bytes.buffer], { type: contentType }),
+        contentType,
+      });
+    }
+
+    entryUrl = publicStorageUrl(
+      config.url,
+      `${html5Folder}/${zipEntries.entryRelativePath}`,
+    );
+    fileUrl = entryUrl;
+  } else {
+    validateImageUploadFile(file);
+    const folder = slot.folder;
+    const objectPath = `${folder}/${sanitizeFileName(file.name)}`;
+
+    await uploadStorageObject({
+      config,
+      objectPath,
+      body: file,
+      contentType: file.type,
+    });
+
+    fileUrl = publicStorageUrl(config.url, objectPath);
+  }
+
   const insertResponse = await fetch(`${config.url}/rest/v1/ad_creatives`, {
     method: "POST",
     headers: {
@@ -596,10 +967,14 @@ export async function uploadAdCreative({
       prefer: "return=representation",
     },
     body: JSON.stringify({
+      id: creativeId,
       placement,
       creative_variant: creativeVariant,
       name: name?.trim() || file.name,
       file_url: fileUrl,
+      creative_type: creativeType,
+      entry_url: entryUrl,
+      original_filename: file.name,
       click_url: safeClickUrl,
       is_active: false,
       uploaded_at: new Date().toISOString(),
@@ -735,6 +1110,27 @@ export async function deleteAdCreative({
   performedBy: string;
 }) {
   const config = getSupabaseConfig();
+  const readResponse = await fetch(
+    `${config.url}/rest/v1/ad_creatives?select=id,placement,creative_variant,creative_type&id=eq.${creativeId}&limit=1`,
+    {
+      headers: headers(config.serviceKey),
+      cache: "no-store",
+    },
+  );
+
+  if (!readResponse.ok) {
+    throw await createCreativeError({
+      response: readResponse,
+      code: "CREATIVE_READ_FAILED",
+      action: "read creative before delete",
+    });
+  }
+
+  const [creative] = (await readResponse.json()) as Pick<
+    AdCreative,
+    "id" | "placement" | "creative_variant" | "creative_type"
+  >[];
+
   const deleteResponse = await fetch(
     `${config.url}/rest/v1/ad_creatives?id=eq.${creativeId}`,
     {
@@ -757,6 +1153,26 @@ export async function deleteAdCreative({
     action: "delete",
     performedBy,
   });
+
+  if (creative?.creative_type === "html5" && isManagedAdPlacement(creative.placement)) {
+    const slot = getCreativeSlot(creative.placement, creative.creative_variant);
+
+    if (slot) {
+      const folder = `${HTML5_STORAGE_PREFIX}/${slot.folder}/${creativeId}`;
+
+      try {
+        const paths = await listStorageObjectPaths({ config, prefix: folder });
+
+        await deleteStorageObjects({ config, prefixes: paths });
+      } catch (error) {
+        devLog(
+          "failed to delete HTML5 creative folder",
+          error,
+        );
+      }
+    }
+  }
+
   clearAdCreativesCache();
 
   return { id: creativeId };

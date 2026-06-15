@@ -67,11 +67,21 @@ function isInDateWindow(campaign: AdCampaign, now = Date.now()) {
 }
 
 function getImagePreviewSrc(campaign?: AdCampaign) {
-  if (!campaign || (campaign.creativeType !== "image" && campaign.creativeType !== "gif")) {
+  if (
+    !campaign ||
+    (campaign.creativeType !== "image" &&
+      campaign.creativeType !== "gif" &&
+      campaign.creativeType !== "html5" &&
+      campaign.creativeType !== "iframe")
+  ) {
     return undefined;
   }
 
   const src = campaign.desktopSrc ?? campaign.mobileSrc;
+
+  if (campaign.creativeType === "html5" || campaign.creativeType === "iframe") {
+    return src;
+  }
 
   return isConfiguredAdAssetAvailable(src) ? src : undefined;
 }
@@ -162,6 +172,8 @@ function getRenderReason({
   const base =
     active.creativeType === "image" || active.creativeType === "gif"
       ? `Rendering ${campaignTypeLabel[active.campaignType]} image`
+      : active.creativeType === "html5" || active.creativeType === "iframe"
+        ? `Rendering ${campaignTypeLabel[active.campaignType]} HTML5`
       : `Rendering ${campaignTypeLabel[active.campaignType]} creative`;
 
   return group.key === "sideSkinsEnabled"
@@ -206,7 +218,10 @@ export function getCampaignStatusRows(
       configuredImage ??
       configuredCampaigns.find(
         (campaign) =>
-          campaign.creativeType === "image" || campaign.creativeType === "gif",
+          campaign.creativeType === "image" ||
+          campaign.creativeType === "gif" ||
+          campaign.creativeType === "html5" ||
+          campaign.creativeType === "iframe",
       ) ??
       configuredCampaigns[0];
     const previewSrc =

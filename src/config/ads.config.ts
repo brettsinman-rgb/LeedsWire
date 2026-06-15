@@ -25,6 +25,7 @@ export type AdCampaignType = "paid" | "affiliate" | "house" | "placeholder";
 export type AdCreativeType =
   | "image"
   | "gif"
+  | "html5"
   | "iframe"
   | "third-party-tag"
   | "html";

@@ -16,6 +16,7 @@
     "src/lib/cronWarmNews.ts",
     "src/lib/adSettings.ts",
     "src/lib/adCreatives.ts",
+    "src/lib/adHtml5.ts",
     "src/lib/admin/auth.ts",
     "src/lib/text.ts",
     "src/config/adControls.ts",

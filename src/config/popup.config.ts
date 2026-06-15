@@ -1,6 +1,6 @@
 import { getActiveAdForPlacement, type AdCampaign } from "@/config/ads.config";
 
-export type PopupCreativeType = "image" | "gif" | "iframe" | "html" | "tag";
+export type PopupCreativeType = "image" | "gif" | "html5" | "iframe" | "html" | "tag";
 
 export type PopupConfig = {
   enabled: boolean;
@@ -43,7 +43,9 @@ export function getPopupConfigForCampaign(
         ? campaign.desktopSrc
         : undefined,
     iframeUrl:
-      campaign?.creativeType === "iframe" ? campaign.desktopSrc : undefined,
+      campaign?.creativeType === "iframe" || campaign?.creativeType === "html5"
+        ? campaign.desktopSrc
+        : undefined,
     html: campaign?.html,
     clickUrl: campaign?.clickUrl,
     showOncePerSession: true,

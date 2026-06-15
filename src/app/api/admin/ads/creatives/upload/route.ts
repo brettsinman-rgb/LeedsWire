@@ -3,6 +3,7 @@ import {
   AdCreativeError,
   isCreativeVariant,
   isManagedAdPlacement,
+  isUploadedCreativeType,
   uploadAdCreative,
 } from "@/lib/adCreatives";
 import { hasAdminSession } from "@/lib/admin/auth";
@@ -16,6 +17,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const placement = String(formData.get("placement") ?? "");
     const creativeVariant = String(formData.get("creativeVariant") ?? "default");
+    const creativeType = String(formData.get("creativeType") ?? "image");
     const file = formData.get("file");
 
     if (!isManagedAdPlacement(placement)) {
@@ -39,9 +41,17 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!isUploadedCreativeType(creativeType)) {
+      return NextResponse.json(
+        { ok: false, error: "Creative type must be image or HTML5." },
+        { status: 400 },
+      );
+    }
+
     const creative = await uploadAdCreative({
       placement,
       creativeVariant,
+      creativeType,
       file,
       name: String(formData.get("name") ?? ""),
       clickUrl: String(formData.get("clickUrl") ?? ""),

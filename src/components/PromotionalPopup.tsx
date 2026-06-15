@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { popupConfig, type PopupConfig } from "@/config/popup.config";
 import { getSafeClickUrl, isConfiguredAdAssetAvailable } from "@/config/ads.config";
+import { appendHtml5ClickTags } from "@/lib/adHtml5";
 
 const DISMISSED_KEY = "leedswire-popup-dismissed";
 const ALLOWED_PATHS = new Set(["/", "/premier-league-news", "/media", "/ad-preview"]);
@@ -78,13 +79,17 @@ function PopupFallback() {
 function Creative({ config }: { config: PopupConfig }) {
   const [hasFailed, setHasFailed] = useState(false);
 
-  if (config.creativeType === "iframe" && config.iframeUrl) {
+  if (
+    (config.creativeType === "iframe" || config.creativeType === "html5") &&
+    config.iframeUrl
+  ) {
     return (
       <iframe
-        src={config.iframeUrl}
+        src={appendHtml5ClickTags(config.iframeUrl, config.clickUrl)}
         title={config.campaignName ?? "Promotional popup"}
         className="aspect-video w-full border-0"
-        sandbox="allow-popups allow-popups-to-escape-sandbox allow-scripts allow-same-origin"
+        scrolling="no"
+        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
       />
     );
   }
@@ -236,6 +241,11 @@ export function PromotionalPopup({ config = popupConfig }: { config?: PopupConfi
     trackPopup(config, "Popup Clicked");
   }
 
+  const shouldWrapCreativeClick =
+    safeClickUrl &&
+    config.creativeType !== "html5" &&
+    config.creativeType !== "iframe";
+
   return (
     <div
       className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-md"
@@ -264,7 +274,7 @@ export function PromotionalPopup({ config = popupConfig }: { config?: PopupConfi
           </div>
         )}
         <div className="overflow-hidden rounded-[1.15rem] bg-[#071827] shadow-[0_30px_90px_rgba(0,0,0,0.42)] ring-1 ring-white/[0.12]">
-          {safeClickUrl ? (
+          {shouldWrapCreativeClick ? (
             <a
               href={safeClickUrl}
               target="_blank"

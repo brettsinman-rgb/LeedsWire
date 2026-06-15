@@ -1,12 +1,17 @@
 import assert from "node:assert/strict";
+import { zipSync, strToU8 } from "fflate";
 import {
+  AdCreativeError,
   clearAdCreativesCache,
+  creativeToCampaign,
   getActiveCreativeForPlacement,
   getActiveCreativeCampaignForPlacement,
   isManagedAdPlacement,
   isValidClickUrl,
+  uploadAdCreative,
   type AdCreative,
 } from "../src/lib/adCreatives";
+import { appendHtml5ClickTags } from "../src/lib/adHtml5";
 
 const originalFetch = global.fetch;
 const originalUrl = process.env.SUPABASE_URL;
@@ -94,6 +99,159 @@ async function run() {
     variant: "mobile",
   });
   assert.equal(mobile?.id, "creative-2");
+
+  const html5Creative: AdCreative = {
+    id: "creative-html5",
+    placement: "homepage-top",
+    creative_variant: "desktop",
+    name: "HTML5 campaign",
+    file_url: "https://cdn.example.com/html5/index.html",
+    creative_type: "html5",
+    entry_url: "https://cdn.example.com/html5/index.html",
+    original_filename: "creative.zip",
+    click_url: "https://www.leedswire.com/advertise",
+    is_active: true,
+    uploaded_at: "2026-06-15T00:02:00.000Z",
+    uploaded_by: "LeedsWire Admin",
+    start_date: null,
+    end_date: null,
+    width: 970,
+    height: 250,
+  };
+  const html5Campaign = creativeToCampaign(html5Creative);
+
+  assert.equal(html5Campaign.creativeType, "html5");
+  assert.equal(html5Campaign.desktopSrc, "https://cdn.example.com/html5/index.html");
+
+  const taggedUrl = appendHtml5ClickTags(
+    "https://cdn.example.com/html5/index.html?existing=1",
+    "https://www.leedswire.com/advertise",
+  );
+  const tagged = new URL(taggedUrl);
+
+  assert.equal(tagged.searchParams.get("existing"), "1");
+  assert.equal(
+    tagged.searchParams.get("clickTag"),
+    "https://www.leedswire.com/advertise",
+  );
+  assert.equal(
+    tagged.searchParams.get("clickTAG"),
+    "https://www.leedswire.com/advertise",
+  );
+  assert.equal(
+    tagged.searchParams.get("clicktag"),
+    "https://www.leedswire.com/advertise",
+  );
+  assert.equal(
+    appendHtml5ClickTags(
+      "https://cdn.example.com/html5/index.html",
+      "javascript:alert(1)",
+    ),
+    "https://cdn.example.com/html5/index.html",
+  );
+
+  const storageUploads: string[] = [];
+  const insertBodies: unknown[] = [];
+  const validZip = zipSync({
+    "index.html": strToU8("<!doctype html><script src=\"main.js\"></script>"),
+    "main.js": strToU8("window.clickTag = window.clickTag || '';"),
+  });
+
+  global.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+
+    if (url.includes("/storage/v1/object/ads/")) {
+      storageUploads.push(url);
+      return new Response("{}", { status: 200 });
+    }
+
+    if (url.endsWith("/rest/v1/ad_creatives")) {
+      insertBodies.push(JSON.parse(String(init?.body)));
+      return Response.json([
+        {
+          ...(insertBodies.at(-1) as Record<string, unknown>),
+          uploaded_at: "2026-06-15T00:03:00.000Z",
+        },
+      ]);
+    }
+
+    if (url.endsWith("/rest/v1/ad_creative_audit")) {
+      return new Response("{}", { status: 201 });
+    }
+
+    return Response.json([]);
+  }) as typeof fetch;
+
+  const uploaded = await uploadAdCreative({
+    placement: "homepage-top",
+    creativeVariant: "desktop",
+    creativeType: "html5",
+    file: new File([validZip], "creative.zip", { type: "application/zip" }),
+    name: "Valid HTML5",
+    clickUrl: "https://www.leedswire.com/advertise",
+    uploadedBy: "LeedsWire Admin",
+  });
+
+  assert.equal(uploaded.creative_type, "html5");
+  assert.equal(uploaded.original_filename, "creative.zip");
+  assert.equal(uploaded.entry_url?.endsWith("/index.html"), true);
+  assert.equal(storageUploads.length, 2);
+  assert.equal(
+    storageUploads.every((url) => url.includes("/storage/v1/object/ads/html5/")),
+    true,
+  );
+
+  await assert.rejects(
+    uploadAdCreative({
+      placement: "homepage-top",
+      creativeVariant: "desktop",
+      creativeType: "html5",
+      file: new File([zipSync({ "main.js": strToU8("alert(1)") })], "bad.zip", {
+        type: "application/zip",
+      }),
+      uploadedBy: "LeedsWire Admin",
+    }),
+    (error) =>
+      error instanceof AdCreativeError &&
+      error.code === "INVALID_CREATIVE" &&
+      error.message.includes("index.html"),
+  );
+
+  await assert.rejects(
+    uploadAdCreative({
+      placement: "homepage-top",
+      creativeVariant: "desktop",
+      creativeType: "html5",
+      file: new File(
+        [zipSync({ "../index.html": strToU8("<!doctype html>") })],
+        "traversal.zip",
+        { type: "application/zip" },
+      ),
+      uploadedBy: "LeedsWire Admin",
+    }),
+    (error) =>
+      error instanceof AdCreativeError &&
+      error.code === "INVALID_CREATIVE" &&
+      error.message.includes("unsafe"),
+  );
+
+  await assert.rejects(
+    uploadAdCreative({
+      placement: "homepage-top",
+      creativeVariant: "desktop",
+      creativeType: "html5",
+      file: new File(
+        [zipSync({ "index.html": strToU8("<!doctype html>"), "run.php": strToU8("") })],
+        "danger.zip",
+        { type: "application/zip" },
+      ),
+      uploadedBy: "LeedsWire Admin",
+    }),
+    (error) =>
+      error instanceof AdCreativeError &&
+      error.code === "INVALID_CREATIVE" &&
+      error.message.includes("unsupported"),
+  );
 
   restore();
   console.log("ad creatives tests passed");

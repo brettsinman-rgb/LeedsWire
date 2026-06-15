@@ -15,6 +15,11 @@ export const metadata: Metadata = {
   },
 };
 
+const impactVerificationMeta = {
+  name: "impact-site-verification",
+  value: "bcdd09d0-7e2f-4e6b-b7c1-f2e2ee604f5e",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -22,6 +27,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
+      <head>
+        <meta {...impactVerificationMeta} />
+      </head>
       <body>{children}</body>
     </html>
   );

@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   description: "Latest Leeds United football news from trusted local, club and national sources.",
 };
 
+export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 export default async function NewsArchivePage() {

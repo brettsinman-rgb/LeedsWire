@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   getActiveAdForPlacement,
+  getSafeClickUrl,
   isConfiguredAdAssetAvailable,
   isSafeAdUrl,
   type AdPlacementId,
   type AdCampaign,
 } from "@/config/ads.config";
+import { isPlacementEnabled } from "@/config/adControls";
 
 const SIDE_SKIN_WIDTH = 160;
 const SIDE_SKIN_HEIGHT = 1080;
@@ -24,6 +26,13 @@ type AdSlotProps = {
   backgroundSponsorImage?: string;
   sideSkinLeft?: string;
   sideSkinRight?: string;
+  campaignOverride?: AdCampaign | null;
+  sponsorOverride?: AdCampaign | OverrideCreative | null;
+  placementEnabledOverride?: boolean;
+  sponsorEnabledOverride?: boolean;
+  sideSkinsEnabledOverride?: boolean;
+  sideSkinLeftOverride?: AdCampaign | OverrideCreative | null;
+  sideSkinRightOverride?: AdCampaign | OverrideCreative | null;
 };
 
 type OverrideCreative = { src: string; enabled: boolean };
@@ -38,6 +47,20 @@ function getCreativeSrc(value?: AdCampaign | OverrideCreative | null) {
   }
 
   return "src" in value ? value.src : undefined;
+}
+
+function getCreativeClickUrl(
+  value: AdCampaign | OverrideCreative | null | undefined,
+  placementId: AdPlacementId,
+) {
+  if (!value || !("clickUrl" in value)) {
+    return undefined;
+  }
+
+  return getSafeClickUrl(value.clickUrl, {
+    placementId,
+    campaignId: value.id,
+  });
 }
 
 function sizeLabel(size?: [number, number]) {
@@ -221,12 +244,29 @@ export function AdSlot({
   mobileSize,
   className = "",
   backgroundSponsorImage,
+  campaignOverride,
+  sponsorOverride,
+  placementEnabledOverride,
+  sponsorEnabledOverride,
 }: AdSlotProps) {
-  const campaign = getActiveAdForPlacement(placementId);
-  const sponsor = backgroundSponsorImage
-    ? { src: backgroundSponsorImage, enabled: true }
-    : getActiveAdForPlacement("top-sponsor-background");
+  const placementEnabled =
+    placementEnabledOverride ?? isPlacementEnabled(placementId);
+  const sponsorEnabled =
+    sponsorEnabledOverride ?? isPlacementEnabled("top-sponsor-background");
+  const campaign =
+    campaignOverride === undefined
+      ? getActiveAdForPlacement(placementId)
+      : campaignOverride;
+  const sponsor =
+    sponsorOverride !== undefined
+      ? sponsorOverride
+      : !sponsorEnabled
+        ? null
+        : backgroundSponsorImage
+          ? { src: backgroundSponsorImage, enabled: true }
+          : getActiveAdForPlacement("top-sponsor-background");
   const sponsorSrc = getCreativeSrc(sponsor);
+  const sponsorClickUrl = getCreativeClickUrl(sponsor, "top-sponsor-background");
   const safeSponsorSrc =
     sponsorSrc && isConfiguredAdAssetAvailable(sponsorSrc)
       ? sponsorSrc
@@ -238,7 +278,7 @@ export function AdSlot({
     trackImpression(placementId, campaign);
   }, [campaign, placementId]);
 
-  if (!campaign && process.env.NODE_ENV === "production") {
+  if (!placementEnabled || (!campaign && process.env.NODE_ENV === "production")) {
     return null;
   }
 
@@ -249,14 +289,32 @@ export function AdSlot({
       data-testid={`adslot-${placementId}`}
     >
       {placementId.endsWith("-top") && safeSponsorSrc ? (
-        <div
-          className="absolute inset-0 -z-10 bg-cover bg-center opacity-45"
-          style={{ backgroundImage: `url(${safeSponsorSrc})` }}
-          data-testid="top-sponsor-background"
-        />
+        sponsorClickUrl ? (
+          <a
+            href={sponsorClickUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute inset-0 z-0 bg-cover bg-center opacity-45"
+            style={{ backgroundImage: `url(${safeSponsorSrc})` }}
+            data-testid="top-sponsor-background"
+            aria-label="Open sponsor background"
+            onClick={() =>
+              trackClick(
+                "top-sponsor-background",
+                sponsor && "id" in sponsor ? sponsor : null,
+              )
+            }
+          />
+        ) : (
+          <div
+            className="absolute inset-0 z-0 bg-cover bg-center opacity-45"
+            style={{ backgroundImage: `url(${safeSponsorSrc})` }}
+            data-testid="top-sponsor-background"
+          />
+        )
       ) : null}
       <div
-        className="hidden overflow-hidden rounded-[0.85rem] sm:block"
+        className="relative z-10 hidden overflow-hidden rounded-[0.85rem] sm:block"
         style={{
           width: resolvedDesktop[0],
           height: resolvedDesktop[1],
@@ -273,7 +331,7 @@ export function AdSlot({
         />
       </div>
       <div
-        className="overflow-hidden rounded-[0.85rem] sm:hidden"
+        className="relative z-10 overflow-hidden rounded-[0.85rem] sm:hidden"
         style={{
           width: resolvedMobile[0],
           height: resolvedMobile[1],
@@ -294,19 +352,26 @@ export function AdSlot({
 }
 
 function SideSkinImage({
-  src,
+  campaign,
+  fallbackSrc,
   side,
 }: {
-  src: string;
+  campaign?: AdCampaign | null;
+  fallbackSrc?: string;
   side: "left" | "right";
 }) {
   const [hasFailed, setHasFailed] = useState(false);
+  const src = campaign?.desktopSrc ?? fallbackSrc;
+  const clickUrl = getSafeClickUrl(campaign?.clickUrl, {
+    placementId: side === "left" ? "sideskin-left" : "sideskin-right",
+    campaignId: campaign?.id,
+  });
 
   if (!isConfiguredAdAssetAvailable(src) || hasFailed) {
     return null;
   }
 
-  return (
+  const image = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
@@ -315,32 +380,87 @@ function SideSkinImage({
       width={SIDE_SKIN_WIDTH}
       height={SIDE_SKIN_HEIGHT}
       onError={() => setHasFailed(true)}
-      className={`pointer-events-auto fixed top-32 h-[var(--side-skin-height)] w-[var(--side-skin-width)] object-cover ${
-        side === "left"
-          ? "[left:max(0px,calc((100vw_-_var(--side-skin-content-width))_/_2_-_var(--side-skin-width)_-_var(--side-skin-gap)))]"
-          : "[right:max(0px,calc((100vw_-_var(--side-skin-content-width))_/_2_-_var(--side-skin-width)_-_var(--side-skin-gap)))]"
-      }`}
+      className="h-full w-full object-cover"
     />
   );
+
+  const positionClass =
+    side === "left"
+      ? "[left:max(0px,calc((100vw_-_var(--side-skin-content-width))_/_2_-_var(--side-skin-width)_-_var(--side-skin-gap)))]"
+      : "[right:max(0px,calc((100vw_-_var(--side-skin-content-width))_/_2_-_var(--side-skin-width)_-_var(--side-skin-gap)))]";
+
+  if (!clickUrl) {
+    return (
+      <div
+        className={`pointer-events-auto fixed top-32 h-[var(--side-skin-height)] w-[var(--side-skin-width)] ${positionClass}`}
+      >
+        {image}
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={clickUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Open ${side} side skin sponsor`}
+      className={`pointer-events-auto fixed top-32 h-[var(--side-skin-height)] w-[var(--side-skin-width)] ${positionClass}`}
+      onClick={() =>
+        trackClick(side === "left" ? "sideskin-left" : "sideskin-right", campaign)
+      }
+    >
+      {image}
+    </a>
+  );
+}
+
+function getSideSkinCampaign(value: AdCampaign | OverrideCreative | null) {
+  return value && "desktopSrc" in value ? value : null;
+}
+
+function getSideSkinFallbackSrc(value: AdCampaign | OverrideCreative | null) {
+  return value && "src" in value ? value.src : undefined;
 }
 
 export function SideSkins({
   sideSkinLeft,
   sideSkinRight,
-}: Pick<AdSlotProps, "sideSkinLeft" | "sideSkinRight">) {
+  sideSkinsEnabledOverride,
+  sideSkinLeftOverride,
+  sideSkinRightOverride,
+}: Pick<
+  AdSlotProps,
+  | "sideSkinLeft"
+  | "sideSkinRight"
+  | "sideSkinsEnabledOverride"
+  | "sideSkinLeftOverride"
+  | "sideSkinRightOverride"
+>) {
+  const sideSkinsEnabled =
+    sideSkinsEnabledOverride ??
+    (isPlacementEnabled("sideskin-left") || isPlacementEnabled("sideskin-right"));
   const left = useMemo(
     () =>
-      sideSkinLeft
-        ? { src: sideSkinLeft, enabled: true }
-        : getActiveAdForPlacement("sideskin-left"),
-    [sideSkinLeft],
+      sideSkinLeftOverride !== undefined
+        ? sideSkinLeftOverride
+        : !sideSkinsEnabled
+          ? null
+          : sideSkinLeft
+            ? { src: sideSkinLeft, enabled: true }
+            : getActiveAdForPlacement("sideskin-left"),
+    [sideSkinLeft, sideSkinLeftOverride, sideSkinsEnabled],
   );
   const right = useMemo(
     () =>
-      sideSkinRight
-        ? { src: sideSkinRight, enabled: true }
-        : getActiveAdForPlacement("sideskin-right"),
-    [sideSkinRight],
+      sideSkinRightOverride !== undefined
+        ? sideSkinRightOverride
+        : !sideSkinsEnabled
+          ? null
+          : sideSkinRight
+            ? { src: sideSkinRight, enabled: true }
+            : getActiveAdForPlacement("sideskin-right"),
+    [sideSkinRight, sideSkinRightOverride, sideSkinsEnabled],
   );
 
   useEffect(() => {
@@ -356,9 +476,6 @@ export function SideSkins({
     return null;
   }
 
-  const leftSrc = getCreativeSrc(left);
-  const rightSrc = getCreativeSrc(right);
-
   const sideSkinStyle = {
     "--side-skin-width": `${SIDE_SKIN_WIDTH}px`,
     "--side-skin-height": `${SIDE_SKIN_HEIGHT}px`,
@@ -372,8 +489,20 @@ export function SideSkins({
       style={sideSkinStyle}
       data-side-skin-min-viewport={SIDE_SKIN_MIN_VIEWPORT}
     >
-      {leftSrc ? <SideSkinImage src={leftSrc} side="left" /> : null}
-      {rightSrc ? <SideSkinImage src={rightSrc} side="right" /> : null}
+      {left ? (
+        <SideSkinImage
+          campaign={getSideSkinCampaign(left)}
+          fallbackSrc={getSideSkinFallbackSrc(left)}
+          side="left"
+        />
+      ) : null}
+      {right ? (
+        <SideSkinImage
+          campaign={getSideSkinCampaign(right)}
+          fallbackSrc={getSideSkinFallbackSrc(right)}
+          side="right"
+        />
+      ) : null}
     </div>
   );
 }

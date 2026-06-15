@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import {
+  getSafeClickUrl,
   getMissingAdAssetDiagnostics,
+  isSafeClickUrl,
   selectActiveAdForPlacement,
   validateConfiguredAdAssets,
   type AdCampaign,
@@ -27,6 +29,26 @@ function select(campaigns: AdCampaign[], development = false) {
     now,
     development,
   });
+}
+
+function withEnv(name: string, value: string | undefined, assertion: () => void) {
+  const previous = process.env[name];
+
+  if (value === undefined) {
+    delete process.env[name];
+  } else {
+    process.env[name] = value;
+  }
+
+  try {
+    assertion();
+  } finally {
+    if (previous === undefined) {
+      delete process.env[name];
+    } else {
+      process.env[name] = previous;
+    }
+  }
 }
 
 assert.equal(
@@ -127,6 +149,136 @@ assert.equal(
   select([], false),
   null,
   "production collapses when no ad or fallback exists",
+);
+
+withEnv("ADS_ENABLED", "false", () => {
+  assert.equal(
+    select([campaign({ id: "paid", campaignType: "paid" })]),
+    null,
+    "master advertising toggle disables all ad selection",
+  );
+});
+
+withEnv("HOUSE_ADS_ENABLED", "false", () => {
+  assert.equal(
+    select([campaign({ id: "house", campaignType: "house", desktopSrc: undefined })]),
+    null,
+    "house ad toggle skips house fallback campaigns",
+  );
+});
+
+withEnv("TOP_AD_ENABLED", "false", () => {
+  assert.equal(
+    select([campaign({ id: "paid", campaignType: "paid" })]),
+    null,
+    "top placement toggle disables top billboards",
+  );
+});
+
+withEnv("POPUP_ENABLED", "false", () => {
+  assert.equal(
+    selectActiveAdForPlacement(
+      [
+        campaign({
+          id: "popup-paid",
+          placementId: "popup",
+          campaignType: "paid",
+          desktopSrc: "/ads/popup-sponsor.jpg",
+        }),
+      ],
+      "popup",
+      { now, development: false },
+    ),
+    null,
+    "popup toggle disables popup campaign selection",
+  );
+});
+
+assert.equal(
+  isSafeClickUrl("https://www.leedswire.com/advertise"),
+  true,
+  "https click URLs are accepted",
+);
+
+assert.equal(
+  isSafeClickUrl("http://www.leedswire.com/advertise"),
+  true,
+  "http click URLs are accepted",
+);
+
+assert.equal(
+  isSafeClickUrl("javascript:alert(1)"),
+  false,
+  "javascript click URLs are rejected",
+);
+
+assert.equal(
+  isSafeClickUrl("/ad-preview"),
+  false,
+  "relative click URLs are rejected for sponsor-style click-throughs",
+);
+
+assert.equal(
+  getSafeClickUrl("javascript:alert(1)", {
+    placementId: "popup",
+    campaignId: "bad-popup",
+  }),
+  undefined,
+  "invalid click URL is ignored",
+);
+
+assert.equal(
+  selectActiveAdForPlacement(
+    [
+      campaign({
+        id: "sideskin-left",
+        placementId: "sideskin-left",
+        campaignType: "paid",
+        desktopSrc: "/ads/side-skin-left.jpg",
+        clickUrl: "https://www.leedswire.com/advertise",
+      }),
+    ],
+    "sideskin-left",
+    { now, development: false },
+  )?.clickUrl,
+  "https://www.leedswire.com/advertise",
+  "side skin click URL is retained on active campaigns",
+);
+
+assert.equal(
+  selectActiveAdForPlacement(
+    [
+      campaign({
+        id: "sponsor-background",
+        placementId: "top-sponsor-background",
+        campaignType: "paid",
+        desktopSrc: "/ads/top-sponsor-bg.jpg",
+        clickUrl: "https://www.leedswire.com/advertise",
+      }),
+    ],
+    "top-sponsor-background",
+    { now, development: false },
+  )?.clickUrl,
+  "https://www.leedswire.com/advertise",
+  "sponsor background click URL is retained on active campaigns",
+);
+
+assert.equal(
+  selectActiveAdForPlacement(
+    [
+      campaign({
+        id: "popup-paid",
+        placementId: "popup",
+        campaignType: "paid",
+        desktopSrc: "/ads/popup-sponsor.jpg",
+        clickUrl: "https://www.leedswire.com/advertise",
+      }),
+    ],
+    "popup",
+    { now, development: false },
+  )?.clickUrl,
+  "https://www.leedswire.com/advertise",
+  "popup click URL is retained on active campaigns",
 );
 
 assert.equal(

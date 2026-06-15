@@ -1,5 +1,7 @@
 import { AdSlot } from "@/components/AdSlot";
-import type { AdPlacementId } from "@/config/ads.config";
+import { getActiveAdForPlacement, type AdPlacementId } from "@/config/ads.config";
+import { isPlacementEnabled } from "@/config/adControls";
+import { getAdvertisingSettings } from "@/lib/adSettings";
 
 type PageAdPrefix = "homepage" | "premier-league-news" | "media";
 type AdPlacementKind = "top" | "mid" | "bottom";
@@ -28,13 +30,20 @@ const sizes = {
   { desktop: [number, number]; mobile: [number, number] }
 >;
 
-export function AdPlacementSet({
+export async function AdPlacementSet({
   page,
   placement,
   className = "",
 }: AdPlacementSetProps) {
   const placementId = `${page}-${placement}` as AdPlacementId;
   const resolvedSizes = sizes[placement];
+  const { settings } = await getAdvertisingSettings();
+  const placementEnabled = isPlacementEnabled(placementId, settings);
+  const sponsorEnabled = isPlacementEnabled("top-sponsor-background", settings);
+  const campaign = getActiveAdForPlacement(placementId, settings);
+  const sponsor = sponsorEnabled
+    ? getActiveAdForPlacement("top-sponsor-background", settings)
+    : null;
 
   return (
     <AdSlot
@@ -42,6 +51,10 @@ export function AdPlacementSet({
       desktopSize={resolvedSizes.desktop}
       mobileSize={resolvedSizes.mobile}
       className={className}
+      campaignOverride={campaign}
+      sponsorOverride={sponsor}
+      placementEnabledOverride={placementEnabled}
+      sponsorEnabledOverride={sponsorEnabled}
     />
   );
 }

@@ -9,6 +9,7 @@ import { enrichArticleImages } from "@/lib/articleImages";
 import { getArticles } from "@/lib/content";
 import { getVideoChannelRows } from "@/lib/youtube";
 
+export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 export default async function Home() {

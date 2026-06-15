@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { popupConfig, type PopupConfig } from "@/config/popup.config";
-import { isConfiguredAdAssetAvailable, isSafeAdUrl } from "@/config/ads.config";
+import { getSafeClickUrl, isConfiguredAdAssetAvailable } from "@/config/ads.config";
 
 const DISMISSED_KEY = "leedswire-popup-dismissed";
 const ALLOWED_PATHS = new Set(["/", "/premier-league-news", "/media", "/ad-preview"]);
@@ -114,6 +114,10 @@ export function PromotionalPopup() {
   const [isVisible, setIsVisible] = useState(false);
   const [forceViewRemaining, setForceViewRemaining] = useState(0);
   const canClose = !popupConfig.forceView || forceViewRemaining <= 0;
+  const safeClickUrl = getSafeClickUrl(popupConfig.clickUrl, {
+    placementId: "popup",
+    campaignId: popupConfig.campaignId,
+  });
   const canRender = useMemo(
     () =>
       ALLOWED_PATHS.has(pathname) &&
@@ -228,12 +232,7 @@ export function PromotionalPopup() {
   }
 
   function handleCreativeClick() {
-    if (!popupConfig.clickUrl || !isSafeAdUrl(popupConfig.clickUrl)) {
-      return;
-    }
-
     trackPopup("Popup Clicked");
-    window.open(popupConfig.clickUrl, "_blank", "noopener,noreferrer");
   }
 
   return (
@@ -264,16 +263,18 @@ export function PromotionalPopup() {
           </div>
         )}
         <div className="overflow-hidden rounded-[1.15rem] bg-[#071827] shadow-[0_30px_90px_rgba(0,0,0,0.42)] ring-1 ring-white/[0.12]">
-          {popupConfig.clickUrl ? (
-            <button
-              type="button"
+          {safeClickUrl ? (
+            <a
+              href={safeClickUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="block max-h-[88vh] w-full cursor-pointer overflow-auto text-left"
               onClick={handleCreativeClick}
               aria-label="Open promotion"
               data-testid="promo-popup-creative"
             >
               <Creative config={popupConfig} />
-            </button>
+            </a>
           ) : (
             <div className="max-h-[88vh] overflow-auto">
               <Creative config={popupConfig} />

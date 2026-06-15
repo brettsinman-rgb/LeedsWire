@@ -120,6 +120,34 @@ test.describe("LeedsWire private beta QA", () => {
     }
   });
 
+  test("advertising admin requires login and accepts valid password", async ({ page }) => {
+    await page.goto("/admin/ads");
+    await expect(page).toHaveURL(/\/admin\/login$/);
+
+    await page.getByLabel("Password").fill("wrong-password");
+    await page.getByRole("button", { name: /Sign in/i }).click();
+    await expect(page).toHaveURL(/\/admin\/login\?error=invalid$/);
+    await expect(page.getByText("Invalid password.")).toBeVisible();
+
+    await page.getByLabel("Password").fill("e2e-admin");
+    await page.getByRole("button", { name: /Sign in/i }).click();
+    await expect(page).toHaveURL(/\/admin\/ads$/);
+    await expect(page.getByRole("heading", { name: "Advertising Controls" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Advertising Status" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Campaign Status" })).toBeVisible();
+  });
+
+  test("advertising admin update API blocks unauthenticated writes", async ({ request }) => {
+    const response = await request.post("/api/admin/ads/update", {
+      data: {
+        settingKey: "POPUP_ENABLED",
+        settingValue: false,
+      },
+    });
+
+    expect(response.status()).toBe(401);
+  });
+
   test("ad placements render at expected responsive sizes", async ({ page }, testInfo) => {
     await dismissPopupForLayoutAudit(page);
     const adPages = [
@@ -168,8 +196,26 @@ test.describe("LeedsWire private beta QA", () => {
         expect(mid).toMatchObject({ width: 970, height: 250 });
         expect(bottom).toMatchObject({ width: 970, height: 250 });
         await expect(page.getByTestId("top-sponsor-background")).toBeVisible();
+        await expect(page.getByTestId("top-sponsor-background")).toHaveAttribute(
+          "href",
+          "https://www.leedswire.com/advertise",
+        );
+        await expect(
+          page
+            .getByTestId(`adslot-${adPage.prefix}-top`)
+            .locator('a[href="https://example.com"]')
+            .first(),
+        ).toBeVisible();
         await expect(page.getByTestId("sideskin-left")).toBeVisible();
         await expect(page.getByTestId("sideskin-right")).toBeVisible();
+        await expect(page.locator("a").filter({ has: page.getByTestId("sideskin-left") })).toHaveAttribute(
+          "href",
+          "https://www.leedswire.com/advertise",
+        );
+        await expect(page.locator("a").filter({ has: page.getByTestId("sideskin-right") })).toHaveAttribute(
+          "href",
+          "https://www.leedswire.com/advertise",
+        );
       } else {
         expect(top!.height).toBe(250);
         expect(mid!.height).toBe(250);
@@ -213,10 +259,12 @@ test.describe("LeedsWire private beta QA", () => {
     });
 
     const popupPromise = page.waitForEvent("popup");
+    await expect(page.getByTestId("promo-popup-creative")).toHaveAttribute(
+      "href",
+      "https://www.leedswire.com/advertise",
+    );
     await page.getByTestId("promo-popup-creative").click();
     const popup = await popupPromise;
-    await popup.waitForLoadState("domcontentloaded");
-    await expect(popup).toHaveURL(/\/news$/);
     await popup.close();
 
     await page.getByTestId("promo-popup-close").click();

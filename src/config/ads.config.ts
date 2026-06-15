@@ -1,3 +1,10 @@
+import {
+  type AdControlSettings,
+  getAdControlSettings,
+  isCampaignTypeEnabled,
+  isPlacementEnabled,
+} from "./adControls";
+
 export type AdPlacementId =
   | "homepage-top"
   | "homepage-mid"
@@ -58,6 +65,7 @@ export type AdCreativeAssetDiagnostic = {
 type AdSelectionOptions = {
   now?: number;
   development?: boolean;
+  settings?: AdControlSettings;
 };
 
 export const adSpecs = {
@@ -204,6 +212,7 @@ export const adCampaigns: AdCampaign[] = [
     enabled: testAdsEnabled,
     creativeType: "image",
     desktopSrc: "/ads/top-sponsor-bg.jpg",
+    clickUrl: "https://www.leedswire.com/advertise",
     label: "Paid preview sponsor background",
   },
   {
@@ -214,6 +223,7 @@ export const adCampaigns: AdCampaign[] = [
     enabled: testAdsEnabled,
     creativeType: "image",
     desktopSrc: "/ads/side-skin-left.jpg",
+    clickUrl: "https://www.leedswire.com/advertise",
     label: "Paid preview left side skin",
   },
   {
@@ -224,6 +234,7 @@ export const adCampaigns: AdCampaign[] = [
     enabled: testAdsEnabled,
     creativeType: "image",
     desktopSrc: "/ads/side-skin-right.jpg",
+    clickUrl: "https://www.leedswire.com/advertise",
     label: "Paid preview right side skin",
   },
   {
@@ -234,7 +245,7 @@ export const adCampaigns: AdCampaign[] = [
     enabled: testPopupEnabled,
     creativeType: "image",
     desktopSrc: "/ads/popup-sponsor.jpg",
-    clickUrl: "/news",
+    clickUrl: "https://www.leedswire.com/advertise",
     label: "Sponsor popup",
     startDate: "2026-06-01",
     endDate: "2026-06-30",
@@ -257,6 +268,43 @@ export function isSafeAdUrl(value?: string) {
   } catch {
     return false;
   }
+}
+
+export function isSafeClickUrl(value?: string) {
+  if (!value) {
+    return false;
+  }
+
+  try {
+    const url = new URL(value);
+
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+export function getSafeClickUrl(
+  value: string | undefined,
+  context: { placementId: AdPlacementId; campaignId?: string },
+) {
+  if (!value) {
+    return undefined;
+  }
+
+  if (isSafeClickUrl(value)) {
+    return value;
+  }
+
+  if (process.env.NODE_ENV === "development") {
+    console.warn("[LeedsWire ad] invalid click URL ignored", {
+      placementId: context.placementId,
+      campaignId: context.campaignId,
+      clickUrl: value,
+    });
+  }
+
+  return undefined;
 }
 
 export function isLocalAdAssetPath(value?: string) {
@@ -305,6 +353,12 @@ export function selectActiveAdForPlacement(
   placementId: AdPlacementId,
   options: AdSelectionOptions = {},
 ) {
+  const settings = options.settings ?? getAdControlSettings();
+
+  if (!isPlacementEnabled(placementId, settings)) {
+    return null;
+  }
+
   const now = options.now ?? Date.now();
   const development = options.development ?? isDevelopment;
   const placementCampaigns = campaigns.filter(
@@ -313,6 +367,7 @@ export function selectActiveAdForPlacement(
 
   const active = placementCampaigns
     .filter((campaign) => campaign.enabled)
+    .filter((campaign) => isCampaignTypeEnabled(campaign.campaignType, settings))
     .filter((campaign) => isInDateWindow(campaign, now))
     .filter((campaign) => isRenderableCreative(campaign))
     .sort((a, b) => {
@@ -339,6 +394,7 @@ export function selectActiveAdForPlacement(
 
   const houseFallback = placementCampaigns
     .filter((campaign) => campaign.campaignType === "house")
+    .filter((campaign) => isCampaignTypeEnabled(campaign.campaignType, settings))
     .filter((campaign) => campaign.enabled)
     .filter((campaign) => isInDateWindow(campaign, now))
     .filter((campaign) => isRenderableCreative(campaign))
@@ -363,15 +419,19 @@ export function selectActiveAdForPlacement(
   return null;
 }
 
-export function getActiveAdForPlacement(placementId: AdPlacementId) {
-  return selectActiveAdForPlacement(adCampaigns, placementId);
+export function getActiveAdForPlacement(
+  placementId: AdPlacementId,
+  settings?: AdControlSettings,
+) {
+  return selectActiveAdForPlacement(adCampaigns, placementId, { settings });
 }
 
 export function getFallbackChainForPlacement(
   placementId: AdPlacementId,
+  settings = getAdControlSettings(),
 ): AdFallbackStatus[] {
   const campaigns = getCampaignsForPlacement(placementId);
-  const active = getActiveAdForPlacement(placementId);
+  const active = getActiveAdForPlacement(placementId, settings);
 
   const fallbackTypes: Array<{ campaignType: AdCampaignType; label: string }> = [
     { campaignType: "paid", label: "Paid" },
@@ -385,18 +445,27 @@ export function getFallbackChainForPlacement(
       return {
         campaignType,
         label,
-        status: isDevelopment ? "dev-only" : "none",
+        status:
+          isDevelopment && isPlacementEnabled(placementId, settings)
+            ? "dev-only"
+            : "none",
       };
     }
 
     const campaign = campaigns
       .filter((item) => item.campaignType === campaignType)
+      .filter((item) => isCampaignTypeEnabled(item.campaignType, settings))
       .find((item) => item.enabled && isInDateWindow(item));
 
     return {
       campaignType,
       label,
-      status: campaign?.id === active?.id ? "active" : campaign ? "available" : "none",
+      status:
+        campaign?.id === active?.id && isPlacementEnabled(placementId, settings)
+          ? "active"
+          : campaign && isPlacementEnabled(placementId, settings)
+            ? "available"
+            : "none",
       campaign,
     };
   });

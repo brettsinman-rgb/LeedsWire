@@ -9,6 +9,7 @@ import {
   knownAdAssetPaths,
   type AdPlacementId,
 } from "@/config/ads.config";
+import { isPlacementEnabled } from "@/config/adControls";
 
 const pageAdGroups = [
   {
@@ -155,6 +156,16 @@ export default function AdPreviewPage() {
                   desktopSize={[970, 250]}
                   mobileSize={[300, 100]}
                   className="rounded-[1rem] bg-[#071827]/45 py-6 ring-1 ring-white/[0.08]"
+                  campaignOverride={getActiveAdForPlacement(
+                    `${group.prefix}-top` as AdPlacementId,
+                  )}
+                  sponsorOverride={getActiveAdForPlacement("top-sponsor-background")}
+                  placementEnabledOverride={isPlacementEnabled(
+                    `${group.prefix}-top` as AdPlacementId,
+                  )}
+                  sponsorEnabledOverride={isPlacementEnabled(
+                    "top-sponsor-background",
+                  )}
                 />
               </div>
 
@@ -170,6 +181,12 @@ export default function AdPreviewPage() {
                   desktopSize={[970, 250]}
                   mobileSize={[300, 600]}
                   className="rounded-[1rem] bg-[#071827]/45 py-6 ring-1 ring-white/[0.08]"
+                  campaignOverride={getActiveAdForPlacement(
+                    `${group.prefix}-mid` as AdPlacementId,
+                  )}
+                  placementEnabledOverride={isPlacementEnabled(
+                    `${group.prefix}-mid` as AdPlacementId,
+                  )}
                 />
               </div>
 
@@ -185,6 +202,12 @@ export default function AdPreviewPage() {
                   desktopSize={[970, 250]}
                   mobileSize={[300, 250]}
                   className="rounded-[1rem] bg-[#071827]/45 py-6 ring-1 ring-white/[0.08]"
+                  campaignOverride={getActiveAdForPlacement(
+                    `${group.prefix}-bottom` as AdPlacementId,
+                  )}
+                  placementEnabledOverride={isPlacementEnabled(
+                    `${group.prefix}-bottom` as AdPlacementId,
+                  )}
                 />
               </div>
             </div>

@@ -152,13 +152,19 @@ function getCampaignPreview(campaign?: AdCampaign | null) {
   return undefined;
 }
 
-function CampaignPreview({ campaign }: { campaign?: AdCampaign | null }) {
-  const src = getCampaignPreview(campaign);
+function CampaignPreview({
+  campaign,
+  src: srcOverride,
+}: {
+  campaign?: AdCampaign | null;
+  src?: string;
+}) {
+  const src = srcOverride ?? getCampaignPreview(campaign);
 
   if (!src) {
     return (
-      <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] text-[0.62rem] font-bold uppercase tracking-[0.12em] text-zinc-500 ring-1 ring-white/[0.08]">
-        None
+      <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] px-1 text-center text-[0.58rem] font-bold uppercase leading-tight tracking-[0.08em] text-zinc-500 ring-1 ring-white/[0.08]">
+        No preview
       </div>
     );
   }
@@ -445,17 +451,20 @@ export function AdSettingsDashboard({
           <table className="w-full table-fixed border-collapse">
             <thead className="bg-white/[0.045] text-left">
               <tr>
-                <th className="w-[28%] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+                <th className="w-[24%] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
                   Placement
                 </th>
-                <th className="w-[18%] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+                <th className="w-[15%] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
                   Status
                 </th>
-                <th className="w-[22%] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+                <th className="w-[16%] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
                   Creative
                 </th>
-                <th className="px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+                <th className="w-[25%] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
                   Click URL
+                </th>
+                <th className="px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+                  Render Reason
                 </th>
               </tr>
             </thead>
@@ -464,7 +473,10 @@ export function AdSettingsDashboard({
                 <tr key={row.label} className="align-middle">
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
-                      <CampaignPreview campaign={row.active ?? row.configuredPrimary} />
+                      <CampaignPreview
+                        campaign={row.active ?? row.configuredPrimary}
+                        src={row.previewSrc}
+                      />
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-white">
                           {row.label}
@@ -499,6 +511,11 @@ export function AdSettingsDashboard({
                       {textValue(row.active?.id ?? row.configuredPrimary?.id)}
                     </p>
                   </td>
+                  <td className="px-4 py-4">
+                    <p className="text-sm leading-5 text-zinc-300">
+                      {row.renderReason}
+                    </p>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -511,7 +528,10 @@ export function AdSettingsDashboard({
               className="rounded-xl bg-white/[0.045] p-4 ring-1 ring-white/[0.09]"
             >
               <div className="flex items-start gap-3">
-                <CampaignPreview campaign={row.active ?? row.configuredPrimary} />
+                <CampaignPreview
+                  campaign={row.active ?? row.configuredPrimary}
+                  src={row.previewSrc}
+                />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
@@ -547,6 +567,12 @@ export function AdSettingsDashboard({
                             row.configuredClickUrl,
                         )}
                       </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+                        Render Reason
+                      </dt>
+                      <dd className="mt-1 text-zinc-300">{row.renderReason}</dd>
                     </div>
                   </dl>
                 </div>

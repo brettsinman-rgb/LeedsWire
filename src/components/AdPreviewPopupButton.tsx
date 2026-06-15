@@ -1,11 +1,6 @@
 "use client";
 
 export function AdPreviewPopupButton() {
-  const popupEnabled =
-    process.env.NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP === "true";
-  const forceViewEnabled =
-    process.env.NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP_FORCE_VIEW === "true";
-
   function showPopup() {
     window.sessionStorage.removeItem("leedswire-popup-dismissed");
     window.dispatchEvent(new CustomEvent("leedswire:show-popup-preview"));
@@ -22,23 +17,17 @@ export function AdPreviewPopupButton() {
             Sponsor popup preview
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-300 [overflow-wrap:anywhere]">
-            Set NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP=true and
-            NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP_FORCE_VIEW=true to preview the
-            popup, force-view countdown, click-through and close state.
+            Use this local trigger to preview the configured popup creative,
+            click-through and close state.
           </p>
         </div>
         <button
           type="button"
           onClick={showPopup}
-          disabled={!popupEnabled}
-          className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#EFBF04] px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-[#071827] shadow-[0_14px_32px_rgba(239,191,4,0.22)] transition hover:bg-[#f7cf24] disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400 disabled:shadow-none"
+          className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#EFBF04] px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-[#071827] shadow-[0_14px_32px_rgba(239,191,4,0.22)] transition hover:bg-[#f7cf24]"
         >
           Show popup
         </button>
-      </div>
-      <div className="mt-4 grid gap-3 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-400 sm:grid-cols-2">
-        <p>Popup enabled: {popupEnabled ? "Yes" : "No"}</p>
-        <p>Force view enabled: {forceViewEnabled ? "Yes" : "No"}</p>
       </div>
     </div>
   );

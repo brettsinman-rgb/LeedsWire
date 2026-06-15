@@ -116,12 +116,8 @@ export default function AdPreviewPage() {
             LeedsWire advertising preview
           </h1>
           <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-300 [overflow-wrap:anywhere]">
-            Set NEXT_PUBLIC_LEEDSWIRE_TEST_ADS=true in .env.local to preview
-            live ad placements.
-          </p>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400 [overflow-wrap:anywhere]">
-            For popup testing, also set NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP=true
-            and NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP_FORCE_VIEW=true.
+            Advertising creatives are controlled by the Supabase admin panel.
+            This page previews configured assets and placement dimensions.
           </p>
         </header>
 

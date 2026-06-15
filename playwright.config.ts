@@ -17,8 +17,7 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   webServer: {
-    command:
-      "LEEDSWIRE_ADMIN_PASSWORD=e2e-admin NEXT_PUBLIC_LEEDSWIRE_TEST_ADS=true NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP=true NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP_FORCE_VIEW=true npm run dev -- -p 3200",
+    command: "LEEDSWIRE_ADMIN_PASSWORD=e2e-admin npm run dev -- -p 3200",
     url: `http://localhost:${port}`,
     reuseExistingServer: false,
     timeout: 120_000,

@@ -77,9 +77,6 @@ export const adSpecs = {
   popup: "1200x1200",
 } as const;
 
-const testAdsEnabled = process.env.NEXT_PUBLIC_LEEDSWIRE_TEST_ADS === "true";
-const testPopupEnabled =
-  process.env.NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP === "true";
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 const pagePrefixes = [
@@ -138,7 +135,7 @@ function createPageCampaigns(): AdCampaign[] {
       placementId: `${prefix}-top`,
       campaignType: "paid",
       priority: 100,
-      enabled: testAdsEnabled,
+      enabled: true,
       creativeType: "image",
       desktopSrc: "/ads/homepage-top.jpg",
       mobileSrc: "/ads/homepage-top-mobile.jpg",
@@ -160,7 +157,7 @@ function createPageCampaigns(): AdCampaign[] {
       placementId: `${prefix}-mid`,
       campaignType: "paid",
       priority: 100,
-      enabled: testAdsEnabled,
+      enabled: true,
       creativeType: "image",
       desktopSrc: "/ads/homepage-mid.jpg",
       mobileSrc: "/ads/homepage-mid-mobile.jpg",
@@ -182,7 +179,7 @@ function createPageCampaigns(): AdCampaign[] {
       placementId: `${prefix}-bottom`,
       campaignType: "paid",
       priority: 100,
-      enabled: testAdsEnabled,
+      enabled: true,
       creativeType: "image",
       desktopSrc: "/ads/homepage-bottom.jpg",
       mobileSrc: "/ads/homepage-bottom-mobile.jpg",
@@ -209,7 +206,7 @@ export const adCampaigns: AdCampaign[] = [
     placementId: "top-sponsor-background",
     campaignType: "paid",
     priority: 100,
-    enabled: testAdsEnabled,
+    enabled: true,
     creativeType: "image",
     desktopSrc: "/ads/top-sponsor-bg.jpg",
     clickUrl: "https://www.leedswire.com/advertise",
@@ -220,7 +217,7 @@ export const adCampaigns: AdCampaign[] = [
     placementId: "sideskin-left",
     campaignType: "paid",
     priority: 100,
-    enabled: testAdsEnabled,
+    enabled: true,
     creativeType: "image",
     desktopSrc: "/ads/side-skin-left.jpg",
     clickUrl: "https://www.leedswire.com/advertise",
@@ -231,7 +228,7 @@ export const adCampaigns: AdCampaign[] = [
     placementId: "sideskin-right",
     campaignType: "paid",
     priority: 100,
-    enabled: testAdsEnabled,
+    enabled: true,
     creativeType: "image",
     desktopSrc: "/ads/side-skin-right.jpg",
     clickUrl: "https://www.leedswire.com/advertise",
@@ -242,7 +239,7 @@ export const adCampaigns: AdCampaign[] = [
     placementId: "popup",
     campaignType: "paid",
     priority: 100,
-    enabled: testPopupEnabled,
+    enabled: true,
     creativeType: "image",
     desktopSrc: "/ads/popup-sponsor.jpg",
     clickUrl: "https://www.leedswire.com/advertise",

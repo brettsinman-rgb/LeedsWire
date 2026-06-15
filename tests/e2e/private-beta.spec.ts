@@ -242,21 +242,13 @@ test.describe("LeedsWire private beta QA", () => {
     await expect(page.getByRole("link", { name: /Watch on YouTube/i })).toBeVisible();
   });
 
-  test("popup force view, click-through, close, and session dismissal", async ({ page }) => {
+  test("popup click-through, close, and session dismissal", async ({ page }) => {
     await page.goto("/");
-
-    await expect(page.getByTestId("promo-popup")).toBeVisible();
-    await expect(page.getByTestId("promo-popup-countdown")).toContainText(
-      /You can close this in [123]/,
-    );
-    await expect(page.getByTestId("promo-popup-close")).toBeHidden();
-
-    await page.keyboard.press("Escape");
-    await expect(page.getByTestId("promo-popup")).toBeVisible();
 
     await expect(page.getByTestId("promo-popup-close")).toBeVisible({
       timeout: 5_000,
     });
+    await expect(page.getByTestId("promo-popup")).toBeVisible();
 
     const popupPromise = page.waitForEvent("popup");
     await expect(page.getByTestId("promo-popup-creative")).toHaveAttribute(

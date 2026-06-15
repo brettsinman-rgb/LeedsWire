@@ -23,10 +23,6 @@ export type PopupConfig = {
   clicks?: number;
 };
 
-const testPopupEnabled =
-  process.env.NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP === "true";
-const testPopupForceView =
-  process.env.NEXT_PUBLIC_LEEDSWIRE_TEST_POPUP_FORCE_VIEW === "true";
 const activePopupCampaign = getActiveAdForPlacement("popup");
 
 export const popupConfig: PopupConfig = {
@@ -51,8 +47,8 @@ export const popupConfig: PopupConfig = {
   html: activePopupCampaign?.html,
   clickUrl: activePopupCampaign?.clickUrl,
   showOncePerSession: true,
-  showDelaySeconds: testPopupEnabled ? 0.1 : 2,
-  forceView: testPopupForceView,
+  showDelaySeconds: 2,
+  forceView: false,
   forceViewSeconds: 3,
   startDate: "2026-06-01",
   endDate: "2026-06-30",

@@ -25,7 +25,7 @@ export default async function Home() {
       <AdPlacementSet
         page="homepage"
         placement="top"
-        className="bg-[#071827]/35 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:py-6"
+        className="bg-[#071827]/35 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:py-6"
       />
       {topStory ? <Hero article={topStory} /> : null}
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">

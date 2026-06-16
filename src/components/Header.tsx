@@ -124,10 +124,10 @@ export function Header() {
       style={headerStyle}
       onFocusCapture={revealHeader}
     >
-      <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-3 sm:px-6 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-x-8 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col items-center gap-2 px-4 py-2 sm:gap-3 sm:px-6 sm:py-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-x-8 lg:px-8">
         <Link
           href="/"
-          className="group flex min-w-0 flex-col items-center justify-center gap-1 text-center lg:flex-row lg:justify-start lg:gap-4 lg:text-left"
+          className="group flex min-w-0 flex-col items-center justify-center gap-0.5 text-center sm:gap-1 lg:flex-row lg:justify-start lg:gap-4 lg:text-left"
           aria-label="LeedsWire home"
         >
           <span className="relative flex h-[94px] w-[94px] shrink-0 items-center justify-center overflow-hidden sm:h-[118px] sm:w-[118px] lg:h-[132px] lg:w-[132px]">
@@ -142,15 +142,15 @@ export function Header() {
             />
           </span>
           <span className="flex flex-col items-center leading-tight lg:items-start lg:justify-center">
-            <span className="text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-[#111111] sm:text-[0.74rem] lg:text-[0.9rem] lg:text-[#164a89]">
+            <span className="text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-[#164a89] sm:text-[0.74rem] lg:text-[0.9rem]">
               Everything Leeds
             </span>
-            <span className="mt-0.5 text-[0.56rem] font-medium uppercase tracking-[0.12em] text-[#4A5565] sm:text-[0.62rem] lg:text-[0.72rem] lg:font-bold lg:tracking-[0.14em] lg:text-[#ffdc48]">
+            <span className="mt-0.5 text-[0.56rem] font-medium uppercase tracking-[0.12em] text-[#ffdc48] sm:text-[0.62rem] lg:text-[0.72rem] lg:font-bold lg:tracking-[0.14em]">
               News. Transfers. Media. All in One Place.
             </span>
           </span>
         </Link>
-        <nav className="flex w-full items-center justify-center gap-5 overflow-x-auto whitespace-nowrap border-t border-black/[0.08] pt-2 lg:justify-end lg:gap-4 lg:border-t-0 lg:pt-0">
+        <nav className="flex w-full items-center justify-center gap-5 overflow-x-auto whitespace-nowrap border-t border-black/[0.08] pt-1.5 sm:pt-2 lg:justify-end lg:gap-4 lg:border-t-0 lg:pt-0">
           {navItems.map((item, index) => {
             const isActive = !item.href.includes("#") && pathname === item.href;
 

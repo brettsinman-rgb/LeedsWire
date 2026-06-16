@@ -103,11 +103,6 @@ const nextConfig: NextConfig = {
         destination: "/",
         permanent: true,
       },
-      {
-        source: "/transfers",
-        destination: "/",
-        permanent: true,
-      },
     ];
   },
 };

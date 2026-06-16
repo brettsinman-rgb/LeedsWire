@@ -1,13 +1,35 @@
 import type { Metadata } from "next";
+import { absoluteUrl, siteUrl } from "@/config/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "LeedsWire",
     template: "%s | LeedsWire",
   },
   description:
     "A premium Leeds United-only news, transfers and media hub.",
+  alternates: {
+    canonical: absoluteUrl("/"),
+  },
+  openGraph: {
+    type: "website",
+    siteName: "LeedsWire",
+    title: "LeedsWire",
+    description:
+      "A premium Leeds United-only news, transfers and media hub.",
+    url: absoluteUrl("/"),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LeedsWire",
+    description:
+      "A premium Leeds United-only news, transfers and media hub.",
+  },
+  other: {
+    "twitter:url": absoluteUrl("/"),
+  },
   icons: {
     icon: "/images/favicon.png",
     shortcut: "/images/favicon.png",

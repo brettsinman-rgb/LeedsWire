@@ -3,12 +3,31 @@ import { AdPlacementSet } from "@/components/AdPlacementSet";
 import { MediaChannelNav } from "@/components/MediaChannelNav";
 import { PageShell } from "@/components/PageShell";
 import { VideoChannelRows } from "@/components/VideoModal";
+import { absoluteUrl } from "@/config/site";
 import { getVideoChannelRows } from "@/lib/youtube";
 
 export const metadata: Metadata = {
   title: "Media",
   description:
     "Leeds United long-form video from official and trusted Leeds channels.",
+  alternates: {
+    canonical: absoluteUrl("/media"),
+  },
+  openGraph: {
+    title: "Media | LeedsWire",
+    description:
+      "Leeds United long-form video from official and trusted Leeds channels.",
+    url: absoluteUrl("/media"),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Media | LeedsWire",
+    description:
+      "Leeds United long-form video from official and trusted Leeds channels.",
+  },
+  other: {
+    "twitter:url": absoluteUrl("/media"),
+  },
 };
 
 export const dynamic = "force-dynamic";

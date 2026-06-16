@@ -127,7 +127,7 @@ export function Header() {
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-3 sm:px-6 lg:grid lg:grid-cols-[auto_1fr] lg:gap-x-8 lg:px-8">
         <Link
           href="/"
-          className="group flex min-w-0 items-center justify-center lg:justify-start"
+          className="group flex min-w-0 flex-col items-center justify-center gap-1 text-center lg:justify-start"
           aria-label="LeedsWire home"
         >
           <span className="relative flex h-[94px] w-[94px] shrink-0 items-center justify-center overflow-hidden sm:h-[118px] sm:w-[118px] lg:h-[132px] lg:w-[132px]">
@@ -140,6 +140,14 @@ export function Header() {
               priority
               unoptimized
             />
+          </span>
+          <span className="flex flex-col items-center leading-tight">
+            <span className="text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-[#111111] sm:text-[0.74rem] lg:text-[0.78rem]">
+              Everything Leeds
+            </span>
+            <span className="mt-0.5 text-[0.56rem] font-medium uppercase tracking-[0.12em] text-[#4A5565] sm:text-[0.62rem] lg:text-[0.66rem]">
+              News. Transfers. Media. All in One Place.
+            </span>
           </span>
         </Link>
         <nav className="flex w-full items-center justify-center gap-5 overflow-x-auto whitespace-nowrap border-t border-black/[0.08] pt-2 lg:justify-end lg:gap-4 lg:border-t-0 lg:pt-0">

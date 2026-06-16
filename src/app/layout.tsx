@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { absoluteUrl, siteUrl } from "@/config/site";
 import "./globals.css";
 
@@ -52,7 +53,10 @@ export default function RootLayout({
       <head>
         <meta {...impactVerificationMeta} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }

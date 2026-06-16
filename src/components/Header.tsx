@@ -124,10 +124,10 @@ export function Header() {
       style={headerStyle}
       onFocusCapture={revealHeader}
     >
-      <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-3 sm:px-6 lg:grid lg:grid-cols-[auto_1fr] lg:gap-x-8 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-3 sm:px-6 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-x-8 lg:px-8">
         <Link
           href="/"
-          className="group flex min-w-0 flex-col items-center justify-center gap-1 text-center lg:justify-start"
+          className="group flex min-w-0 flex-col items-center justify-center gap-1 text-center lg:flex-row lg:justify-start lg:gap-4 lg:text-left"
           aria-label="LeedsWire home"
         >
           <span className="relative flex h-[94px] w-[94px] shrink-0 items-center justify-center overflow-hidden sm:h-[118px] sm:w-[118px] lg:h-[132px] lg:w-[132px]">
@@ -141,11 +141,11 @@ export function Header() {
               unoptimized
             />
           </span>
-          <span className="flex flex-col items-center leading-tight">
-            <span className="text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-[#111111] sm:text-[0.74rem] lg:text-[0.78rem]">
+          <span className="flex flex-col items-center leading-tight lg:items-start lg:justify-center">
+            <span className="text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-[#111111] sm:text-[0.74rem] lg:text-[0.9rem] lg:text-[#164a89]">
               Everything Leeds
             </span>
-            <span className="mt-0.5 text-[0.56rem] font-medium uppercase tracking-[0.12em] text-[#4A5565] sm:text-[0.62rem] lg:text-[0.66rem]">
+            <span className="mt-0.5 text-[0.56rem] font-medium uppercase tracking-[0.12em] text-[#4A5565] sm:text-[0.62rem] lg:text-[0.72rem] lg:font-bold lg:tracking-[0.14em] lg:text-[#ffdc48]">
               News. Transfers. Media. All in One Place.
             </span>
           </span>

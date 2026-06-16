@@ -9,7 +9,20 @@ type MediaChannelNavProps = {
   align?: "start" | "end";
 };
 
-const headerOffset = 236;
+const fallbackHeaderOffset = 172;
+
+function getHeaderOffset() {
+  if (typeof window === "undefined") {
+    return fallbackHeaderOffset;
+  }
+
+  const value = window
+    .getComputedStyle(document.documentElement)
+    .getPropertyValue("--lw-header-offset");
+  const parsed = Number.parseFloat(value);
+
+  return Number.isFinite(parsed) ? parsed + 24 : fallbackHeaderOffset;
+}
 
 export function MediaChannelNav({
   sticky = false,
@@ -20,6 +33,20 @@ export function MediaChannelNav({
     mediaChannelLinks[0].anchorId,
   );
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [headerOffset, setHeaderOffset] = useState(fallbackHeaderOffset);
+
+  useEffect(() => {
+    const updateHeaderOffset = () => {
+      setHeaderOffset(getHeaderOffset());
+    };
+
+    updateHeaderOffset();
+    window.addEventListener("resize", updateHeaderOffset);
+
+    return () => {
+      window.removeEventListener("resize", updateHeaderOffset);
+    };
+  }, []);
 
   useEffect(() => {
     const sections = mediaChannelLinks
@@ -57,7 +84,7 @@ export function MediaChannelNav({
       observer.disconnect();
       window.removeEventListener("scroll", updateActiveSection);
     };
-  }, []);
+  }, [headerOffset]);
 
   const scrollToChannel = (anchorId: string) => {
     const section = document.getElementById(anchorId);
@@ -79,7 +106,7 @@ export function MediaChannelNav({
       aria-label="Media channels"
       className={[
         sticky
-          ? "sticky top-[154px] z-30 py-3 lg:top-[156px]"
+          ? "sticky top-[var(--lw-header-offset)] z-30 py-3"
           : "",
         "max-w-full",
       ].join(" ")}

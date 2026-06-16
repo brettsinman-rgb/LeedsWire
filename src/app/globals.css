@@ -3,6 +3,19 @@
 :root {
   --background: #06111f;
   --foreground: #f8fafc;
+  --lw-header-offset: 180px;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --lw-header-offset: 222px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --lw-header-offset: 158px;
+  }
 }
 
 @theme inline {
@@ -19,7 +32,7 @@
 html {
   background: var(--background);
   scroll-behavior: smooth;
-  scroll-padding-top: 236px;
+  scroll-padding-top: calc(var(--lw-header-offset) + 24px);
 }
 
 body {

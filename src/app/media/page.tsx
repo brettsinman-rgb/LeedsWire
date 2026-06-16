@@ -42,7 +42,7 @@ export default async function MediaPage() {
       <AdPlacementSet
         page="media"
         placement="top"
-        className="bg-[#071827]/35 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:py-6"
+        className="bg-[#071827]/35 py-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:py-6"
       />
       <div className="mx-auto max-w-[1560px] px-4 py-8 sm:px-6 lg:px-8">
         <section className="rounded-[1.15rem] bg-[radial-gradient(circle_at_82%_8%,rgba(255,221,0,0.08),transparent_26%),linear-gradient(135deg,rgba(14,29,48,0.88)_0%,rgba(8,24,42,0.84)_100%)] px-5 py-8 shadow-[0_22px_68px_rgba(0,0,0,0.22)] ring-1 ring-white/[0.08] sm:px-8 sm:py-10 lg:px-10">

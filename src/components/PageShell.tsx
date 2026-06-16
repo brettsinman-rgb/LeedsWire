@@ -55,7 +55,7 @@ export async function PageShell({ children, pathname }: PageShellProps) {
       {popupEnabled ? (
         <PromotionalPopup config={getPopupConfigForCampaign(popupCampaign)} />
       ) : null}
-      <main className="pt-[154px] lg:pt-[156px]">{children}</main>
+      <main className="pt-[var(--lw-header-offset)]">{children}</main>
       <footer className="border-t border-white/[0.08] bg-[#071827]/72 px-4 py-10 text-center backdrop-blur sm:py-12">
         <p className="mx-auto max-w-[700px] text-[13px] leading-6 text-[#94A3B8] sm:text-sm">
           LeedsWire aggregates headlines and links to original publishers. All

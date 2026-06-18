@@ -61,6 +61,15 @@ export async function PageShell({ children, pathname }: PageShellProps) {
           LeedsWire aggregates headlines and links to original publishers. All
           articles remain the property of their respective owners.
         </p>
+        <p className="mx-auto mt-5 max-w-[700px] text-xs leading-5 text-[#64748B]">
+          Questions, feedback or partnership enquiries?{" "}
+          <a
+            href="mailto:helloleedswire@gmail.com?subject=LeedsWire%20Enquiry"
+            className="font-medium text-[#94A3B8] underline decoration-white/20 underline-offset-4 transition-colors hover:text-[#FFDD00] hover:decoration-[#FFDD00]/70"
+          >
+            Contact Us
+          </a>
+        </p>
       </footer>
     </div>
   );

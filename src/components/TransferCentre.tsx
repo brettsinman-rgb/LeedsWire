@@ -1,4 +1,5 @@
 import { ArticleCard } from "@/components/ArticleCard";
+import { ArticleRating } from "@/components/ArticleRating";
 import { getNewsSource } from "@/config/newsSources";
 import { getArticleCtaUrl } from "@/lib/articleUrls";
 import { formatDate } from "@/lib/format";
@@ -49,18 +50,10 @@ export function TransferCentre({ articles }: TransferCentreProps) {
         <div className="grid gap-3">
           {latest.slice(0, 4).map((article) => {
             const ctaUrl = getArticleCtaUrl(article);
-            const Wrapper = ctaUrl ? "a" : "div";
 
             return (
-              <Wrapper
+              <article
                 key={article.id}
-                {...(ctaUrl
-                  ? {
-                      href: ctaUrl,
-                      target: "_blank",
-                      rel: "noreferrer",
-                    }
-                  : {})}
                 className="group rounded-xl bg-[#0b1726]/74 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.12)] ring-1 ring-white/[0.06] transition hover:translate-x-1 hover:bg-[#101f33]"
               >
                 <div className="mb-3 flex items-center gap-2">
@@ -74,7 +67,19 @@ export function TransferCentre({ articles }: TransferCentreProps) {
                 <h3 className="text-lg font-semibold leading-tight text-white">
                   {article.title}
                 </h3>
-              </Wrapper>
+                {ctaUrl ? (
+                  <a
+                    href={ctaUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#ffdd00]/85 transition hover:translate-x-1 hover:text-white"
+                  >
+                    Read
+                    <span className="text-base leading-none">→</span>
+                  </a>
+                ) : null}
+                <ArticleRating article={article} dense />
+              </article>
             );
           })}
         </div>

@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
+import { Suspense } from "react";
+import { GoogleAnalyticsPageView } from "@/components/GoogleAnalyticsPageView";
 import { absoluteUrl, siteUrl } from "@/config/site";
+import {
+  GA_MEASUREMENT_ID,
+  isGoogleAnalyticsEnabled,
+} from "@/lib/analytics";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -55,6 +62,25 @@ export default function RootLayout({
       </head>
       <body>
         {children}
+        {isGoogleAnalyticsEnabled ? (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });
+              `}
+            </Script>
+            <Suspense fallback={null}>
+              <GoogleAnalyticsPageView />
+            </Suspense>
+          </>
+        ) : null}
         <Analytics />
       </body>
     </html>

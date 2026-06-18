@@ -1,3 +1,4 @@
+import { ArticleRating } from "@/components/ArticleRating";
 import { SafeImage } from "@/components/SafeImage";
 import { getNewsSource } from "@/config/newsSources";
 import { getArticleCtaUrl } from "@/lib/articleUrls";
@@ -72,6 +73,7 @@ export function Hero({ article }: HeroProps) {
                     </a>
                   ) : null}
                 </div>
+                <ArticleRating article={article} />
               </div>
             </div>
           </div>

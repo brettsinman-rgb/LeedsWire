@@ -3,6 +3,7 @@ import { getArticleCtaUrl } from "@/lib/articleUrls";
 import { formatRelativeTime } from "@/lib/format";
 import type { Article } from "@/types/content";
 import { SafeImage } from "@/components/SafeImage";
+import { ArticleRating } from "@/components/ArticleRating";
 import type { CSSProperties } from "react";
 
 type ArticleCardProps = {
@@ -34,26 +35,18 @@ export function ArticleCard({
   const isWide = variant === "wide";
   const categoryLabel = article.transferType ?? (article.category === "transfer" ? "Transfers" : "General");
   const ctaUrl = getArticleCtaUrl(article);
-  const Wrapper = ctaUrl ? "a" : "div";
   const shouldHideExcerptOnMobile = denseMobile && !isWide;
 
   return (
     <article
       className={
         isWide
-          ? "shine-card group overflow-hidden rounded-[1.15rem] bg-[#0b1726]/92 shadow-[0_20px_62px_rgba(0,0,0,0.22)] ring-1 ring-white/[0.08] transition duration-300 hover:-translate-y-1 hover:bg-[#0e1d30] hover:shadow-[0_26px_76px_rgba(0,0,0,0.28)] hover:ring-[#ffdd00]/22 lg:max-h-[520px] lg:min-h-[420px]"
-          : "shine-card group flex h-full overflow-hidden rounded-[1rem] bg-[#0b1726]/82 shadow-[0_14px_42px_rgba(0,0,0,0.16)] ring-1 ring-white/[0.08] transition duration-300 hover:-translate-y-1 hover:bg-[#101f33] hover:shadow-[0_22px_58px_rgba(0,0,0,0.22)] hover:ring-[#ffdd00]/18"
+          ? "shine-card group flex flex-col overflow-hidden rounded-[1.15rem] bg-[#0b1726]/92 shadow-[0_20px_62px_rgba(0,0,0,0.22)] ring-1 ring-white/[0.08] transition duration-300 hover:-translate-y-1 hover:bg-[#0e1d30] hover:shadow-[0_26px_76px_rgba(0,0,0,0.28)] hover:ring-[#ffdd00]/22 lg:max-h-none lg:min-h-[420px]"
+          : "shine-card group flex h-full flex-col overflow-hidden rounded-[1rem] bg-[#0b1726]/82 shadow-[0_14px_42px_rgba(0,0,0,0.16)] ring-1 ring-white/[0.08] transition duration-300 hover:-translate-y-1 hover:bg-[#101f33] hover:shadow-[0_22px_58px_rgba(0,0,0,0.22)] hover:ring-[#ffdd00]/18"
       }
     >
-      <Wrapper
-        {...(ctaUrl
-          ? {
-              href: ctaUrl,
-              target: "_blank",
-              rel: "noreferrer",
-            }
-          : {})}
-        className={isWide ? "grid gap-0 md:grid-cols-[1.08fr_0.92fr] lg:max-h-[520px] lg:min-h-[420px]" : "flex h-full w-full flex-col"}
+      <div
+        className={isWide ? "grid flex-1 gap-0 md:grid-cols-[1.08fr_0.92fr] lg:min-h-[420px]" : "flex flex-1 flex-col"}
       >
         <div
           className={
@@ -154,15 +147,21 @@ export function ArticleCard({
                 {formatRelativeTime(article.publishedAt)}
               </time>
               {ctaUrl ? (
-                <span className={denseMobile ? "inline-flex items-center gap-1 text-[0.62rem] font-bold uppercase tracking-[0.08em] text-[#ffdd00]/85 transition group-hover:translate-x-1 group-hover:text-white sm:gap-2 sm:text-xs sm:tracking-[0.12em]" : "inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#ffdd00]/85 transition group-hover:translate-x-1 group-hover:text-white"}>
+                <a
+                  href={ctaUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={denseMobile ? "inline-flex items-center gap-1 text-[0.62rem] font-bold uppercase tracking-[0.08em] text-[#ffdd00]/85 transition hover:translate-x-1 hover:text-white sm:gap-2 sm:text-xs sm:tracking-[0.12em]" : "inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#ffdd00]/85 transition hover:translate-x-1 hover:text-white"}
+                >
                   Read
                   <span className="text-base leading-none">→</span>
-                </span>
+                </a>
               ) : null}
             </div>
+            <ArticleRating article={article} dense={denseMobile} />
           </div>
         </div>
-      </Wrapper>
+      </div>
     </article>
   );
 }

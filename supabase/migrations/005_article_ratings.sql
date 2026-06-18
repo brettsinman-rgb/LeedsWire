@@ -98,8 +98,9 @@ for select
 to anon, authenticated
 using (true);
 
-grant select, insert, update on public.article_rating_articles to anon, authenticated;
-grant select, insert, update on public.article_ratings to anon, authenticated;
+grant select, insert, update on public.article_rating_articles to anon, authenticated, service_role;
+grant select, insert, update on public.article_ratings to anon, authenticated, service_role;
+grant select, insert, update on public.article_rating_aggregates to service_role;
 grant select on public.article_rating_aggregates to anon, authenticated;
 
 create or replace function public.refresh_article_rating_aggregate(target_article_id text)

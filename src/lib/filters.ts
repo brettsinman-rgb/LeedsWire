@@ -194,6 +194,9 @@ export function isLeedsFootballArticle(article: Article) {
     includesAny(text, otherClubOnlyTerms) && !text.includes("leeds");
   const otherClubPrimary = hasOtherClubPrimaryHeadline(title);
   const weakNonLeedsHeadline = !headlineHasLeeds && hasWeakNonLeedsHeadline(title);
+  const invalidSkySection =
+    article.sourceId === "sky-sports-leeds" &&
+    !urlPath(article).includes("/football/");
 
   const hasPrimaryLeedsSignal =
     article.sourceId === "leeds-united-official" ||
@@ -208,7 +211,8 @@ export function isLeedsFootballArticle(article: Article) {
     !isGenericFootball &&
     !isOtherClubOnly &&
     !otherClubPrimary &&
-    !weakNonLeedsHeadline
+    !weakNonLeedsHeadline &&
+    !invalidSkySection
   );
 }
 

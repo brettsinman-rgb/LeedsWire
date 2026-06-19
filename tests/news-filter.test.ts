@@ -123,6 +123,15 @@ const rejectedFootball: Array<[string, Article]> = [
     }),
   ],
   [
+    "rejects non-football Sky sections even when Leeds appears in copy",
+    article({
+      sourceId: "sky-sports-leeds",
+      title: "Leeds United personalities attend darts event",
+      standfirst: "Leeds United players were present away from football.",
+      url: "https://www.skysports.com/darts/news/12040/leeds-players-attend-event",
+    }),
+  ],
+  [
     "rejects audited false positive",
     article({
       title: "Everything you need to know about Karl Darlow contract talks and Illan Meslier future",

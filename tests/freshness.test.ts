@@ -36,6 +36,18 @@ async function main() {
     return new Response(null, { status: 200 });
   };
 
+  const bearerAccepted = await handleWarmNewsRequest(
+    "https://leedswire.test/api/cron/warm-news",
+    okFetch,
+    "Bearer test-cron-secret",
+  );
+  assert.equal(
+    bearerAccepted.status,
+    200,
+    "cron route accepts Vercel's bearer authorization header",
+  );
+  fetchedUrls.length = 0;
+
   const accepted = await handleWarmNewsRequest(
     "https://leedswire.test/api/cron/warm-news?secret=test-cron-secret",
     okFetch,
@@ -79,6 +91,11 @@ async function main() {
   );
 
   const motSource = getNewsSource("mot-leeds-news");
+  assert.equal(
+    getNewsSource("bbc-football-leeds")?.feedUrl,
+    "https://feeds.bbci.co.uk/sport/football/teams/leeds-united/rss.xml",
+    "BBC uses its Leeds-specific team feed",
+  );
   assert.equal(
     getArticleUrl(
       {

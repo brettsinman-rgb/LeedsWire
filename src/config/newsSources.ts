@@ -56,7 +56,7 @@ export const newsSources: NewsSource[] = [
     id: "bbc-football-leeds",
     name: "BBC Football",
     url: "https://www.bbc.com/sport/football/teams/leeds-united",
-    feedUrl: "https://feeds.bbci.co.uk/sport/football/rss.xml",
+    feedUrl: "https://feeds.bbci.co.uk/sport/football/teams/leeds-united/rss.xml",
     ingestionType: "rss",
     leedsOnly: false,
     publisherImagePreferred: true,

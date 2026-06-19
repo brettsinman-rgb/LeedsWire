@@ -5,6 +5,7 @@ import {
 } from "./filters";
 import { getArticleUrl } from "./articleUrls";
 import { normalizeDecodedText } from "./text";
+import { normalizeArticleDate, sortNewestFirst } from "./rssDates";
 import { newsSources, type NewsSource } from "../config/newsSources";
 import type { Article, Video } from "../types/content";
 
@@ -126,7 +127,7 @@ const allArticles: Article[] = [
   },
 ];
 
-type RssItem = {
+export type RssItem = {
   title: string;
   description: string;
   link?: string;
@@ -138,6 +139,7 @@ type RssItem = {
   };
   imageUrl?: string;
   publishedAt: string;
+  fetchedAt?: string;
 };
 
 const articleUrlStatusCache = new Map<string, number | "error">();
@@ -209,7 +211,7 @@ function getRssImage(item: string) {
   );
 }
 
-function parseRssItems(xml: string): RssItem[] {
+export function parseRssItems(xml: string): RssItem[] {
   return [...xml.matchAll(/<item[\s\S]*?<\/item>/gi)].map((match) => {
     const item = match[0];
 
@@ -262,7 +264,12 @@ async function fetchFeed(source: NewsSource) {
       return [];
     }
 
-    return parseRssItems(await response.text());
+    const fetchedAt = new Date().toISOString();
+
+    return parseRssItems(await response.text()).map((item) => ({
+      ...item,
+      fetchedAt,
+    }));
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.warn("[LeedsWire news] feed fetch failed", {
@@ -330,7 +337,12 @@ async function fetchMotHomepageFallback(source: NewsSource) {
       return [];
     }
 
-    return parseMotHomepageItems(await response.text(), source);
+    const fetchedAt = new Date().toISOString();
+
+    return parseMotHomepageItems(await response.text(), source).map((item) => ({
+      ...item,
+      fetchedAt,
+    }));
   } catch {
     return [];
   }
@@ -358,7 +370,7 @@ async function fetchSourceItems(source: NewsSource) {
   return [...rssItems, ...newFallbackItems];
 }
 
-async function getUrlStatus(url: string) {
+export async function getUrlStatus(url: string) {
   const cached = articleUrlStatusCache.get(url);
 
   if (cached !== undefined) {
@@ -397,7 +409,7 @@ async function getUrlStatus(url: string) {
   return "error";
 }
 
-function itemToArticle(item: RssItem, source: NewsSource): Article | null {
+export function itemToArticle(item: RssItem, source: NewsSource): Article | null {
   const sourceUrl = getArticleUrl(item, source);
 
   if (!sourceUrl || !item.title) {
@@ -409,7 +421,8 @@ function itemToArticle(item: RssItem, source: NewsSource): Article | null {
     title: normalizeDecodedText(item.title),
     standfirst: normalizeDecodedText(item.description),
     sourceId: source.id,
-    publishedAt: item.publishedAt,
+    publishedAt: normalizeArticleDate(item.publishedAt, item.fetchedAt),
+    fetchedAt: item.fetchedAt,
     url: sourceUrl,
     sourceUrl,
     imageUrl: item.imageUrl,
@@ -437,12 +450,18 @@ async function getLiveArticles() {
   const checked = await Promise.all(
     leedsArticles.map(async (article) => ({
       article,
-      status: await getUrlStatus(article.sourceUrl ?? ""),
+      status:
+        article.sourceId === "yorkshire-evening-post"
+          ? "rss-trusted"
+          : await getUrlStatus(article.sourceUrl ?? ""),
     })),
   );
 
   return checked
-    .filter(({ status }) => [200, 301, 302].includes(Number(status)))
+    .filter(
+      ({ status }) =>
+        status === "rss-trusted" || [200, 301, 302].includes(Number(status)),
+    )
     .map(({ article }) => ({
       ...article,
       category: isLeedsTransferArticle(article) ? "transfer" : article.category,
@@ -503,10 +522,8 @@ const allVideos: Video[] = [
   },
 ];
 
-function byNewest<T extends { publishedAt: string }>(items: T[]) {
-  return [...items].sort(
-    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
-  );
+function byNewest<T extends { publishedAt: string; fetchedAt?: string }>(items: T[]) {
+  return sortNewestFirst(items);
 }
 
 function getDevSeededArticles() {

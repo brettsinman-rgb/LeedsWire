@@ -23,6 +23,7 @@ export type Article = {
   standfirst: string;
   sourceId: NewsSourceId;
   publishedAt: string;
+  fetchedAt?: string;
   url: string;
   sourceUrl?: string;
   imageUrl?: string;

@@ -31,10 +31,17 @@ export type CronWarmNewsHandlerResult = {
       };
 };
 
-export function isValidCronSecret(providedSecret: string | null) {
+export function isValidCronSecret(
+  providedSecret: string | null,
+  authorizationHeader: string | null = null,
+) {
   const expectedSecret = process.env.CRON_SECRET?.trim();
 
-  return Boolean(expectedSecret) && providedSecret === expectedSecret;
+  return (
+    Boolean(expectedSecret) &&
+    (providedSecret === expectedSecret ||
+      authorizationHeader === `Bearer ${expectedSecret}`)
+  );
 }
 
 export function getWarmNewsUrl(path: WarmNewsPath, requestUrl: string) {
@@ -81,10 +88,11 @@ export async function warmNewsRoutes(
 export async function handleWarmNewsRequest(
   requestUrl: string,
   fetcher: typeof fetch = fetch,
+  authorizationHeader: string | null = null,
 ): Promise<CronWarmNewsHandlerResult> {
   const url = new URL(requestUrl);
 
-  if (!isValidCronSecret(url.searchParams.get("secret"))) {
+  if (!isValidCronSecret(url.searchParams.get("secret"), authorizationHeader)) {
     return {
       status: 401,
       body: { ok: false, error: "Unauthorized" },

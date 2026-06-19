@@ -37,11 +37,8 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Content Freshness
 
-LeedsWire uses 300-second RSS fetch revalidation for news freshness. Vercel calls `/api/cron/warm-news` every 15 minutes to warm the public news routes.
+LeedsWire uses 300-second, request-driven RSS fetch revalidation for news freshness.
 
 ### Required production environment variables
 
-- `CRON_SECRET`: a random secret used by Vercel as the `Authorization: Bearer <secret>` header for cron requests.
 - `LEEDSWIRE_ADMIN_PASSWORD`: protects admin pages and production diagnostics.
-
-The configured Vercel plan must support 15-minute cron schedules. Cron runs only against production deployments.

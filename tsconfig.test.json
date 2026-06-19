@@ -13,7 +13,6 @@
     "src/lib/filters.ts",
     "src/lib/articleUrls.ts",
     "src/lib/content.ts",
-    "src/lib/cronWarmNews.ts",
     "src/lib/adSettings.ts",
     "src/lib/adCreatives.ts",
     "src/lib/adHtml5.ts",

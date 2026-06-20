@@ -3,6 +3,7 @@ import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import { Suspense } from "react";
 import { GoogleAnalyticsPageView } from "@/components/GoogleAnalyticsPageView";
+import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
 import {
   absoluteUrl,
   siteUrl,
@@ -68,6 +69,7 @@ export default function RootLayout({
       </head>
       <body>
         {children}
+        <PwaInstallPrompt />
         {isGoogleAnalyticsEnabled ? (
           <>
             <Script

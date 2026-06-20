@@ -3,7 +3,11 @@ import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import { Suspense } from "react";
 import { GoogleAnalyticsPageView } from "@/components/GoogleAnalyticsPageView";
-import { absoluteUrl, siteUrl } from "@/config/site";
+import {
+  absoluteUrl,
+  siteUrl,
+  socialSharingImageUrl,
+} from "@/config/site";
 import {
   GA_MEASUREMENT_ID,
   isGoogleAnalyticsEnabled,
@@ -17,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s | LeedsWire",
   },
   description:
-    "A premium Leeds United-only news, transfers and media hub.",
+    "Latest Leeds United news, transfers and fan ratings.",
   alternates: {
     canonical: absoluteUrl("/"),
   },
@@ -26,14 +30,16 @@ export const metadata: Metadata = {
     siteName: "LeedsWire",
     title: "LeedsWire",
     description:
-      "A premium Leeds United-only news, transfers and media hub.",
+      "Latest Leeds United news, transfers and fan ratings.",
     url: absoluteUrl("/"),
+    images: [socialSharingImageUrl],
   },
   twitter: {
     card: "summary_large_image",
     title: "LeedsWire",
     description:
-      "A premium Leeds United-only news, transfers and media hub.",
+      "Latest Leeds United news, transfers and fan ratings.",
+    images: [socialSharingImageUrl],
   },
   other: {
     "twitter:url": absoluteUrl("/"),

@@ -3,7 +3,7 @@ import { ArticleGrid } from "@/components/ArticleGrid";
 import { PageShell } from "@/components/PageShell";
 import { SectionHeader } from "@/components/SectionHeader";
 import { TransferCentre } from "@/components/TransferCentre";
-import { absoluteUrl } from "@/config/site";
+import { absoluteUrl, socialSharingImageUrl } from "@/config/site";
 import { enrichArticleImages } from "@/lib/articleImages";
 import { getTransferArticles } from "@/lib/content";
 
@@ -19,12 +19,14 @@ export const metadata: Metadata = {
     description:
       "Leeds United transfer rumours, done deals, contracts and outgoing news.",
     url: absoluteUrl("/transfers"),
+    images: [socialSharingImageUrl],
   },
   twitter: {
     card: "summary_large_image",
     title: "Transfers | LeedsWire",
     description:
       "Leeds United transfer rumours, done deals, contracts and outgoing news.",
+    images: [socialSharingImageUrl],
   },
   other: {
     "twitter:url": absoluteUrl("/transfers"),

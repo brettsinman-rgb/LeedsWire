@@ -1,4 +1,5 @@
 export const siteUrl = "https://www.leedswire.com";
+export const socialSharingImageUrl = `${siteUrl}/images/OG-Img.jpg`;
 
 export const publicRoutes = [
   {

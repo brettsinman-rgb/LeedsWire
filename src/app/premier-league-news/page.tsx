@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AdPlacementSet } from "@/components/AdPlacementSet";
 import { ArticleGrid } from "@/components/ArticleGrid";
 import { PageShell } from "@/components/PageShell";
-import { absoluteUrl } from "@/config/site";
+import { absoluteUrl, socialSharingImageUrl } from "@/config/site";
 import { getPremierLeagueArticles } from "@/lib/premierLeague";
 
 export const metadata: Metadata = {
@@ -15,11 +15,13 @@ export const metadata: Metadata = {
     title: "Premier League News | LeedsWire",
     description: "Latest Premier League stories from BBC Sport.",
     url: absoluteUrl("/premier-league-news"),
+    images: [socialSharingImageUrl],
   },
   twitter: {
     card: "summary_large_image",
     title: "Premier League News | LeedsWire",
     description: "Latest Premier League stories from BBC Sport.",
+    images: [socialSharingImageUrl],
   },
   other: {
     "twitter:url": absoluteUrl("/premier-league-news"),

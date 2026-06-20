@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ArticleGrid } from "@/components/ArticleGrid";
 import { PageShell } from "@/components/PageShell";
-import { absoluteUrl } from "@/config/site";
+import { absoluteUrl, socialSharingImageUrl } from "@/config/site";
 import { enrichArticleImages } from "@/lib/articleImages";
 import { getArticles } from "@/lib/content";
 
@@ -16,12 +16,14 @@ export const metadata: Metadata = {
     description:
       "Latest Leeds United football news from trusted local, club and national sources.",
     url: absoluteUrl("/news"),
+    images: [socialSharingImageUrl],
   },
   twitter: {
     card: "summary_large_image",
     title: "News Archive | LeedsWire",
     description:
       "Latest Leeds United football news from trusted local, club and national sources.",
+    images: [socialSharingImageUrl],
   },
   other: {
     "twitter:url": absoluteUrl("/news"),

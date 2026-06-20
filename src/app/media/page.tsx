@@ -3,7 +3,7 @@ import { AdPlacementSet } from "@/components/AdPlacementSet";
 import { MediaChannelNav } from "@/components/MediaChannelNav";
 import { PageShell } from "@/components/PageShell";
 import { VideoChannelRows } from "@/components/VideoModal";
-import { absoluteUrl } from "@/config/site";
+import { absoluteUrl, socialSharingImageUrl } from "@/config/site";
 import { getVideoChannelRows } from "@/lib/youtube";
 
 export const metadata: Metadata = {
@@ -18,12 +18,14 @@ export const metadata: Metadata = {
     description:
       "Leeds United long-form video from official and trusted Leeds channels.",
     url: absoluteUrl("/media"),
+    images: [socialSharingImageUrl],
   },
   twitter: {
     card: "summary_large_image",
     title: "Media | LeedsWire",
     description:
       "Leeds United long-form video from official and trusted Leeds channels.",
+    images: [socialSharingImageUrl],
   },
   other: {
     "twitter:url": absoluteUrl("/media"),

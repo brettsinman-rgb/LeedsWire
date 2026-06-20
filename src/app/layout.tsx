@@ -69,7 +69,9 @@ export default function RootLayout({
       </head>
       <body>
         {children}
-        <PwaInstallPrompt />
+        <Suspense fallback={null}>
+          <PwaInstallPrompt />
+        </Suspense>
         {isGoogleAnalyticsEnabled ? (
           <>
             <Script

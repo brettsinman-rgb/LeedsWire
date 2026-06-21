@@ -39,7 +39,7 @@ export default async function Home() {
           <ArticleGrid
             articles={latest.slice(0, 6)}
             layout="uniform"
-            mobileColumns={2}
+            mobileColumns={1}
           />
         </section>
 

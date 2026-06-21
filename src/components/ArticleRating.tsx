@@ -20,6 +20,7 @@ const ratingOptions = [
   {
     value: "worth_reading",
     label: "Worth Reading",
+    mobileLabel: "Worth",
     icon: "🔥",
     className:
       "border-[#3f77b2]/55 bg-transparent text-[#b9d8ff] hover:border-[#3f77b2]/80 hover:bg-[#3f77b2]/8",
@@ -28,6 +29,7 @@ const ratingOptions = [
   {
     value: "must_read",
     label: "Must Read",
+    mobileLabel: "Must Read",
     icon: "💛",
     className:
       "border-[#ffdd00]/55 bg-transparent text-[#ffed75] hover:border-[#ffdd00]/80 hover:bg-[#ffdd00]/8",
@@ -36,6 +38,7 @@ const ratingOptions = [
   {
     value: "skip",
     label: "Skip",
+    mobileLabel: "Skip",
     icon: "😴",
     className:
       "border-white/[0.16] bg-transparent text-zinc-400 hover:border-white/[0.28] hover:bg-white/[0.055] hover:text-zinc-200",
@@ -44,6 +47,7 @@ const ratingOptions = [
 ] as const satisfies Array<{
   value: ArticleRatingValue;
   label: string;
+  mobileLabel: string;
   icon: string;
   className: string;
   activeClassName: string;
@@ -155,7 +159,7 @@ export function ArticleRating({ article, dense = false }: ArticleRatingProps) {
       >
         Was this worth your time?
       </p>
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-1.5 md:gap-2">
         {ratingOptions.map((option) => {
           const isActive = visitorRating === option.value;
 
@@ -167,8 +171,8 @@ export function ArticleRating({ article, dense = false }: ArticleRatingProps) {
               onClick={() => handleRate(option.value)}
               aria-pressed={isActive}
               className={[
-                "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border px-2.5 py-2 text-[0.72rem] font-bold transition disabled:cursor-wait disabled:opacity-70",
-                dense ? "sm:min-h-9 sm:text-[0.66rem]" : "",
+                "inline-flex min-h-11 min-w-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg border px-1.5 py-2 text-[0.64rem] font-bold transition disabled:cursor-wait disabled:opacity-70 md:min-h-10 md:gap-1.5 md:px-2.5 md:text-[0.72rem]",
+                dense ? "text-[0.58rem] md:min-h-9 md:text-[0.66rem]" : "",
                 option.className,
                 isActive ? option.activeClassName : "",
               ].join(" ")}
@@ -181,7 +185,8 @@ export function ArticleRating({ article, dense = false }: ArticleRatingProps) {
               ) : (
                 <span aria-hidden="true">{option.icon}</span>
               )}
-              <span>{option.label}</span>
+              <span className="md:hidden">{option.mobileLabel}</span>
+              <span className="hidden md:inline">{option.label}</span>
             </button>
           );
         })}

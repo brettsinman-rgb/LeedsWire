@@ -20,7 +20,7 @@ const ratingOptions = [
   {
     value: "worth_reading",
     label: "Worth Reading",
-    mobileLabel: "Worth",
+    mobileLabel: "Top Read",
     icon: "🔥",
     className:
       "border-[#3f77b2]/55 bg-transparent text-[#b9d8ff] hover:border-[#3f77b2]/80 hover:bg-[#3f77b2]/8",
@@ -29,7 +29,7 @@ const ratingOptions = [
   {
     value: "must_read",
     label: "Must Read",
-    mobileLabel: "Must Read",
+    mobileLabel: "Good Un",
     icon: "💛",
     className:
       "border-[#ffdd00]/55 bg-transparent text-[#ffed75] hover:border-[#ffdd00]/80 hover:bg-[#ffdd00]/8",
@@ -38,7 +38,7 @@ const ratingOptions = [
   {
     value: "skip",
     label: "Skip",
-    mobileLabel: "Skip",
+    mobileLabel: "Nah",
     icon: "😴",
     className:
       "border-white/[0.16] bg-transparent text-zinc-400 hover:border-white/[0.28] hover:bg-white/[0.055] hover:text-zinc-200",

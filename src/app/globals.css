@@ -82,11 +82,13 @@ body {
   -webkit-line-clamp: 3;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 767px) {
   .lw-excerpt-clamp {
     -webkit-line-clamp: 2;
   }
+}
 
+@media (max-width: 639px) {
   .lw-mobile-hidden {
     display: none !important;
   }

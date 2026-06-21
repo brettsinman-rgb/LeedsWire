@@ -119,26 +119,18 @@ export function ArticleCard({
               {article.standfirst}
             </p>
           ) : (
-            <>
-              {shouldHideExcerptOnMobile ? null : (
-                <p
-                  className="lw-clamp-2 mt-3 text-sm leading-6 text-zinc-500 sm:hidden"
-                  style={clamp2Style}
-                >
-                  {article.standfirst}
-                </p>
-              )}
+            shouldHideExcerptOnMobile ? (
               <p
-                className={
-                  shouldHideExcerptOnMobile
-                    ? "lw-clamp-3 lw-mobile-hidden mt-3 text-sm leading-6 text-zinc-500 sm:block"
-                    : "lw-clamp-3 mt-3 hidden text-sm leading-6 text-zinc-500 sm:block"
-                }
+                className="lw-clamp-3 lw-mobile-hidden mt-3 text-sm leading-6 text-zinc-500 sm:block"
                 style={clamp3Style}
               >
                 {article.standfirst}
               </p>
-            </>
+            ) : (
+              <p className="lw-excerpt-clamp mt-3 text-sm leading-6 text-zinc-500">
+                {article.standfirst}
+              </p>
+            )
           )}
           <div className={denseMobile ? "mt-auto pt-4 sm:pt-5" : "mt-auto pt-5"}>
             <div className={denseMobile ? "mb-3 h-px bg-white/[0.08] sm:mb-4" : "mb-4 h-px bg-white/[0.08]"} />

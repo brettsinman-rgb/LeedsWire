@@ -143,10 +143,10 @@ export function ArticleCard({
                   href={ctaUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className={denseMobile ? "inline-flex items-center gap-1 text-[0.62rem] font-bold uppercase tracking-[0.08em] text-[#ffdd00]/85 transition hover:translate-x-1 hover:text-white sm:gap-2 sm:text-xs sm:tracking-[0.12em]" : "inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#ffdd00]/85 transition hover:translate-x-1 hover:text-white"}
+                  className={denseMobile ? "read-cta inline-flex items-center gap-1 text-[0.62rem] font-bold uppercase tracking-[0.08em] text-[#ffdd00]/85 transition hover:translate-x-1 hover:text-white sm:gap-2 sm:text-xs sm:tracking-[0.12em]" : "read-cta inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#ffdd00]/85 transition hover:translate-x-1 hover:text-white"}
                 >
                   Read
-                  <span className="text-base leading-none">→</span>
+                  <span className="read-arrow inline-block text-base leading-none">→</span>
                 </a>
               ) : null}
             </div>

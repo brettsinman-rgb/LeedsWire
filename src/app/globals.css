@@ -121,6 +121,35 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 
+@keyframes readArrowFloat {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(-4px);
+  }
+}
+
+.read-arrow {
+  animation: readArrowFloat 1.7s ease-in-out infinite;
+  will-change: transform;
+}
+
+.read-cta:hover .read-arrow,
+.read-cta:focus .read-arrow,
+.read-cta:focus-within .read-arrow {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .read-arrow {
+    animation: none;
+    will-change: auto;
+  }
+}
+
 ::selection {
   background: #ffdd00;
   color: #111827;

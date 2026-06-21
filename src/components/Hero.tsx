@@ -67,9 +67,12 @@ export function Hero({ article }: HeroProps) {
                       href={ctaUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex w-fit items-center gap-3 border-b border-[#ffdd00]/70 pb-1 text-sm font-bold uppercase tracking-[0.16em] text-white transition hover:border-white hover:text-[#ffdd00]"
+                      className="read-cta inline-flex w-fit items-center gap-3 border-b border-[#ffdd00]/70 pb-1 text-sm font-bold uppercase tracking-[0.16em] text-white transition hover:border-white hover:text-[#ffdd00]"
                     >
-                      Read the feature <span className="text-lg leading-none">→</span>
+                      Read the feature{" "}
+                      <span className="read-arrow inline-block text-lg leading-none">
+                        →
+                      </span>
                     </a>
                   ) : null}
                 </div>

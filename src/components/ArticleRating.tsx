@@ -19,8 +19,7 @@ type ArticleRatingProps = {
 const ratingOptions = [
   {
     value: "worth_reading",
-    label: "Worth Reading",
-    mobileLabel: "Top Read",
+    label: "Top Read",
     icon: "🔥",
     className:
       "border-[#3f77b2]/55 bg-transparent text-[#b9d8ff] hover:border-[#3f77b2]/80 hover:bg-[#3f77b2]/8",
@@ -28,8 +27,7 @@ const ratingOptions = [
   },
   {
     value: "must_read",
-    label: "Must Read",
-    mobileLabel: "Good Un",
+    label: "Good Un",
     icon: "💛",
     className:
       "border-[#ffdd00]/55 bg-transparent text-[#ffed75] hover:border-[#ffdd00]/80 hover:bg-[#ffdd00]/8",
@@ -37,8 +35,7 @@ const ratingOptions = [
   },
   {
     value: "skip",
-    label: "Skip",
-    mobileLabel: "Nah",
+    label: "Nah",
     icon: "😴",
     className:
       "border-white/[0.16] bg-transparent text-zinc-400 hover:border-white/[0.28] hover:bg-white/[0.055] hover:text-zinc-200",
@@ -47,7 +44,6 @@ const ratingOptions = [
 ] as const satisfies Array<{
   value: ArticleRatingValue;
   label: string;
-  mobileLabel: string;
   icon: string;
   className: string;
   activeClassName: string;
@@ -185,8 +181,7 @@ export function ArticleRating({ article, dense = false }: ArticleRatingProps) {
               ) : (
                 <span aria-hidden="true">{option.icon}</span>
               )}
-              <span className="md:hidden">{option.mobileLabel}</span>
-              <span className="hidden md:inline">{option.label}</span>
+              <span>{option.label}</span>
             </button>
           );
         })}

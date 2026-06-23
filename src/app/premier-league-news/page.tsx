@@ -64,7 +64,7 @@ export default async function PremierLeagueNewsPage() {
             <ArticleGrid
               articles={firstStories}
               layout="uniform"
-              mobileColumns={2}
+              mobileColumns={1}
             />
             <AdPlacementSet
               page="premier-league-news"
@@ -75,7 +75,7 @@ export default async function PremierLeagueNewsPage() {
               <ArticleGrid
                 articles={remainingStories}
                 layout="uniform"
-                mobileColumns={2}
+                mobileColumns={1}
               />
             ) : null}
             <AdPlacementSet

@@ -134,6 +134,8 @@ export type RssItem = {
   guid?: string;
   id?: string;
   url?: string;
+  author?: string;
+  categories?: string[];
   enclosure?: {
     url?: string;
   };
@@ -170,6 +172,19 @@ function getTag(item: string, tagName: string) {
   return decodeXml(match?.[1] ?? "");
 }
 
+function getRawTag(item: string, tagName: string) {
+  return (
+    item.match(new RegExp(`<${tagName}[^>]*>([\\s\\S]*?)<\\/${tagName}>`, "i"))?.[1] ??
+    ""
+  );
+}
+
+function getTags(item: string, tagName: string) {
+  return [...item.matchAll(new RegExp(`<${tagName}[^>]*>([\\s\\S]*?)<\\/${tagName}>`, "gi"))]
+    .map((match) => decodeXml(match[1]))
+    .filter(Boolean);
+}
+
 function getAttribute(tag: string, attribute: string) {
   return tag.match(new RegExp(`${attribute}=["']([^"']+)["']`, "i"))?.[1] ?? "";
 }
@@ -202,11 +217,15 @@ function getRssImage(item: string) {
   const mediaContent = item.match(/<media:content\b[^>]*>/i)?.[0];
   const mediaThumbnail = item.match(/<media:thumbnail\b[^>]*>/i)?.[0];
   const enclosure = item.match(/<enclosure\b[^>]*type=["']image\/[^"']+["'][^>]*>/i)?.[0];
+  const contentImage = getRawTag(item, "content:encoded").match(
+    /<img\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/i,
+  )?.[1];
 
   return (
     (mediaContent ? decodeXml(getAttribute(mediaContent, "url")) : "") ||
     (mediaThumbnail ? decodeXml(getAttribute(mediaThumbnail, "url")) : "") ||
     (enclosure ? decodeXml(getAttribute(enclosure, "url")) : "") ||
+    (contentImage ? decodeXml(contentImage) : "") ||
     undefined
   );
 }
@@ -222,6 +241,8 @@ export function parseRssItems(xml: string): RssItem[] {
       guid: getTag(item, "guid"),
       id: getTag(item, "id"),
       url: getTag(item, "url"),
+      author: getTag(item, "dc:creator") || getTag(item, "author"),
+      categories: getTags(item, "category"),
       enclosure: getEnclosure(item),
       imageUrl: getRssImage(item),
       publishedAt:
@@ -426,8 +447,14 @@ export function itemToArticle(item: RssItem, source: NewsSource): Article | null
     url: sourceUrl,
     sourceUrl,
     imageUrl: item.imageUrl,
+    author: item.author ? normalizeDecodedText(item.author) : undefined,
     category: "news",
-    tags: ["Leeds United", "football", normalizeDecodedText(source.name)],
+    tags: [
+      "Leeds United",
+      "football",
+      normalizeDecodedText(source.name),
+      ...(item.categories ?? []).map(normalizeDecodedText),
+    ],
     readMinutes: 3,
   };
 }

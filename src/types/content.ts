@@ -7,6 +7,7 @@ export type NewsSourceId =
   | "sky-sports-leeds"
   | "bbc-football-leeds"
   | "mot-leeds-news"
+  | "leeds-all-over"
   | "bbc-premier-league";
 
 export type YouTubeSourceId =
@@ -27,6 +28,7 @@ export type Article = {
   url: string;
   sourceUrl?: string;
   imageUrl?: string;
+  author?: string;
   category: NewsCategory;
   transferType?: TransferType;
   tags: string[];

@@ -73,6 +73,17 @@ export const newsSources: NewsSource[] = [
     publisherImagePreferred: true,
   },
   {
+    id: "leeds-all-over",
+    name: "Leeds All Over",
+    url: "https://www.leedsallover.com/category/latest-news/",
+    feedUrl: "https://www.leedsallover.com/category/latest-news/feed/",
+    type: "rss",
+    ingestionType: "rss",
+    leedsOnly: true,
+    approved: true,
+    publisherImagePreferred: true,
+  },
+  {
     id: "bbc-premier-league",
     name: "BBC Premier League",
     url: "https://www.bbc.com/sport/football/premier-league",

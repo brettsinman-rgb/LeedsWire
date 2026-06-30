@@ -74,6 +74,12 @@ export function isSpecificArticleUrl(value?: string, source?: NewsSource) {
     return segments.length >= 2 && segments[1].length > 12;
   }
 
+  if (source?.id === "leeds-all-over") {
+    const segments = path.split("/").filter(Boolean);
+
+    return segments.length === 1 && segments[0].length > 12;
+  }
+
   return (
     /\d{4,}/.test(path) ||
     path.includes("/articles/") ||

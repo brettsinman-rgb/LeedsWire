@@ -8,6 +8,7 @@ const official = getNewsSource("leeds-united-official");
 const bbc = getNewsSource("bbc-football-leeds");
 const sky = getNewsSource("sky-sports-leeds");
 const mot = getNewsSource("mot-leeds-news");
+const leedsAllOver = getNewsSource("leeds-all-over");
 
 assert.equal(
   getArticleUrl(
@@ -73,6 +74,23 @@ assert.equal(
   "rejects MOT Leeds News category pages",
 );
 
+assert.equal(
+  getArticleUrl(
+    {
+      link: "https://www.leedsallover.com/leeds-united-target-julian-brandts-agent-spotted-at-real-betis/",
+    },
+    leedsAllOver,
+  ),
+  "https://www.leedsallover.com/leeds-united-target-julian-brandts-agent-spotted-at-real-betis/",
+  "accepts Leeds All Over article slug URLs",
+);
+
+assert.equal(
+  isSpecificArticleUrl("https://www.leedsallover.com/category/latest-news/", leedsAllOver),
+  false,
+  "rejects Leeds All Over category pages",
+);
+
 for (const url of [
   "https://www.leedsunited.com/",
   "https://www.leedsunited.com/news",
@@ -80,6 +98,7 @@ for (const url of [
   "https://www.bbc.com/sport/football/teams/leeds-united",
   "https://www.skysports.com/leeds-united",
   "https://motleedsnews.com/",
+  "https://www.leedsallover.com/category/latest-news/",
 ]) {
   assert.equal(isSpecificArticleUrl(url, leedsLive), false, `rejects generic URL ${url}`);
 }

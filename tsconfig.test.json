@@ -32,6 +32,7 @@
     "tests/admin-auth.test.ts",
     "tests/freshness.test.ts",
     "tests/rss-date.test.ts",
+    "tests/rss-parser.test.ts",
     "tests/text.test.ts"
   ]
 }

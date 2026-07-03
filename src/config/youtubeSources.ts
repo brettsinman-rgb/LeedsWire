@@ -51,6 +51,15 @@ export const youtubeSources: YouTubeSource[] = [
     includeShorts: false,
     minDurationSeconds: 180,
   },
+  {
+    id: "moustachi1",
+    name: "Moustachi1",
+    channelUrl: "https://www.youtube.com/@Moustachi1",
+    channelHandle: "@Moustachi1",
+    typeLabel: "Fan Media",
+    includeShorts: false,
+    minDurationSeconds: 180,
+  },
 ];
 
 export function getYouTubeSource(channelId: YouTubeSourceId) {

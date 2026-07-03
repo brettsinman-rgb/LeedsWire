@@ -13,6 +13,7 @@ export type NewsSourceId =
 export type YouTubeSourceId =
   | "leeds-united-official"
   | "one-leeds"
+  | "moustachi1"
   | "the-leeds-view"
   | "the-square-ball";
 

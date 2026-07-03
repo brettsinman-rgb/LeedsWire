@@ -518,6 +518,16 @@ const allVideos: Video[] = [
     tags: ["Leeds United", "transfer", "rumours"],
   },
   {
+    id: "moustachi1-leeds-chat",
+    title: "Moustachi1: Leeds United fan media reaction and analysis",
+    channelId: "moustachi1",
+    publishedAt: "2026-06-10T18:30:00.000Z",
+    youtubeId: "M7lc1UVf-VE",
+    durationSeconds: 1280,
+    thumbnailUrl: "https://i.ytimg.com/vi/M7lc1UVf-VE/hqdefault.jpg",
+    tags: ["Leeds United", "Fan Media", "analysis"],
+  },
+  {
     id: "leeds-view-analysis",
     title: "The Leeds View: Farke's biggest tactical calls this summer",
     channelId: "the-leeds-view",
@@ -584,6 +594,7 @@ export function getFallbackVideosByChannel() {
     {
       "leeds-united-official": [],
       "one-leeds": [],
+      moustachi1: [],
       "the-leeds-view": [],
       "the-square-ball": [],
     },

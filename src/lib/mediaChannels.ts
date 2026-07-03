@@ -21,6 +21,11 @@ export const mediaChannelLinks = [
     label: "One Leeds",
     anchorId: "one-leeds",
   },
+  {
+    sourceId: "moustachi1",
+    label: "Moustachi1",
+    anchorId: "moustachi1",
+  },
 ] as const satisfies readonly {
   sourceId: YouTubeSourceId;
   label: string;

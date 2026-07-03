@@ -259,6 +259,7 @@ test.describe("LeedsWire private beta QA", () => {
     await expect(page.getByText("Leeds United Official").first()).toBeVisible();
     await expect(page.getByText("The Square Ball").first()).toBeVisible();
     await expect(page.getByText("One Leeds").first()).toBeVisible();
+    await expect(page.getByText("Moustachi1").first()).toBeVisible();
     await expect(page.getByText("The Leeds View").first()).toBeVisible();
 
     await page.getByTestId("video-card").first().click();

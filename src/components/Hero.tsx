@@ -26,7 +26,7 @@ export function Hero({ article }: HeroProps) {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_8%,rgba(255,221,0,0.075),transparent_28%),linear-gradient(180deg,rgba(8,27,47,0.78)_0%,rgba(6,17,31,0)_100%)]" />
       <div className="relative mx-auto max-w-7xl px-4 pb-8 pt-5 sm:px-6 sm:pb-12 lg:px-8">
         <article className="shine-card group relative overflow-hidden rounded-[1.25rem] bg-[#0b1726]/78 shadow-[0_26px_82px_rgba(0,0,0,0.26)] ring-1 ring-white/[0.08] backdrop-blur lg:max-h-[800px]">
-          <div className="grid lg:h-[min(70vh,720px)] lg:min-h-[650px] lg:max-h-[720px] lg:grid-cols-[1.35fr_0.82fr]">
+          <div className="grid lg:h-[clamp(34rem,58vh,38rem)] lg:grid-cols-[1.35fr_0.82fr]">
             <div className="image-wrap h-[320px] sm:h-[420px] md:h-[500px] lg:h-full lg:min-h-0">
               <SafeImage
                 src={article.imageUrl}
@@ -43,20 +43,20 @@ export function Hero({ article }: HeroProps) {
                 <time>{formatDate(article.publishedAt)}</time>
               </div>
             </div>
-            <div className="flex flex-col bg-[linear-gradient(145deg,rgba(14,29,48,0.96)_0%,rgba(8,24,42,0.92)_100%)] p-6 sm:p-8 lg:min-h-0 lg:p-10">
+            <div className="flex flex-col bg-[linear-gradient(145deg,rgba(14,29,48,0.96)_0%,rgba(8,24,42,0.92)_100%)] p-6 sm:p-8 lg:min-h-0">
               <div className="flex flex-1 flex-col justify-center overflow-hidden">
-                <p className="mb-4 text-xs font-bold uppercase tracking-[0.22em] text-[#ffdd00]">
+                <p className="mb-4 text-xs font-bold uppercase tracking-[0.22em] text-[#ffdd00] lg:mb-3">
                   Top Story
                 </p>
                 <h1 className="line-clamp-2 text-2xl font-semibold leading-[1.03] tracking-tight text-white sm:line-clamp-4 sm:text-5xl lg:text-[3.35rem]">
                   {article.title}
                 </h1>
-                <p className="mt-5 line-clamp-3 max-w-2xl text-base leading-7 text-zinc-300">
+                <p className="mt-5 line-clamp-3 max-w-2xl text-base leading-7 text-zinc-300 lg:mt-4">
                   {shortExcerpt}
                 </p>
               </div>
-              <div className="mt-auto pt-8">
-                <div className="mb-5 h-px bg-white/[0.08]" />
+              <div className="mt-auto pt-8 lg:pt-5">
+                <div className="mb-5 h-px bg-white/[0.08] lg:mb-4" />
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <time className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
                     {formatRelativeTime(article.publishedAt)}

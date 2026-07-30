@@ -7,9 +7,7 @@ import type { NextFixture, NextFixtureResponse } from "@/types/fixture";
 const SEEN_KEY = "leedswire-next-fixture-seen";
 const INITIAL_REVEAL_DELAY_MS = 600;
 const DISPLAY_DURATION_MS = 15_000;
-const MOBILE_EXIT_DURATION_MS = 220;
-const DESKTOP_EXIT_DURATION_MS = 400;
-const REDUCED_MOTION_EXIT_DURATION_MS = 150;
+const EXIT_FALLBACK_MS = 700;
 
 type PopupPhase = "hidden" | "entering" | "visible" | "exiting";
 type DismissReason = "close" | "auto";
@@ -37,16 +35,6 @@ function formatFixtureTime(kickoffAt: string) {
   }).format(new Date(kickoffAt));
 }
 
-function getExitDuration(prefersReducedMotion: boolean) {
-  if (prefersReducedMotion) {
-    return REDUCED_MOTION_EXIT_DURATION_MS;
-  }
-
-  return window.matchMedia("(min-width: 640px)").matches
-    ? DESKTOP_EXIT_DURATION_MS
-    : MOBILE_EXIT_DURATION_MS;
-}
-
 function TeamCrest({ src, team }: { src: string; team: string }) {
   return (
     // Crest URLs are validated as absolute HTTPS URLs by the server parser.
@@ -71,6 +59,16 @@ export function NextFixturePopup() {
   const removalTimer = useRef<number | null>(null);
   const hasRecordedView = useRef(false);
 
+  const removePopup = useCallback(() => {
+    if (removalTimer.current !== null) {
+      window.clearTimeout(removalTimer.current);
+      removalTimer.current = null;
+    }
+
+    setPhase("hidden");
+    setFixture(null);
+  }, []);
+
   const dismiss = useCallback(
     (reason: DismissReason) => {
       if (!fixture || phase === "exiting" || phase === "hidden") {
@@ -86,14 +84,11 @@ export function NextFixturePopup() {
       setPhase("exiting");
 
       removalTimer.current = window.setTimeout(
-        () => {
-          setPhase("hidden");
-          setFixture(null);
-        },
-        getExitDuration(prefersReducedMotion),
+        removePopup,
+        prefersReducedMotion ? 300 : EXIT_FALLBACK_MS,
       );
     },
-    [fixture, phase, prefersReducedMotion],
+    [fixture, phase, prefersReducedMotion, removePopup],
   );
 
   useEffect(() => {
@@ -151,9 +146,11 @@ export function NextFixturePopup() {
             setFixture(nextFixture);
             setPhase("entering");
             remainingMs.current = DISPLAY_DURATION_MS;
-            animationFrame = window.requestAnimationFrame(() =>
-              setPhase("visible"),
-            );
+            animationFrame = window.requestAnimationFrame(() => {
+              animationFrame = window.requestAnimationFrame(() =>
+                setPhase("visible"),
+              );
+            });
           }, INITIAL_REVEAL_DELAY_MS);
         };
 
@@ -318,10 +315,12 @@ export function NextFixturePopup() {
       role="dialog"
       aria-label={`Next Leeds United fixture against ${fixture.opponent}`}
       className={[
-        "next-fixture-popup fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-[60] mx-auto w-auto max-w-[400px] transition-[transform,opacity] duration-200 ease-out sm:inset-x-auto sm:bottom-6 sm:right-6 sm:mx-0 sm:w-[400px] sm:duration-[400ms] lg:right-[max(1.5rem,calc((100vw-1560px)/2+1.5rem))]",
+        "next-fixture-popup fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-[60] mx-auto w-auto max-w-[400px] transition-[translate,opacity] duration-200 ease-out sm:inset-x-auto sm:bottom-6 sm:right-6 sm:mx-0 sm:w-[400px] sm:duration-[400ms] lg:right-[max(1.5rem,calc((100vw-1560px)/2+1.5rem))]",
         isShown
           ? "translate-x-0 translate-y-0 opacity-100"
-          : "translate-y-5 opacity-0 sm:translate-x-[calc(100%+2rem)] sm:translate-y-0",
+          : prefersReducedMotion
+            ? "translate-x-0 translate-y-0 opacity-0"
+            : "translate-y-5 opacity-0 sm:translate-x-[calc(100%+max(1.5rem,calc((100vw-1560px)/2+1.5rem))+1px)] sm:translate-y-0",
       ].join(" ")}
       onMouseEnter={() => {
         if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
@@ -329,6 +328,18 @@ export function NextFixturePopup() {
         }
       }}
       onMouseLeave={() => setIsPaused(false)}
+      onTransitionEnd={(event) => {
+        if (
+          phase !== "exiting" ||
+          event.target !== event.currentTarget ||
+          (event.propertyName !== "translate" &&
+            event.propertyName !== "opacity")
+        ) {
+          return;
+        }
+
+        window.requestAnimationFrame(removePopup);
+      }}
       data-testid="next-fixture-popup"
     >
       <div className="relative overflow-hidden rounded-[1.15rem] bg-[radial-gradient(circle_at_88%_0%,rgba(255,221,0,0.1),transparent_36%),linear-gradient(145deg,rgba(14,29,48,0.98),rgba(7,24,39,0.98))] p-4 shadow-[0_8px_28px_rgba(0,0,0,0.14)] ring-1 ring-white/[0.12] backdrop-blur-xl sm:p-5">

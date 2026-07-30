@@ -117,6 +117,7 @@ body {
 
   .next-fixture-popup {
     transform: none !important;
+    translate: none !important;
     transition-duration: 150ms !important;
     transition-property: opacity !important;
   }

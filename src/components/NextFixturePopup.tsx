@@ -315,12 +315,12 @@ export function NextFixturePopup() {
       role="dialog"
       aria-label={`Next Leeds United fixture against ${fixture.opponent}`}
       className={[
-        "next-fixture-popup fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-[60] mx-auto w-auto max-w-[400px] transition-[translate,opacity] duration-200 ease-out sm:inset-x-auto sm:bottom-6 sm:right-6 sm:mx-0 sm:w-[400px] sm:duration-[400ms] lg:right-[max(1.5rem,calc((100vw-1560px)/2+1.5rem))]",
+        "next-fixture-popup fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-[60] mx-auto w-auto max-w-[400px] transition-[translate,opacity] duration-200 ease-out sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-[calc(var(--lw-header-offset)+1.5rem)] sm:mx-0 sm:w-[400px] sm:duration-[400ms]",
         isShown
           ? "translate-x-0 translate-y-0 opacity-100"
           : prefersReducedMotion
             ? "translate-x-0 translate-y-0 opacity-0"
-            : "translate-y-5 opacity-0 sm:translate-x-[calc(100%+max(1.5rem,calc((100vw-1560px)/2+1.5rem))+1px)] sm:translate-y-0",
+            : "translate-y-5 opacity-0 sm:translate-x-[calc(100%+1.5rem+1px)] sm:translate-y-0",
       ].join(" ")}
       onMouseEnter={() => {
         if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {

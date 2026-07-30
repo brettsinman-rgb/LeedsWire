@@ -160,6 +160,18 @@ test("desktop popup enters fully from the right and exits to the right", async (
   const settledBox = await popup.boundingBox();
   expect(settledBox?.width).toBe(400);
   expect(
+    Math.abs(1920 - (settledBox!.x + settledBox!.width) - 24),
+  ).toBeLessThan(0.5);
+  const expectedDesktopTop = await page.evaluate(() => {
+    const headerOffset = Number.parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue(
+        "--lw-header-offset",
+      ),
+    );
+    return headerOffset + 24;
+  });
+  expect(Math.abs(settledBox!.y - expectedDesktopTop)).toBeLessThan(1);
+  expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth === window.innerWidth,
     ),

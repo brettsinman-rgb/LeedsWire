@@ -3,7 +3,6 @@ import { getArticleCtaUrl } from "@/lib/articleUrls";
 import { formatRelativeTime } from "@/lib/format";
 import type { Article } from "@/types/content";
 import { SafeImage } from "@/components/SafeImage";
-import { ArticleRating } from "@/components/ArticleRating";
 import type { CSSProperties } from "react";
 
 type ArticleCardProps = {
@@ -150,7 +149,6 @@ export function ArticleCard({
                 </a>
               ) : null}
             </div>
-            <ArticleRating article={article} dense={denseMobile} />
           </div>
         </div>
       </div>

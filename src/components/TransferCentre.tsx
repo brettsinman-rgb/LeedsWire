@@ -1,5 +1,4 @@
 import { ArticleCard } from "@/components/ArticleCard";
-import { ArticleRating } from "@/components/ArticleRating";
 import { getNewsSource } from "@/config/newsSources";
 import { getArticleCtaUrl } from "@/lib/articleUrls";
 import { formatDate } from "@/lib/format";
@@ -78,7 +77,6 @@ export function TransferCentre({ articles }: TransferCentreProps) {
                     <span className="text-base leading-none">→</span>
                   </a>
                 ) : null}
-                <ArticleRating article={article} dense />
               </article>
             );
           })}

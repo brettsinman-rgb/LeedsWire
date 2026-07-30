@@ -43,12 +43,12 @@ export function Hero({ article }: HeroProps) {
                 <time>{formatDate(article.publishedAt)}</time>
               </div>
             </div>
-            <div className="flex min-h-[360px] flex-col bg-[linear-gradient(145deg,rgba(14,29,48,0.96)_0%,rgba(8,24,42,0.92)_100%)] p-6 sm:p-8 lg:min-h-0 lg:p-10">
+            <div className="flex flex-col bg-[linear-gradient(145deg,rgba(14,29,48,0.96)_0%,rgba(8,24,42,0.92)_100%)] p-6 sm:p-8 lg:min-h-0 lg:p-10">
               <div className="flex flex-1 flex-col justify-center overflow-hidden">
                 <p className="mb-4 text-xs font-bold uppercase tracking-[0.22em] text-[#ffdd00]">
                   Top Story
                 </p>
-                <h1 className="line-clamp-4 text-4xl font-semibold leading-[1.03] tracking-tight text-white sm:text-5xl lg:text-[3.35rem]">
+                <h1 className="line-clamp-2 text-2xl font-semibold leading-[1.03] tracking-tight text-white sm:line-clamp-4 sm:text-5xl lg:text-[3.35rem]">
                   {article.title}
                 </h1>
                 <p className="mt-5 line-clamp-3 max-w-2xl text-base leading-7 text-zinc-300">

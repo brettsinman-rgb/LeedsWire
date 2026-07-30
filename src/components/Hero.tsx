@@ -25,7 +25,7 @@ export function Hero({ article }: HeroProps) {
     <section className="relative isolate overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_8%,rgba(255,221,0,0.075),transparent_28%),linear-gradient(180deg,rgba(8,27,47,0.78)_0%,rgba(6,17,31,0)_100%)]" />
       <div className="relative mx-auto max-w-7xl px-4 pb-8 pt-5 sm:px-6 sm:pb-12 lg:px-8">
-        <article className="shine-card group relative overflow-hidden rounded-[1.25rem] bg-[#0b1726]/78 shadow-[0_26px_82px_rgba(0,0,0,0.26)] ring-1 ring-white/[0.08] backdrop-blur lg:max-h-[800px]">
+        <article className="shine-card group relative overflow-hidden rounded-[1.25rem] bg-[#0b1726]/78 shadow-[0_8px_28px_rgba(0,0,0,0.12)] ring-1 ring-white/[0.08] backdrop-blur lg:max-h-[800px]">
           <div className="grid lg:h-[clamp(29rem,49vh,32rem)] lg:grid-cols-[1.35fr_0.82fr]">
             <div className="image-wrap h-[320px] sm:h-[420px] md:h-[500px] lg:h-full lg:min-h-0">
               <SafeImage

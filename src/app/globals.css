@@ -114,6 +114,12 @@ body {
   .image-wrap::after {
     display: none;
   }
+
+  .next-fixture-popup {
+    transform: none !important;
+    transition-duration: 150ms !important;
+    transition-property: opacity !important;
+  }
 }
 
 a,

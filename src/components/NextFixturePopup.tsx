@@ -5,8 +5,11 @@ import { event as trackEvent } from "@/lib/analytics";
 import type { NextFixture, NextFixtureResponse } from "@/types/fixture";
 
 const SEEN_KEY = "leedswire-next-fixture-seen";
+const INITIAL_REVEAL_DELAY_MS = 600;
 const DISPLAY_DURATION_MS = 15_000;
-const EXIT_DURATION_MS = 220;
+const MOBILE_EXIT_DURATION_MS = 220;
+const DESKTOP_EXIT_DURATION_MS = 400;
+const REDUCED_MOTION_EXIT_DURATION_MS = 150;
 
 type PopupPhase = "hidden" | "entering" | "visible" | "exiting";
 type DismissReason = "close" | "auto";
@@ -32,6 +35,16 @@ function formatFixtureTime(kickoffAt: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(kickoffAt));
+}
+
+function getExitDuration(prefersReducedMotion: boolean) {
+  if (prefersReducedMotion) {
+    return REDUCED_MOTION_EXIT_DURATION_MS;
+  }
+
+  return window.matchMedia("(min-width: 640px)").matches
+    ? DESKTOP_EXIT_DURATION_MS
+    : MOBILE_EXIT_DURATION_MS;
 }
 
 function TeamCrest({ src, team }: { src: string; team: string }) {
@@ -77,7 +90,7 @@ export function NextFixturePopup() {
           setPhase("hidden");
           setFixture(null);
         },
-        prefersReducedMotion ? 0 : EXIT_DURATION_MS,
+        getExitDuration(prefersReducedMotion),
       );
     },
     [fixture, phase, prefersReducedMotion],
@@ -95,6 +108,8 @@ export function NextFixturePopup() {
 
   useEffect(() => {
     let animationFrame = 0;
+    let revealTimer = 0;
+    let handlePageLoad: (() => void) | null = null;
     const controller = new AbortController();
 
     try {
@@ -127,12 +142,27 @@ export function NextFixturePopup() {
           return;
         }
 
-        setFixture(nextFixture);
-        setPhase("entering");
-        remainingMs.current = DISPLAY_DURATION_MS;
-        animationFrame = window.requestAnimationFrame(() =>
-          setPhase("visible"),
-        );
+        const revealFixture = () => {
+          revealTimer = window.setTimeout(() => {
+            if (controller.signal.aborted) {
+              return;
+            }
+
+            setFixture(nextFixture);
+            setPhase("entering");
+            remainingMs.current = DISPLAY_DURATION_MS;
+            animationFrame = window.requestAnimationFrame(() =>
+              setPhase("visible"),
+            );
+          }, INITIAL_REVEAL_DELAY_MS);
+        };
+
+        if (document.readyState === "complete") {
+          revealFixture();
+        } else {
+          handlePageLoad = revealFixture;
+          window.addEventListener("load", handlePageLoad, { once: true });
+        }
       } catch (error) {
         if (!(error instanceof DOMException && error.name === "AbortError")) {
           // Fixture failures intentionally remain invisible to visitors.
@@ -145,6 +175,11 @@ export function NextFixturePopup() {
     return () => {
       controller.abort();
       window.cancelAnimationFrame(animationFrame);
+      window.clearTimeout(revealTimer);
+
+      if (handlePageLoad) {
+        window.removeEventListener("load", handlePageLoad);
+      }
 
       if (removalTimer.current !== null) {
         window.clearTimeout(removalTimer.current);
@@ -283,10 +318,10 @@ export function NextFixturePopup() {
       role="dialog"
       aria-label={`Next Leeds United fixture against ${fixture.opponent}`}
       className={[
-        "fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-[60] mx-auto w-auto max-w-[400px] transition duration-200 ease-out motion-reduce:transform-none motion-reduce:transition-none sm:inset-x-auto sm:bottom-6 sm:right-6 sm:mx-0 sm:w-[400px] lg:right-[max(1.5rem,calc((100vw-1560px)/2+1.5rem))]",
+        "next-fixture-popup fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] z-[60] mx-auto w-auto max-w-[400px] transition-[transform,opacity] duration-200 ease-out sm:inset-x-auto sm:bottom-6 sm:right-6 sm:mx-0 sm:w-[400px] sm:duration-[400ms] lg:right-[max(1.5rem,calc((100vw-1560px)/2+1.5rem))]",
         isShown
-          ? "translate-y-0 opacity-100"
-          : "translate-y-5 opacity-0 sm:translate-y-3",
+          ? "translate-x-0 translate-y-0 opacity-100"
+          : "translate-y-5 opacity-0 sm:translate-x-[calc(100%+2rem)] sm:translate-y-0",
       ].join(" ")}
       onMouseEnter={() => {
         if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {

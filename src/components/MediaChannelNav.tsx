@@ -118,9 +118,9 @@ export function MediaChannelNav({
       ) : null}
       <div
         className={[
-          "-mx-5 flex max-w-none gap-0.5 overflow-visible whitespace-nowrap px-5 py-4 min-[390px]:gap-1 sm:mx-0 sm:max-w-full sm:gap-2 sm:p-4",
+          "-mx-5 flex max-w-none flex-wrap gap-0.5 overflow-visible whitespace-normal px-5 py-4 min-[390px]:gap-1 sm:mx-0 sm:max-w-full sm:flex-nowrap sm:gap-2 sm:whitespace-nowrap sm:p-4",
           align === "start"
-            ? "sm:flex-wrap sm:justify-start sm:px-0 sm:whitespace-normal"
+            ? "sm:justify-start sm:px-0"
             : "sm:justify-end",
         ].join(" ")}
       >

@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsc -p tsconfig.test.json && node .test-build/tests/news-filter.test.js && node .test-build/tests/article-url.test.js && node .test-build/tests/ad-fallback.test.js && node .test-build/tests/ad-campaign-status.test.js && node .test-build/tests/ad-creatives.test.js && node .test-build/tests/ad-settings.test.js && node .test-build/tests/admin-auth.test.js && node .test-build/tests/freshness.test.js && node .test-build/tests/rss-date.test.js && node .test-build/tests/rss-parser.test.js && node .test-build/tests/text.test.js",
+    "test": "tsc -p tsconfig.test.json && node .test-build/tests/news-filter.test.js && node .test-build/tests/article-url.test.js && node .test-build/tests/ad-fallback.test.js && node .test-build/tests/ad-campaign-status.test.js && node .test-build/tests/ad-creatives.test.js && node .test-build/tests/ad-settings.test.js && node .test-build/tests/admin-auth.test.js && node .test-build/tests/freshness.test.js && node .test-build/tests/fixture-parser.test.js && node .test-build/tests/rss-date.test.js && node .test-build/tests/rss-parser.test.js && node .test-build/tests/text.test.js",
     "test:e2e": "playwright test",
     "test:e2e:report": "playwright show-report"
   },

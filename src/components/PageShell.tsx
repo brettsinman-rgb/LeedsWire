@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { SideSkins } from "@/components/AdSlot";
 import { Header } from "@/components/Header";
+import { NextFixturePopup } from "@/components/NextFixturePopup";
 import { PromotionalPopup } from "@/components/PromotionalPopup";
 import { getActiveAdForPlacement } from "@/config/ads.config";
 import { isPlacementEnabled } from "@/config/adControls";
@@ -55,6 +56,7 @@ export async function PageShell({ children, pathname }: PageShellProps) {
       {popupEnabled ? (
         <PromotionalPopup config={getPopupConfigForCampaign(popupCampaign)} />
       ) : null}
+      <NextFixturePopup />
       <main className="pt-[var(--lw-header-offset)]">{children}</main>
       <footer className="border-t border-white/[0.08] bg-[#071827]/72 px-4 py-10 text-center backdrop-blur sm:py-12">
         <p className="mx-auto max-w-[700px] text-[13px] leading-6 text-[#94A3B8] sm:text-sm">

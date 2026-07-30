@@ -22,6 +22,7 @@ type Frame = {
   left: number;
   top: number;
   right: number;
+  bottom: number;
   opacity: number;
   transform: string;
   translate: string;
@@ -76,6 +77,7 @@ async function prepareFixtureQa(page: Page) {
           left: rect.left,
           top: rect.top,
           right: rect.right,
+          bottom: rect.bottom,
           opacity: Number.parseFloat(style.opacity),
           transform: style.transform,
           translate: style.translate,
@@ -120,7 +122,7 @@ async function readFixtureQa(page: Page) {
   );
 }
 
-test("desktop popup enters fully from the right and exits to the right", async ({
+test("desktop popup enters diagonally from above-right and exits above-right", async ({
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop");
@@ -145,14 +147,19 @@ test("desktop popup enters fully from the right and exits to the right", async (
 
   expect(first.time - qa.loadAt).toBeGreaterThanOrEqual(550);
   expect(first.left).toBeGreaterThanOrEqual(1920);
+  expect(first.bottom).toBeLessThanOrEqual(0);
   expect(first.opacity).toBe(0);
   expect(first.translate).not.toBe("none");
   expect(final.left).toBeLessThan(1920);
   expect(final.opacity).toBeGreaterThanOrEqual(0.999);
-  expect(Math.abs(final.top - first.top)).toBeLessThan(1);
+  expect(first.top).toBeLessThan(final.top);
   expect(
     qa.frames.some(
-      (frame) => frame.left < first.left && frame.left > final.left,
+      (frame) =>
+        frame.left < first.left &&
+        frame.left > final.left &&
+        frame.top > first.top &&
+        frame.top < final.top,
     ),
   ).toBe(true);
   expect(qa.frames.some((frame) => frame.opacity > first.opacity)).toBe(true);
@@ -181,20 +188,19 @@ test("desktop popup enters fully from the right and exits to the right", async (
   await popup
     .getByRole("button", { name: "Close next fixture" })
     .click({ force: true });
-  await page.waitForFunction((settledLeft) => {
+  await page.waitForFunction(({ settledLeft, settledTop }) => {
     const element = document.querySelector<HTMLElement>(
       '[data-testid="next-fixture-popup"]',
     );
-    return (
-      element &&
-      element.getBoundingClientRect().left > Number(settledLeft) + 1
-    );
-  }, settledBox!.x);
+    if (!element) return false;
+    const rect = element.getBoundingClientRect();
+    return rect.left > settledLeft + 1 && rect.top < settledTop - 1;
+  }, { settledLeft: settledBox!.x, settledTop: settledBox!.y });
 
   const exitingBox = await popup.boundingBox();
   expect(exitingBox).not.toBeNull();
   expect(exitingBox!.x).toBeGreaterThan(settledBox!.x);
-  expect(Math.abs(exitingBox!.y - settledBox!.y)).toBeLessThan(1);
+  expect(exitingBox!.y).toBeLessThan(settledBox!.y);
 
   await expect(popup).toHaveCount(0);
   const afterExit = await readFixtureQa(page);
@@ -202,10 +208,11 @@ test("desktop popup enters fully from the right and exits to the right", async (
   const lastExitFrame = exitFrames.at(-1);
 
   expect(lastExitFrame?.left).toBeGreaterThanOrEqual(1920);
+  expect(lastExitFrame?.bottom).toBeLessThanOrEqual(0);
   expect(lastExitFrame?.opacity).toBeLessThanOrEqual(0.02);
 });
 
-test("mobile popup retains its bottom-up animation", async ({
+test("mobile popup enters from above and exits upward", async ({
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name !== "mobile");
@@ -220,10 +227,43 @@ test("mobile popup retains its bottom-up animation", async ({
   const first = qa.frames[0];
   const final = qa.frames.at(-1)!;
 
-  expect(first.left).toBeLessThan(390);
-  expect(first.top).toBeGreaterThan(final.top);
+  expect(first.bottom).toBeLessThanOrEqual(0);
+  expect(first.top).toBeLessThan(final.top);
   expect(Math.abs(first.left - final.left)).toBeLessThan(1);
   expect(final.opacity).toBe(1);
+
+  const settledBox = await popup.boundingBox();
+  const expectedMobileTop = await page.evaluate(() => {
+    const headerOffset = Number.parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue(
+        "--lw-header-offset",
+      ),
+    );
+    return headerOffset + 24;
+  });
+  expect(settledBox!.x).toBeCloseTo(16, 0);
+  expect(390 - settledBox!.x - settledBox!.width).toBeCloseTo(16, 0);
+  expect(settledBox!.y).toBeGreaterThanOrEqual(expectedMobileTop);
+
+  const framesBeforeExit = qa.frames.length;
+  await popup
+    .getByRole("button", { name: "Close next fixture" })
+    .click({ force: true });
+  await page.waitForFunction((settledTop) => {
+    const element = document.querySelector<HTMLElement>(
+      '[data-testid="next-fixture-popup"]',
+    );
+    return (
+      element && element.getBoundingClientRect().top < Number(settledTop) - 1
+    );
+  }, settledBox!.y);
+  await expect(popup).toHaveCount(0);
+
+  const afterExit = await readFixtureQa(page);
+  const lastExitFrame = afterExit.frames.slice(framesBeforeExit).at(-1);
+  expect(lastExitFrame?.bottom).toBeLessThanOrEqual(0);
+  expect(Math.abs(lastExitFrame!.left - final.left)).toBeLessThan(1);
+  expect(lastExitFrame?.opacity).toBeLessThanOrEqual(0.02);
 });
 
 test("reduced motion uses opacity without directional movement", async ({

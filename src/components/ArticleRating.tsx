@@ -142,19 +142,10 @@ export function ArticleRating({ article, dense = false }: ArticleRatingProps) {
     <div
       className={
         dense
-          ? "mt-3 border-t border-white/[0.08] pt-3"
-          : "mt-4 border-t border-white/[0.08] pt-4"
+          ? "mt-3 border-t border-white/[0.08] pt-2"
+          : "mt-4 border-t border-white/[0.08] pt-3"
       }
     >
-      <p
-        className={
-          dense
-            ? "mb-2 text-[0.68rem] font-semibold text-zinc-400"
-            : "mb-3 text-xs font-semibold text-zinc-400"
-        }
-      >
-        Was this worth your time?
-      </p>
       <div className="grid grid-cols-3 gap-1.5 md:gap-2">
         {ratingOptions.map((option) => {
           const isActive = visitorRating === option.value;

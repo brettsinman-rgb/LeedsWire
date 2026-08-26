@@ -320,7 +320,7 @@ export function NextFixturePopup() {
           ? "translate-x-0 translate-y-0 opacity-100"
           : prefersReducedMotion
             ? "translate-x-0 translate-y-0 opacity-0"
-            : "-translate-y-[calc(100%+env(safe-area-inset-top)+var(--lw-header-offset)+1.5rem+1px)] opacity-0 sm:translate-x-[calc(100%+1.5rem+1px)]",
+            : "-translate-y-[calc(100%+env(safe-area-inset-top)+var(--lw-header-offset)+1.5rem+1px)] opacity-0 sm:translate-x-[calc(100%+1.5rem+1px)] sm:translate-y-0",
       ].join(" ")}
       onMouseEnter={() => {
         if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {

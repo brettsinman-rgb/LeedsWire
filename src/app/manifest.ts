@@ -6,6 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "LeedsWire",
     description: "Latest Leeds United news, transfers and fan ratings.",
     start_url: "/",
+    id: "/",
     display: "standalone",
     background_color: "#06111f",
     theme_color: "#071827",

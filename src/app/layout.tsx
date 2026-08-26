@@ -4,6 +4,8 @@ import Script from "next/script";
 import { Suspense } from "react";
 import { GoogleAnalyticsPageView } from "@/components/GoogleAnalyticsPageView";
 import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
+import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
+import { PushNotificationDiagnostics } from "@/components/PushNotificationDiagnostics";
 import {
   absoluteUrl,
   siteUrl,
@@ -70,6 +72,8 @@ export default function RootLayout({
       <body>
         {children}
         <PwaInstallPrompt />
+        <PushNotificationPrompt />
+        {process.env.NODE_ENV === "development" ? <PushNotificationDiagnostics /> : null}
         {isGoogleAnalyticsEnabled ? (
           <>
             <Script

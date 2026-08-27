@@ -11,6 +11,7 @@ import {
 } from "@/config/ads.config";
 import { isPlacementEnabled } from "@/config/adControls";
 import { appendHtml5ClickTags } from "@/lib/adHtml5";
+import { MOBILE_AD_MEDIA_QUERY } from "@/lib/adBreakpoints";
 
 const SIDE_SKIN_WIDTH = 160;
 const SIDE_SKIN_HEIGHT = 1080;
@@ -144,7 +145,7 @@ function ImageCreative({
     <img
       src={src}
       alt={campaign.label ?? "Advertisement"}
-      className="h-full w-full object-cover"
+      className={slot === "desktop" ? "h-full w-full object-contain" : "h-full w-full object-cover"}
       loading="lazy"
       onError={() => setHasFailed(true)}
     />
@@ -283,6 +284,15 @@ export function AdSlot({
       : undefined;
   const resolvedDesktop = desktopSize ?? [970, 250];
   const resolvedMobile = mobileSize ?? resolvedDesktop;
+  const [isMobileViewport, setIsMobileViewport] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(MOBILE_AD_MEDIA_QUERY);
+    const updateViewport = () => setIsMobileViewport(mediaQuery.matches);
+    updateViewport();
+    mediaQuery.addEventListener("change", updateViewport);
+    return () => mediaQuery.removeEventListener("change", updateViewport);
+  }, []);
 
   useEffect(() => {
     trackImpression(placementId, campaign);
@@ -332,40 +342,32 @@ export function AdSlot({
           />
         )
       ) : null}
-      <div
-        className="relative z-10 hidden overflow-hidden rounded-[0.85rem] sm:block"
-        style={{
-          width: resolvedDesktop[0],
-          height: resolvedDesktop[1],
-          maxWidth: "100%",
-          ...cssSize(resolvedDesktop),
-        }}
-      >
-        <Creative
-          campaign={campaign}
-          placementId={placementId}
-          desktopSize={resolvedDesktop}
-          mobileSize={resolvedMobile}
-          slot="desktop"
-        />
-      </div>
-      <div
-        className="relative z-10 overflow-hidden rounded-[0.85rem] sm:hidden"
-        style={{
-          width: resolvedMobile[0],
-          height: resolvedMobile[1],
-          maxWidth: "100%",
-          ...cssSize(resolvedMobile),
-        }}
-      >
-        <Creative
-          campaign={mobileCampaign}
-          placementId={placementId}
-          desktopSize={resolvedDesktop}
-          mobileSize={resolvedMobile}
-          slot="mobile"
-        />
-      </div>
+      {isMobileViewport === false ? (
+        <div
+          className="relative z-10 w-full overflow-hidden rounded-[0.85rem]"
+          style={{
+            maxWidth: resolvedDesktop[0],
+            aspectRatio: `${resolvedDesktop[0]} / ${resolvedDesktop[1]}`,
+            ...cssSize(resolvedDesktop),
+          }}
+          data-ad-variant="desktop"
+        >
+          <Creative campaign={campaign} placementId={placementId} desktopSize={resolvedDesktop} mobileSize={resolvedMobile} slot="desktop" />
+        </div>
+      ) : isMobileViewport === true ? (
+        <div
+          className="relative z-10 overflow-hidden rounded-[0.85rem]"
+          style={{
+            width: resolvedMobile[0],
+            height: resolvedMobile[1],
+            maxWidth: "100%",
+            ...cssSize(resolvedMobile),
+          }}
+          data-ad-variant="mobile"
+        >
+          <Creative campaign={mobileCampaign} placementId={placementId} desktopSize={resolvedDesktop} mobileSize={resolvedMobile} slot="mobile" />
+        </div>
+      ) : null}
     </section>
   );
 }

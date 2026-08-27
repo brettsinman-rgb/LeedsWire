@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
+import { PwaInstallCta } from "@/components/PwaInstallCta";
 
 const navItems = [
   { label: "Premier League News", href: "/premier-league-news" },
@@ -175,6 +176,7 @@ export function Header() {
               </span>
             );
           })}
+          <span className="shrink-0 lg:ml-1"><PwaInstallCta /></span>
         </nav>
       </div>
     </header>

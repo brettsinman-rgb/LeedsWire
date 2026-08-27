@@ -3,7 +3,7 @@ import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import { Suspense } from "react";
 import { GoogleAnalyticsPageView } from "@/components/GoogleAnalyticsPageView";
-import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
+import { PwaInstallProvider } from "@/components/PwaInstallPrompt";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { PushNotificationDiagnostics } from "@/components/PushNotificationDiagnostics";
 import {
@@ -70,30 +70,31 @@ export default function RootLayout({
         <meta {...impactVerificationMeta} />
       </head>
       <body>
-        {children}
-        <PwaInstallPrompt />
-        <PushNotificationPrompt />
-        {process.env.NODE_ENV === "development" ? <PushNotificationDiagnostics /> : null}
-        {isGoogleAnalyticsEnabled ? (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`
+        <PwaInstallProvider>
+          {children}
+          <PushNotificationPrompt />
+          {process.env.NODE_ENV === "development" ? <PushNotificationDiagnostics /> : null}
+          {isGoogleAnalyticsEnabled ? (
+            <>
+              <Script
+                src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+                strategy="afterInteractive"
+              />
+              <Script id="google-analytics" strategy="afterInteractive">
+                {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
                 gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });
               `}
-            </Script>
-            <Suspense fallback={null}>
-              <GoogleAnalyticsPageView />
-            </Suspense>
-          </>
-        ) : null}
-        <Analytics />
+              </Script>
+              <Suspense fallback={null}>
+                <GoogleAnalyticsPageView />
+              </Suspense>
+            </>
+          ) : null}
+          <Analytics />
+        </PwaInstallProvider>
       </body>
     </html>
   );

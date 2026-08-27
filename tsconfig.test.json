@@ -17,6 +17,7 @@
     "src/lib/adSettings.ts",
     "src/lib/adCreatives.ts",
     "src/lib/adHtml5.ts",
+    "src/lib/adBreakpoints.ts",
     "src/lib/admin/auth.ts",
     "src/lib/text.ts",
     "src/lib/pushValidation.ts",
@@ -35,6 +36,7 @@
     "tests/news-filter.test.ts",
     "tests/article-url.test.ts",
     "tests/ad-fallback.test.ts",
+    "tests/ad-breakpoints.test.ts",
     "tests/ad-campaign-status.test.ts",
     "tests/ad-creatives.test.ts",
     "tests/ad-settings.test.ts",
@@ -45,6 +47,7 @@
     "tests/rss-parser.test.ts",
     "tests/text.test.ts",
     "tests/push-foundation.test.ts",
-    "tests/daily-brief.test.ts"
+    "tests/daily-brief.test.ts",
+    "tests/pwa-install.test.ts"
   ]
 }

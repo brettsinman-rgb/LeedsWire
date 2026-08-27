@@ -108,4 +108,13 @@ assert.match(serviceWorker, /dailyBriefEventId/);
 const cronRoute = fs.readFileSync("src/app/api/cron/daily-brief/route.ts", "utf8");
 assert.match(cronRoute, /process\.env\.CRON_SECRET/);
 
+const pushPrompt = fs.readFileSync("src/components/PushNotificationPrompt.tsx", "utf8");
+assert.match(
+  pushPrompt,
+  /existingSubscription \? "SAVE PREFERENCES" : "TURN ON ALERTS"/,
+);
+assert.match(pushPrompt, /dailyBrief: false/);
+assert.match(pushPrompt, /matchAlerts: true/);
+assert.match(pushPrompt, /fullTimeResults: true/);
+
 console.log("daily brief tests passed");

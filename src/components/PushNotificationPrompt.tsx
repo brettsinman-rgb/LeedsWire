@@ -12,6 +12,7 @@ import {
 } from "@/config/pushPrompt";
 
 const SNOOZE_KEY = "leedswire:push:snooze-until";
+const PREFERENCES_REVIEWED_KEY = "leedswire:push:preferences-reviewed-v1";
 const SNOOZE_MS = 14 * 24 * 60 * 60 * 1000;
 
 function isIos() {
@@ -43,6 +44,12 @@ export function PushNotificationPrompt() {
   const [shown, setShown] = useState(false);
   const [publicKey, setPublicKey] = useState("");
   const [state, setState] = useState<"idle" | "working" | "success" | "error">("idle");
+  const [preferences, setPreferences] = useState({
+    dailyBrief: false,
+    matchAlerts: true,
+    fullTimeResults: true,
+  });
+  const [existingSubscription, setExistingSubscription] = useState<PushSubscription | null>(null);
   const exitTimer = useRef<number | null>(null);
   const successTimer = useRef<number | null>(null);
 
@@ -68,12 +75,32 @@ export function PushNotificationPrompt() {
       }
       try {
         const registration = await navigator.serviceWorker.getRegistration("/");
-        const existing = await registration?.pushManager.getSubscription();
-        if (existing) return;
-        const response = await fetch("/api/push/status", { cache: "no-store" });
-        const result = await response.json() as { configured?: boolean; publicKey?: string | null };
+        const existing = await registration?.pushManager.getSubscription() ?? null;
+        if (existing && localStorage.getItem(PREFERENCES_REVIEWED_KEY) === "true") return;
+        const endpointQuery = existing
+          ? `?endpoint=${encodeURIComponent(existing.endpoint)}`
+          : "";
+        const response = await fetch(`/api/push/status${endpointQuery}`, { cache: "no-store" });
+        const result = await response.json() as {
+          configured?: boolean;
+          publicKey?: string | null;
+          subscribed?: boolean;
+          preferences?: {
+            dailyBrief?: boolean;
+            matchAlerts?: boolean;
+            fullTimeResults?: boolean;
+          } | null;
+        };
         if (!cancelled && response.ok && result.configured && result.publicKey) {
           setPublicKey(result.publicKey);
+          setExistingSubscription(existing);
+          if (result.subscribed && result.preferences) {
+            setPreferences({
+              dailyBrief: result.preferences.dailyBrief === true,
+              matchAlerts: result.preferences.matchAlerts !== false,
+              fullTimeResults: result.preferences.fullTimeResults !== false,
+            });
+          }
           setVisible(true);
           window.requestAnimationFrame(() =>
             window.requestAnimationFrame(() => setShown(true)),
@@ -109,6 +136,10 @@ export function PushNotificationPrompt() {
   }
 
   async function enable() {
+    if (!Object.values(preferences).some(Boolean)) {
+      setState("error");
+      return;
+    }
     setState("working");
     reportPushDiagnostic({
       permissionGranted: false,
@@ -121,7 +152,9 @@ export function PushNotificationPrompt() {
       lastSafeError: null,
     });
     try {
-      const permission = await Notification.requestPermission();
+      const permission = existingSubscription
+        ? Notification.permission
+        : await Notification.requestPermission();
       if (permission === "denied") {
         snooze();
         trackEvent("push_permission_denied");
@@ -140,7 +173,7 @@ export function PushNotificationPrompt() {
       const registration = await navigator.serviceWorker.ready;
       reportPushDiagnostic({ serviceWorkerReady: true });
       if (!registration.pushManager) throw new Error("PushManager is unavailable on the active worker");
-      const subscription =
+      const subscription = existingSubscription ??
         (await registration.pushManager.getSubscription()) ??
         (await registration.pushManager.subscribe({
           userVisibleOnly: true,
@@ -157,7 +190,7 @@ export function PushNotificationPrompt() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           ...serialized,
-          preferences: { matchAlerts: true, fullTimeResults: true },
+          preferences,
         }),
       });
       const result = await response.json() as {
@@ -173,7 +206,8 @@ export function PushNotificationPrompt() {
       if (!response.ok || result.ok !== true || result.persisted !== true) {
         throw new Error(result.code ?? `Subscribe request failed (${response.status})`);
       }
-      trackEvent("push_subscription_created");
+      trackEvent(existingSubscription ? "push_preferences_updated" : "push_subscription_created");
+      try { localStorage.setItem(PREFERENCES_REVIEWED_KEY, "true"); } catch {}
       setState("success");
       successTimer.current = window.setTimeout(
         hidePrompt,
@@ -198,9 +232,13 @@ export function PushNotificationPrompt() {
           : "-translate-y-[calc(100%+env(safe-area-inset-top)+var(--lw-header-offset)+1.5rem)] opacity-0",
       ].join(" ")}>
         {state === "success" ? (
-          <><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ffdd00]">LeedsWire alerts</p><h2 className="mt-2 text-xl font-semibold">You&apos;re in. MOT 💙💛</h2><button type="button" onClick={hidePrompt} className="mt-4 min-h-11 w-full rounded-xl bg-[#ffdd00] px-4 font-bold text-[#071827]">Done</button></>
+          <><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ffdd00]">LeedsWire alerts</p><h2 className="mt-2 text-xl font-semibold">Your alerts are saved. MOT 💙💛</h2><button type="button" onClick={hidePrompt} className="mt-4 min-h-11 w-full rounded-xl bg-[#ffdd00] px-4 font-bold text-[#071827]">Done</button></>
         ) : (
-          <><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ffdd00]">Never miss Leeds.</p><h2 id="push-title" className="mt-2 text-lg font-semibold">Get match alerts and Full-Time results straight to your phone.</h2><p className="mt-2 text-xs leading-5 text-zinc-400">Turn alerts off anytime in your browser or device settings.</p>{state === "error" ? <p className="mt-2 text-xs text-red-300">Alerts could not be enabled. Please try again later.</p> : null}<div className="mt-4 flex gap-3"><button type="button" disabled={state === "working"} onClick={() => void enable()} className="min-h-11 flex-1 rounded-xl bg-[#ffdd00] px-4 text-sm font-bold text-[#071827] disabled:opacity-60">{state === "working" ? "Enabling…" : "TURN ON ALERTS"}</button><button type="button" onClick={dismiss} className="min-h-11 rounded-xl bg-white/[0.06] px-4 text-sm font-semibold text-zinc-200 ring-1 ring-white/[0.1]">Not now</button></div></>
+          <><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ffdd00]">Never miss Leeds.</p><h2 id="push-title" className="mt-2 text-lg font-semibold">Choose your LeedsWire alerts.</h2><fieldset className="mt-3 space-y-2"><legend className="sr-only">Notification preferences</legend>{[
+            ["dailyBrief", "Daily Leeds Brief", "The biggest Leeds story each day."],
+            ["matchAlerts", "Match Alerts", "Important Leeds matchday updates."],
+            ["fullTimeResults", "Full-Time Results", "Get the score when it’s all over."],
+          ].map(([key, label, description]) => <label key={key} className="flex cursor-pointer items-start gap-3 rounded-xl bg-white/[0.045] px-3 py-2 ring-1 ring-white/[0.08]"><input type="checkbox" checked={preferences[key as keyof typeof preferences]} onChange={(event) => setPreferences((current) => ({ ...current, [key]: event.target.checked }))} className="mt-1 size-4 accent-[#ffdd00]"/><span><span className="block text-sm font-semibold text-white">{label}</span><span className="block text-[0.7rem] leading-4 text-zinc-400">{description}</span></span></label>)}</fieldset><p className="mt-2 text-xs leading-5 text-zinc-400">Choose at least one. Turn alerts off anytime in your browser or device settings.</p>{state === "error" ? <p className="mt-2 text-xs text-red-300">{Object.values(preferences).some(Boolean) ? "Alerts could not be saved. Please try again later." : "Choose at least one alert type."}</p> : null}<div className="mt-4 flex gap-3"><button type="button" disabled={state === "working" || !Object.values(preferences).some(Boolean)} onClick={() => void enable()} className="min-h-11 flex-1 rounded-xl bg-[#ffdd00] px-4 text-sm font-bold text-[#071827] disabled:opacity-60">{state === "working" ? "Saving…" : existingSubscription ? "SAVE ALERTS" : "TURN ON ALERTS"}</button><button type="button" onClick={dismiss} className="min-h-11 rounded-xl bg-white/[0.06] px-4 text-sm font-semibold text-zinc-200 ring-1 ring-white/[0.1]">Not now</button></div></>
         )}
       </section>
     </div>

@@ -20,6 +20,7 @@ export async function GET(request: Request) {
       ? {
           matchAlerts: subscription.notification_match_alerts,
           fullTimeResults: subscription.notification_full_time,
+          dailyBrief: subscription.notification_daily_brief,
         }
       : null,
   }, { headers: { "cache-control": "no-store" } });

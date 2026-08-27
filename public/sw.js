@@ -10,6 +10,7 @@ self.addEventListener("push", (event) => {
     data: {
       destinationUrl: typeof payload.destinationUrl === "string" && payload.destinationUrl.startsWith("/") ? payload.destinationUrl : "/",
       fixtureId: typeof payload.fixtureId === "string" ? payload.fixtureId : null,
+      dailyBriefEventId: typeof payload.dailyBriefEventId === "string" ? payload.dailyBriefEventId : null,
     },
   };
   event.waitUntil(self.registration.showNotification(title, options));

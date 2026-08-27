@@ -10,6 +10,7 @@ export function pushSubscriptionRow(
     auth: subscription.keys.auth,
     user_agent: metadata.userAgent?.slice(0, 500) || null,
     platform: metadata.platform?.slice(0, 100) || null,
+    notification_daily_brief: subscription.preferences.dailyBrief,
     notification_match_alerts: subscription.preferences.matchAlerts,
     notification_full_time: subscription.preferences.fullTimeResults,
     is_active: true,

@@ -22,6 +22,8 @@
     "src/lib/pushValidation.ts",
     "src/lib/pushClientSupport.ts",
     "src/lib/pushStoreRequest.ts",
+    "src/lib/dailyBrief.ts",
+    "src/lib/topStorySelection.ts",
     "src/config/adControls.ts",
     "src/config/adCampaignStatus.ts",
     "src/config/ads.config.ts",
@@ -41,6 +43,7 @@
     "tests/rss-date.test.ts",
     "tests/rss-parser.test.ts",
     "tests/text.test.ts",
-    "tests/push-foundation.test.ts"
+    "tests/push-foundation.test.ts",
+    "tests/daily-brief.test.ts"
   ]
 }

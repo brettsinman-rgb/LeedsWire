@@ -5,16 +5,14 @@ import { MediaChannelNav } from "@/components/MediaChannelNav";
 import { PageShell } from "@/components/PageShell";
 import { SectionHeader } from "@/components/SectionHeader";
 import { VideoChannelRows } from "@/components/VideoModal";
-import { enrichArticleImages } from "@/lib/articleImages";
-import { getArticles } from "@/lib/content";
+import { getHomepageStories } from "@/lib/topStory";
 import { getVideoChannelRows } from "@/lib/youtube";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 export default async function Home() {
-  const articles = await enrichArticleImages(await getArticles());
-  const topStory = articles[0];
+  const { articles, topStory } = await getHomepageStories();
   const latest = topStory
     ? articles.filter((article) => article.id !== topStory.id)
     : [];

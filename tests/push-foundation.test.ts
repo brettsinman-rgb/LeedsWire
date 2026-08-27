@@ -15,12 +15,13 @@ const valid = validatePushSubscription({
   keys: { p256dh: "public-key", auth: "auth-secret" },
 });
 assert.ok(valid);
-assert.deepEqual(valid.preferences, { matchAlerts: true, fullTimeResults: true });
+assert.deepEqual(valid.preferences, { dailyBrief: false, matchAlerts: true, fullTimeResults: true });
 assert.equal(validatePushSubscription({ endpoint: "http://unsafe.test", keys: {} }), null);
 
 const row = pushSubscriptionRow(valid, { userAgent: "Browser", platform: "Android" });
 assert.equal(row.endpoint, valid.endpoint);
 assert.equal(row.notification_match_alerts, true);
+assert.equal(row.notification_daily_brief, false);
 assert.equal(endpointFilter(valid.endpoint), "endpoint=eq.https%3A%2F%2Fpush.example.test%2Fsubscription%2F1");
 
 assert.equal(envFlag("true"), true);

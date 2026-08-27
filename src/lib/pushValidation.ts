@@ -1,4 +1,5 @@
 export type PushPreferences = {
+  dailyBrief: boolean;
   matchAlerts: boolean;
   fullTimeResults: boolean;
 };
@@ -45,6 +46,7 @@ export function validatePushSubscription(body: unknown): ValidPushSubscription |
     endpoint,
     keys: { p256dh, auth },
     preferences: {
+      dailyBrief: typeof selected.dailyBrief === "boolean" ? selected.dailyBrief : false,
       matchAlerts: typeof selected.matchAlerts === "boolean" ? selected.matchAlerts : true,
       fullTimeResults: typeof selected.fullTimeResults === "boolean" ? selected.fullTimeResults : true,
     },
@@ -59,6 +61,7 @@ export type SafePushPayload = {
   destinationUrl: string;
   tag: string;
   fixtureId?: string;
+  dailyBriefEventId?: string;
 };
 
 export function shapePushPayload(input: Partial<SafePushPayload>): SafePushPayload {
@@ -73,6 +76,9 @@ export function shapePushPayload(input: Partial<SafePushPayload>): SafePushPaylo
     destinationUrl,
     tag: String(input.tag ?? "leedswire").slice(0, 100),
     ...(input.fixtureId ? { fixtureId: String(input.fixtureId).slice(0, 100) } : {}),
+    ...(input.dailyBriefEventId
+      ? { dailyBriefEventId: String(input.dailyBriefEventId).slice(0, 100) }
+      : {}),
   };
 }
 

@@ -23,6 +23,7 @@
     "src/lib/pushClientSupport.ts",
     "src/lib/pushStoreRequest.ts",
     "src/lib/dailyBrief.ts",
+    "src/lib/cronAuth.ts",
     "src/lib/topStorySelection.ts",
     "src/config/adControls.ts",
     "src/config/adCampaignStatus.ts",

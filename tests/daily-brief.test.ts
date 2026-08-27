@@ -9,6 +9,7 @@ import {
 import { selectTopStory } from "../src/lib/topStorySelection";
 import { validatePushSubscription } from "../src/lib/pushValidation";
 import { pushSubscriptionRow } from "../src/lib/pushStoreRequest";
+import { isCronBearerAuthorized } from "../src/lib/cronAuth";
 import type { Article } from "../src/types/content";
 
 function story(publishedAt: string, overrides: Partial<Article> = {}): Article {
@@ -56,6 +57,11 @@ assert.equal(dailyBriefSendingEnabled(true, true), true);
 assert.equal(dailyBriefSendingEnabled(true, false), false);
 assert.equal(dailyBriefSendingEnabled(false, true), false);
 
+assert.equal(isCronBearerAuthorized(null, undefined), false);
+assert.equal(isCronBearerAuthorized(null, "cron-secret"), false);
+assert.equal(isCronBearerAuthorized("Bearer wrong", "cron-secret"), false);
+assert.equal(isCronBearerAuthorized("Bearer cron-secret", "cron-secret"), true);
+
 const first = story(now.toISOString());
 const second = story(now.toISOString(), { id: "story-2", title: "Second" });
 assert.equal(selectTopStory([first, second]), first);
@@ -98,5 +104,8 @@ assert.match(service, /concurrent_or_duplicate_dispatch/);
 
 const serviceWorker = fs.readFileSync("public/sw.js", "utf8");
 assert.match(serviceWorker, /dailyBriefEventId/);
+
+const cronRoute = fs.readFileSync("src/app/api/cron/daily-brief/route.ts", "utf8");
+assert.match(cronRoute, /process\.env\.CRON_SECRET/);
 
 console.log("daily brief tests passed");

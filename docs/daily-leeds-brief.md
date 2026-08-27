@@ -19,6 +19,17 @@ Minute-accurate delivery requires a Vercel plan with per-minute cron precision. 
 
 The Daily Brief route validates Vercel's reserved `CRON_SECRET`. A missing secret or missing/incorrect bearer header fails closed with HTTP 401.
 
+## Delivery observability
+
+Migration `008_daily_brief_observability.sql` separates scheduler evaluation from delivery outcomes:
+
+- `last_evaluated_at` records every scheduler evaluation, including a skipped run.
+- `last_dispatch_attempt_at` records a run that attempted at least one delivery.
+- `last_successful_dispatch_at` records only a run where at least one push service accepted the notification.
+- Eligible, attempted, successful, failed and expired totals describe the most recent delivery attempt. A safe aggregate `failure_summary` classifies failures without storing subscription credentials.
+
+The two Vercel schedules intentionally cover GMT and BST. The invocation outside the Europe/London dispatch window updates evaluation state and `skip_reason`, but does not replace the most recent delivery-attempt totals.
+
 ## Safe dry run
 
 With an authenticated LeedsWire admin session, send:

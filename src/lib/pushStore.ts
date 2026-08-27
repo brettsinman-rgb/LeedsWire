@@ -165,8 +165,14 @@ export async function reserveDailyBriefEvent(input: {
 
 export async function completeDailyBriefEvent(
   eventId: string,
-  successfulDeliveries: number,
-  failedDeliveries: number,
+  metrics: {
+    eligibleSubscribers: number;
+    attemptedDeliveries: number;
+    successfulDeliveries: number;
+    failedDeliveries: number;
+    expiredSubscriptions: number;
+    failureSummary: Record<string, number>;
+  },
 ) {
   const { url, key } = config();
   const response = await fetch(
@@ -175,9 +181,13 @@ export async function completeDailyBriefEvent(
       method: "PATCH",
       headers: headers(key, "return=minimal"),
       body: JSON.stringify({
-        sent_at: successfulDeliveries > 0 ? new Date().toISOString() : null,
-        successful_deliveries: successfulDeliveries,
-        failed_deliveries: failedDeliveries,
+        sent_at: metrics.successfulDeliveries > 0 ? new Date().toISOString() : null,
+        eligible_subscribers: metrics.eligibleSubscribers,
+        attempted_deliveries: metrics.attemptedDeliveries,
+        successful_deliveries: metrics.successfulDeliveries,
+        failed_deliveries: metrics.failedDeliveries,
+        expired_subscriptions: metrics.expiredSubscriptions,
+        failure_summary: metrics.failureSummary,
       }),
       cache: "no-store",
     },
@@ -193,6 +203,13 @@ export async function updateDailyBriefStatus(input: {
   successfulDeliveries: number;
   failedDeliveries: number;
   skipReason?: string | null;
+  deliveryMetrics?: {
+    attemptedAt: string;
+    eligibleSubscribers: number;
+    attemptedDeliveries: number;
+    expiredSubscriptions: number;
+    failureSummary: Record<string, number>;
+  };
 }) {
   const { url, key } = config();
   const response = await fetch(
@@ -204,10 +221,17 @@ export async function updateDailyBriefStatus(input: {
         singleton: true,
         last_evaluated_at: input.evaluatedAt,
         ...(input.successfulAt ? { last_successful_dispatch_at: input.successfulAt } : {}),
+        ...(input.deliveryMetrics ? {
+          last_dispatch_attempt_at: input.deliveryMetrics.attemptedAt,
+          eligible_subscribers: input.deliveryMetrics.eligibleSubscribers,
+          attempted_deliveries: input.deliveryMetrics.attemptedDeliveries,
+          successful_deliveries: input.successfulDeliveries,
+          failed_deliveries: input.failedDeliveries,
+          expired_subscriptions: input.deliveryMetrics.expiredSubscriptions,
+          failure_summary: input.deliveryMetrics.failureSummary,
+        } : {}),
         selected_article_id: input.articleId ?? null,
         selected_headline: input.headline?.slice(0, 500) ?? null,
-        successful_deliveries: input.successfulDeliveries,
-        failed_deliveries: input.failedDeliveries,
         skip_reason: input.skipReason ?? null,
         updated_at: input.evaluatedAt,
       }),
@@ -242,7 +266,7 @@ export async function recordDailyBriefClick(eventId: string) {
 export async function getDailyBriefStatus() {
   const { url, key } = config();
   const response = await fetch(
-    `${url}/rest/v1/push_daily_brief_status?select=last_evaluated_at,last_successful_dispatch_at,selected_article_id,selected_headline,successful_deliveries,failed_deliveries,skip_reason&singleton=eq.true&limit=1`,
+    `${url}/rest/v1/push_daily_brief_status?select=last_evaluated_at,last_dispatch_attempt_at,last_successful_dispatch_at,selected_article_id,selected_headline,eligible_subscribers,attempted_deliveries,successful_deliveries,failed_deliveries,expired_subscriptions,failure_summary,skip_reason&singleton=eq.true&limit=1`,
     { headers: headers(key), cache: "no-store" },
   );
   await ensureOk(response);

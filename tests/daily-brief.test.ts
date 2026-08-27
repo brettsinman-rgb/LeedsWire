@@ -92,6 +92,12 @@ assert.match(migration, /notification_daily_brief boolean not null default false
 assert.match(migration, /push_daily_brief_article_once_idx/);
 assert.match(migration, /push_daily_brief_date_once_idx/);
 assert.match(migration, /on conflict do nothing/);
+const observabilityMigration = fs.readFileSync("supabase/migrations/008_daily_brief_observability.sql", "utf8");
+assert.match(observabilityMigration, /last_dispatch_attempt_at/);
+assert.match(observabilityMigration, /eligible_subscribers/);
+assert.match(observabilityMigration, /attempted_deliveries/);
+assert.match(observabilityMigration, /expired_subscriptions/);
+assert.match(observabilityMigration, /failure_summary/);
 
 const homepage = fs.readFileSync("src/app/page.tsx", "utf8");
 const service = fs.readFileSync("src/lib/dailyBriefService.ts", "utf8");
@@ -101,6 +107,7 @@ assert.match(service, /notification_daily_brief|countDailyBriefSubscribers/);
 assert.match(service, /dryRun/);
 assert.match(service, /sendPushToSubscription/);
 assert.match(service, /concurrent_or_duplicate_dispatch/);
+assert.match(service, /failureSummary/);
 
 const serviceWorker = fs.readFileSync("public/sw.js", "utf8");
 assert.match(serviceWorker, /dailyBriefEventId/);

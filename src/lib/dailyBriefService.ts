@@ -1,6 +1,6 @@
 import "server-only";
 import { getPushConfig } from "@/lib/pushConfig";
-import { sendPushToSubscription } from "@/lib/pushService";
+import { sendPushToSubscription, type PushFailureCategory } from "@/lib/pushService";
 import {
   completeDailyBriefEvent,
   countDailyBriefSubscribers,
@@ -33,27 +33,37 @@ type DailyBriefReport = {
   wouldSend: boolean;
   sent: number;
   failed: number;
+  attempted: number;
+  expired: number;
+  failureSummary: Partial<Record<PushFailureCategory, number>>;
   skipReason: string | null;
 };
 
 async function deliverBatch<T>(
   items: T[],
-  worker: (item: T) => Promise<boolean>,
+  worker: (item: T) => Promise<Awaited<ReturnType<typeof sendPushToSubscription>>>,
 ) {
   let cursor = 0;
   let sent = 0;
   let failed = 0;
+  let expired = 0;
+  const failureSummary: Partial<Record<PushFailureCategory, number>> = {};
   async function consume() {
     while (cursor < items.length) {
       const item = items[cursor++];
-      if (await worker(item)) sent += 1;
-      else failed += 1;
+      const result = await worker(item);
+      if (result.sent) sent += 1;
+      else {
+        failed += 1;
+        if (result.permanent) expired += 1;
+        failureSummary[result.failureCategory] = (failureSummary[result.failureCategory] ?? 0) + 1;
+      }
     }
   }
   await Promise.all(
     Array.from({ length: Math.min(DELIVERY_CONCURRENCY, items.length) }, consume),
   );
-  return { sent, failed };
+  return { attempted: items.length, sent, failed, expired, failureSummary };
 }
 
 export async function runDailyBrief(input: { dryRun: boolean; now?: Date }) {
@@ -110,6 +120,9 @@ export async function runDailyBrief(input: { dryRun: boolean; now?: Date }) {
     wouldSend,
     sent: 0,
     failed: 0,
+    attempted: 0,
+    expired: 0,
+    failureSummary: {},
     skipReason,
   };
 
@@ -163,15 +176,28 @@ export async function runDailyBrief(input: { dryRun: boolean; now?: Date }) {
         tag: "leedswire-daily-brief",
         dailyBriefEventId: eventId,
       });
-      return delivery.sent;
+      return delivery;
     });
+    report.attempted += result.attempted;
     report.sent += result.sent;
     report.failed += result.failed;
+    report.expired += result.expired;
+    for (const [category, count] of Object.entries(result.failureSummary)) {
+      const key = category as PushFailureCategory;
+      report.failureSummary[key] = (report.failureSummary[key] ?? 0) + (count ?? 0);
+    }
     if (subscriptions.length < SUBSCRIBER_BATCH_SIZE) break;
     afterId = subscriptions.at(-1)?.id ?? null;
   }
 
-  await completeDailyBriefEvent(eventId, report.sent, report.failed);
+  await completeDailyBriefEvent(eventId, {
+    eligibleSubscribers: report.eligibleSubscriberCount,
+    attemptedDeliveries: report.attempted,
+    successfulDeliveries: report.sent,
+    failedDeliveries: report.failed,
+    expiredSubscriptions: report.expired,
+    failureSummary: report.failureSummary,
+  });
   await updateDailyBriefStatus({
     evaluatedAt,
     successfulAt: report.sent > 0 ? new Date().toISOString() : null,
@@ -180,6 +206,13 @@ export async function runDailyBrief(input: { dryRun: boolean; now?: Date }) {
     successfulDeliveries: report.sent,
     failedDeliveries: report.failed,
     skipReason: report.sent > 0 ? null : "no_successful_deliveries",
+    deliveryMetrics: {
+      attemptedAt: new Date().toISOString(),
+      eligibleSubscribers: report.eligibleSubscriberCount,
+      attemptedDeliveries: report.attempted,
+      expiredSubscriptions: report.expired,
+      failureSummary: report.failureSummary,
+    },
   });
   report.skipReason = report.sent > 0 ? null : "no_successful_deliveries";
   return report;

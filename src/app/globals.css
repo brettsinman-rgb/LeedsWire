@@ -73,6 +73,28 @@ body {
   overflow: hidden;
 }
 
+.media-channel-nav {
+  container-name: media-channel-nav;
+  container-type: inline-size;
+  min-width: 0;
+}
+
+.media-channel-list {
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+@container media-channel-nav (min-width: 720px) {
+  .media-channel-list {
+    flex-wrap: nowrap;
+  }
+
+  .media-channel-list--end {
+    justify-content: flex-end;
+  }
+}
+
 .lw-clamp-2 {
   -webkit-line-clamp: 2;
 }

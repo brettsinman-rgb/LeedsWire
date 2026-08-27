@@ -108,7 +108,7 @@ export function MediaChannelNav({
         sticky
           ? "sticky top-[var(--lw-header-offset)] z-30 py-3"
           : "",
-        "max-w-full",
+        "media-channel-nav min-w-0 max-w-full",
       ].join(" ")}
     >
       {title ? (
@@ -118,10 +118,10 @@ export function MediaChannelNav({
       ) : null}
       <div
         className={[
-          "-mx-5 flex max-w-none flex-wrap gap-0.5 overflow-visible whitespace-normal px-5 py-4 min-[390px]:gap-1 sm:mx-0 sm:max-w-full sm:flex-nowrap sm:gap-2 sm:whitespace-nowrap sm:p-4",
+          "media-channel-list -mx-5 flex min-w-0 max-w-none flex-wrap justify-start gap-x-0.5 gap-y-2 overflow-visible whitespace-normal px-5 py-4 min-[390px]:gap-x-1 sm:mx-0 sm:max-w-full sm:gap-x-2 sm:p-4",
           align === "start"
-            ? "sm:justify-start sm:px-0"
-            : "sm:justify-end",
+            ? "sm:px-0"
+            : "media-channel-list--end",
         ].join(" ")}
       >
         {mediaChannelLinks.map((channel) => {

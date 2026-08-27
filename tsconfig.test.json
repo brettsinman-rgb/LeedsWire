@@ -26,6 +26,7 @@
     "src/lib/dailyBrief.ts",
     "src/lib/cronAuth.ts",
     "src/lib/topStorySelection.ts",
+    "src/lib/mediaChannels.ts",
     "src/config/adControls.ts",
     "src/config/adCampaignStatus.ts",
     "src/config/ads.config.ts",
@@ -48,6 +49,7 @@
     "tests/text.test.ts",
     "tests/push-foundation.test.ts",
     "tests/daily-brief.test.ts",
-    "tests/pwa-install.test.ts"
+    "tests/pwa-install.test.ts",
+    "tests/media-channel-nav.test.ts"
   ]
 }

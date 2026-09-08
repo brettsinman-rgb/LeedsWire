@@ -1,4 +1,5 @@
 import "server-only";
+import { DAILY_BRIEF_EVENT_ID, type DailyBriefStory } from "@/lib/dailyBriefClick";
 import type { ValidPushSubscription } from "@/lib/pushValidation";
 import { endpointFilter, pushSubscriptionRow } from "@/lib/pushStoreRequest";
 
@@ -241,15 +242,15 @@ export async function updateDailyBriefStatus(input: {
   await ensureOk(response);
 }
 
-export async function getDailyBriefEventDestination(eventId: string) {
+export async function getDailyBriefEventStory(eventId: string) {
+  if (!DAILY_BRIEF_EVENT_ID.test(eventId)) return null;
   const { url, key } = config();
   const response = await fetch(
-    `${url}/rest/v1/push_notification_events?select=canonical_url&id=eq.${encodeURIComponent(eventId)}&event_type=eq.daily_brief&limit=1`,
+    `${url}/rest/v1/push_notification_events?select=article_id,canonical_url,canonical_url_hash,headline,source_id&id=eq.${encodeURIComponent(eventId)}&event_type=eq.daily_brief&limit=1`,
     { headers: headers(key), cache: "no-store" },
   );
   await ensureOk(response);
-  const row = ((await response.json()) as Array<{ canonical_url?: string }>)[0];
-  return row?.canonical_url ?? null;
+  return ((await response.json()) as DailyBriefStory[])[0] ?? null;
 }
 
 export async function recordDailyBriefClick(eventId: string) {

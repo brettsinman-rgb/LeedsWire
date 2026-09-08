@@ -1,4 +1,5 @@
 import "server-only";
+import { dailyBriefClickUrl } from "@/lib/dailyBriefClick";
 import { getPushConfig } from "@/lib/pushConfig";
 import { sendPushToSubscription, type PushFailureCategory } from "@/lib/pushService";
 import {
@@ -172,7 +173,7 @@ export async function runDailyBrief(input: { dryRun: boolean; now?: Date }) {
       const delivery = await sendPushToSubscription(subscription, {
         title: "LEEDSWIRE DAILY",
         body: selectedStory.headline,
-        destinationUrl: `/api/push/daily-brief/click?event=${eventId}`,
+        destinationUrl: dailyBriefClickUrl(eventId),
         tag: "leedswire-daily-brief",
         dailyBriefEventId: eventId,
       });

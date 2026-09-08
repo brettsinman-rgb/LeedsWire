@@ -39,8 +39,10 @@ export function Hero({ article }: HeroProps) {
                   Top Story
                 </span>
                 <span>{source?.name}</span>
-                <span className="text-white/35">•</span>
-                <time>{formatDate(article.publishedAt)}</time>
+                {article.publishedAt ? <>
+                  <span className="text-white/35">•</span>
+                  <time>{formatDate(article.publishedAt)}</time>
+                </> : null}
               </div>
             </div>
             <div className="flex flex-col bg-[linear-gradient(145deg,rgba(14,29,48,0.96)_0%,rgba(8,24,42,0.92)_100%)] p-6 sm:p-8 lg:min-h-0 lg:px-7 lg:py-6">
@@ -59,7 +61,7 @@ export function Hero({ article }: HeroProps) {
                 <div className="mb-5 h-px bg-white/[0.08] lg:mb-3" />
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <time className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
-                    {formatRelativeTime(article.publishedAt)}
+                    {article.publishedAt ? formatRelativeTime(article.publishedAt) : "Daily Leeds Brief"}
                   </time>
                   {ctaUrl ? (
                     <a

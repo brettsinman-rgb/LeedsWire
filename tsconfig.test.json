@@ -50,6 +50,7 @@
     "tests/push-foundation.test.ts",
     "tests/daily-brief.test.ts",
     "tests/pwa-install.test.ts",
-    "tests/media-channel-nav.test.ts"
+    "tests/media-channel-nav.test.ts",
+    "tests/daily-brief-click.test.ts"
   ]
 }

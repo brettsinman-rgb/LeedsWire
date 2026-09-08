@@ -1,3 +1,5 @@
+import { getDailyBriefEventStory } from "@/lib/pushStore";
+import { resolveDailyBriefStory } from "@/lib/dailyBriefClick";
 import { ArticleGrid } from "@/components/ArticleGrid";
 import { AdPlacementSet } from "@/components/AdPlacementSet";
 import { Hero } from "@/components/Hero";
@@ -11,8 +13,15 @@ import { getVideoChannelRows } from "@/lib/youtube";
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
-export default async function Home() {
+export default async function Home({ searchParams }: {
+  searchParams: Promise<{ dailyBrief?: string | string[] }>;
+}) {
   const { articles, topStory } = await getHomepageStories();
+  const { dailyBrief } = await searchParams;
+  const saved = typeof dailyBrief === "string"
+    ? await getDailyBriefEventStory(dailyBrief).catch(() => null) : null;
+  const selectedStory = saved ? resolveDailyBriefStory(saved, articles) : null;
+  const heroStory = selectedStory ?? topStory;
   const latest = topStory
     ? articles.filter((article) => article.id !== topStory.id)
     : [];
@@ -25,7 +34,7 @@ export default async function Home() {
         placement="top"
         className="bg-[#071827]/35 py-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:py-6"
       />
-      {topStory ? <Hero article={topStory} /> : null}
+      {heroStory ? <Hero article={heroStory} /> : null}
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
         <section id="latest" className="pb-10">
           <SectionHeader

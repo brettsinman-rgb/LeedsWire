@@ -51,6 +51,8 @@
     "tests/daily-brief.test.ts",
     "tests/pwa-install.test.ts",
     "tests/media-channel-nav.test.ts",
-    "tests/daily-brief-click.test.ts"
+    "tests/daily-brief-click.test.ts",
+    "tests/full-time.test.ts",
+    "tests/full-time-adapters.test.ts"
   ]
 }

@@ -80,3 +80,8 @@ export async function getNextFixture(): Promise<NextFixture | null> {
 
   return fixtures[0] ?? null;
 }
+
+// Share the official cached list; unlike getNextFixture, retain fixtures after kickoff.
+export async function getFullTimeFixtureList() {
+  return getCachedFixtureList();
+}

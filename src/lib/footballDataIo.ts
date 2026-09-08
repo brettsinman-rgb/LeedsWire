@@ -1,4 +1,5 @@
 import "server-only";
+import { fullTimeSearchRange, type FullTimeProviderMatch } from "./fullTime";
 
 const FOOTBALL_DATA_BASE_URL = "https://footballdata.io/api/v1";
 const REQUEST_TIMEOUT_MS = 8_000;
@@ -228,4 +229,19 @@ export async function getFootballDataDiagnostic(): Promise<FootballDataDiagnosti
       matchesRequest.meta,
     ],
   };
+}
+
+// One scoped request per monitor cycle. Use the positively matched public ID thereafter.
+export async function getFootballDataFullTimeMatches(kickoffAt: string, providerFixtureId: number | null) {
+  if (providerFixtureId !== null) {
+    if (!Number.isSafeInteger(providerFixtureId) || providerFixtureId <= 0) throw new FootballDataError("Invalid match ID");
+    const response = await footballDataRequest<FullTimeProviderMatch>(`/matches/${providerFixtureId}`);
+    return [response.data];
+  }
+  const { from, to } = fullTimeSearchRange(kickoffAt);
+  const response = await footballDataRequest<{ matches?: FullTimeProviderMatch[] }>(
+    `/teams/193/matches?league_id=15&from=${from}&to=${to}&limit=100`,
+  );
+  if (!Array.isArray(response.data.matches)) throw new FootballDataError("Malformed match list");
+  return response.data.matches;
 }

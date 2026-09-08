@@ -28,6 +28,7 @@ function safeFailureCategory(error: unknown, statusCode: number): PushFailureCat
 export async function sendPushToSubscription(
   subscription: StoredPushSubscription,
   payload: Partial<SafePushPayload>,
+  options?: { timeout: number },
 ) {
   const config = getPushConfig();
   if (!hasVapidConfig(config)) {
@@ -39,7 +40,7 @@ export async function sendPushToSubscription(
     await webPush.sendNotification(
       { endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } },
       JSON.stringify(shapePushPayload(payload)),
-      { TTL: 60 },
+      { TTL: 60, ...(options ? { timeout: options.timeout } : {}) },
     );
     await recordPushResult(subscription.id, true);
     return { sent: true as const };

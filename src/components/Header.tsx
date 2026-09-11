@@ -14,6 +14,7 @@ const navItems = [
 
 export function Header() {
   const pathname = usePathname();
+  const headerRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(true);
   const [hasScrolled, setHasScrolled] = useState(false);
   const lastScrollY = useRef(0);
@@ -106,6 +107,22 @@ export function Header() {
     };
   }, [revealHeader]);
 
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const root = document.documentElement;
+    const previousOffset = root.style.getPropertyValue("--lw-header-offset");
+    const observer = new ResizeObserver(() => {
+      root.style.setProperty("--lw-header-offset", `${header.offsetHeight}px`);
+    });
+    observer.observe(header);
+    return () => {
+      observer.disconnect();
+      if (previousOffset) root.style.setProperty("--lw-header-offset", previousOffset);
+      else root.style.removeProperty("--lw-header-offset");
+    };
+  }, []);
+
   const headerClassName = [
     "fixed inset-x-0 top-0 z-40 border-b border-black/[0.08] bg-white backdrop-blur-2xl",
     "transform-gpu will-change-transform",
@@ -122,11 +139,12 @@ export function Header() {
 
   return (
     <header
+      ref={headerRef}
       className={headerClassName}
       style={headerStyle}
       onFocusCapture={revealHeader}
     >
-      <div className="mx-auto flex max-w-7xl flex-col items-center gap-2 px-4 py-2 sm:gap-3 sm:px-6 sm:py-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-x-8 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col items-center gap-2 px-3 py-2 sm:gap-3 sm:px-6 sm:py-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-x-8 lg:px-8">
         <Link
           href="/"
           className="group flex min-w-0 flex-col items-center justify-center gap-0.5 text-center sm:gap-1 lg:flex-row lg:justify-start lg:gap-4 lg:text-left"
@@ -152,60 +170,55 @@ export function Header() {
             </span>
           </span>
         </Link>
-        <nav className="flex w-full items-center [justify-content:safe_center] gap-5 overflow-x-auto whitespace-nowrap border-t border-black/[0.08] pt-1.5 sm:pt-2 lg:justify-end lg:gap-4 lg:border-t-0 lg:pt-0">
-          {navItems.map((item, index) => {
-            const isActive = !item.href.includes("#") && pathname === item.href;
+        <nav className="flex w-full flex-col items-center gap-2 whitespace-nowrap border-t border-black/[0.08] pt-1.5 sm:pt-2 lg:w-auto lg:border-t-0 lg:pt-0 xl:flex-row xl:gap-4">
+          <div className="flex max-w-full items-center justify-center gap-2 min-[375px]:gap-5 sm:gap-6 lg:gap-4">
+            {navItems.map((item) => {
+              const isActive = !item.href.includes("#") && pathname === item.href;
 
-            return (
-              <span key={item.href} className="flex shrink-0 items-center gap-4">
-                {index > 0 ? (
-                  <span
-                    aria-hidden="true"
-                    className="hidden h-3 w-px shrink-0 bg-[rgba(255,255,255,0.35)] lg:block"
-                  />
-                ) : null}
-                <Link
-                  href={item.href}
-                  className={
-                    isActive
-                      ? "shrink-0 border-b-2 border-[#EFBF04] pb-1 text-[0.72rem] font-extrabold uppercase tracking-[0.13em] text-[#EFBF04] transition duration-300"
-                      : "shrink-0 border-b-2 border-transparent pb-1 text-[0.72rem] font-bold uppercase tracking-[0.13em] text-[#111111] transition duration-300 hover:border-[#EFBF04]/50 hover:text-[#EFBF04]"
-                  }
-                >
-                  {item.label}
-                </Link>
-              </span>
-            );
-          })}
-          <Link
-            href="/audio"
-            aria-label="LeedsWire Audio"
-            aria-current={pathname === "/audio" ? "page" : undefined}
-            title="LeedsWire Audio"
-            onFocus={(e) => e.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" })}
-            onClick={() => event("audio_nav_click", { destination: "/audio" })}
-            className={`inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-2 text-[0.72rem] font-bold uppercase tracking-[0.13em] transition duration-300 hover:text-[#EFBF04] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#164a89] ${pathname === "/audio" ? "text-[#EFBF04]" : "text-[#111111]"}`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              focusable="false"
-              className="shrink-0"
+              return (
+                <span key={item.href} className="flex shrink-0 items-center gap-4">
+                  <Link
+                    href={item.href}
+                    className={
+                      isActive
+                        ? "inline-flex h-11 shrink-0 items-center border-y-2 border-t-transparent border-b-[#EFBF04] lg:h-9 text-[0.72rem] font-extrabold uppercase tracking-[0.13em] text-[#EFBF04] transition duration-300"
+                        : "inline-flex h-11 shrink-0 items-center border-y-2 border-transparent lg:h-9 text-[0.72rem] font-bold uppercase tracking-[0.13em] text-[#111111] transition duration-300 hover:border-b-[#EFBF04]/50 hover:text-[#EFBF04]"
+                    }
+                  >
+                    {item.label}
+                  </Link>
+                </span>
+              );
+            })}
+            <Link
+              href="/audio"
+              aria-label="LeedsWire Audio"
+              aria-current={pathname === "/audio" ? "page" : undefined}
+              title="LeedsWire Audio"
+              onClick={() => event("audio_nav_click", { destination: "/audio" })}
+              className={`inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-1 border border-transparent text-[0.72rem] font-bold uppercase tracking-[0.13em] transition duration-300 hover:text-[#EFBF04] lg:h-9 lg:gap-1.5 lg:rounded-full lg:px-[15px] lg:hover:border-[#EFBF04] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#164a89] ${pathname === "/audio" ? "text-[#EFBF04] lg:border-[#EFBF04]" : "text-[#071827] lg:border-[#071827]"}`}
             >
-              <path d="M12 17V3l8 2v4l-8-2" />
-              <ellipse cx="8" cy="17" rx="4" ry="3" />
-            </svg>
-            <span className="lg:hidden">Audio</span>
-          </Link>
-          <span className="shrink-0 lg:ml-1"><PwaInstallCta /></span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                focusable="false"
+                className="shrink-0"
+              >
+                <path d="M12 17V3l8 2v4l-8-2" />
+                <ellipse cx="8" cy="17" rx="4" ry="3" />
+              </svg>
+              <span>Audio</span>
+            </Link>
+          </div>
+          <span className="shrink-0 empty:hidden"><PwaInstallCta /></span>
         </nav>
       </div>
     </header>

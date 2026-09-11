@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import { PwaInstallCta } from "@/components/PwaInstallCta";
+import { event } from "@/lib/analytics";
 
 const navItems = [
   { label: "Premier League News", href: "/premier-league-news" },
@@ -151,7 +152,7 @@ export function Header() {
             </span>
           </span>
         </Link>
-        <nav className="flex w-full items-center justify-center gap-5 overflow-x-auto whitespace-nowrap border-t border-black/[0.08] pt-1.5 sm:pt-2 lg:justify-end lg:gap-4 lg:border-t-0 lg:pt-0">
+        <nav className="flex w-full items-center [justify-content:safe_center] gap-5 overflow-x-auto whitespace-nowrap border-t border-black/[0.08] pt-1.5 sm:pt-2 lg:justify-end lg:gap-4 lg:border-t-0 lg:pt-0">
           {navItems.map((item, index) => {
             const isActive = !item.href.includes("#") && pathname === item.href;
 
@@ -176,6 +177,34 @@ export function Header() {
               </span>
             );
           })}
+          <Link
+            href="/audio"
+            aria-label="LeedsWire Audio"
+            aria-current={pathname === "/audio" ? "page" : undefined}
+            title="LeedsWire Audio"
+            onFocus={(e) => e.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" })}
+            onClick={() => event("audio_nav_click", { destination: "/audio" })}
+            className={`inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-2 text-[0.72rem] font-bold uppercase tracking-[0.13em] transition duration-300 hover:text-[#EFBF04] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#164a89] ${pathname === "/audio" ? "text-[#EFBF04]" : "text-[#111111]"}`}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              focusable="false"
+              className="shrink-0"
+            >
+              <path d="M12 17V3l8 2v4l-8-2" />
+              <ellipse cx="8" cy="17" rx="4" ry="3" />
+            </svg>
+            <span className="lg:hidden">Audio</span>
+          </Link>
           <span className="shrink-0 lg:ml-1"><PwaInstallCta /></span>
         </nav>
       </div>
